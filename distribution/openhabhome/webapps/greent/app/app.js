@@ -233,9 +233,9 @@ function getLocalStoreItem(item_name, default_value){
 }
 
 function setTheme(){
-var current_theme = getLocalStoreItem('openHAB_theme', 'GreenT');
+  var current_theme = getLocalStoreItem('openHAB_theme', 'black-glass'); // #proserv
 if(OpenHAB.themes.indexOf(current_theme) == -1){
-	current_theme = 'GreenT';
+    current_theme = 'black-glass';
 }
 
 theme_css_filename = './themes/' + current_theme + '/css/style.css';
@@ -253,7 +253,7 @@ document.getElementsByTagName("head")[0].appendChild(theme_css);
 var ui_language = getLocalStoreItem('openHAB_language', 'en');
 var transitions = getLocalStoreItem('openHAB_transitions', '1');
 var force_transport = getLocalStoreItem('openHAB_transport', 'auto');
-var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'chart');
+var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'rrdchart.png'); //#proserv
 
 
 var sitemapStoreLoadTries = 3;
@@ -368,7 +368,7 @@ var settingsWindow = {
     floating: true,
     centered: true,
     //width:300,
-	height:500,
+	height:480, //#Proserv
     layout: 'card',
 	items: [{
 	scrollable: 'vertical',
@@ -399,7 +399,7 @@ var settingsWindow = {
             				localStorage.setItem('openHAB_theme', settingsPanel.getItems().items[0].getItems().items[4].getValue());
 							localStorage.setItem('openHAB_transport', settingsPanel.getItems().items[0].getItems().items[5].getValue());
 							localStorage.setItem('openHAB_transitions', settingsPanel.getItems().items[0].getItems().items[6].getValue());
-							localStorage.setItem('openHAB_chart_servlet', settingsPanel.getItems().items[0].getItems().items[7].getValue());
+							//localStorage.setItem('openHAB_chart_servlet', settingsPanel.getItems().items[0].getItems().items[7].getValue()); // #proserv
 
             				alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect);
             				window.location.reload();
@@ -451,7 +451,7 @@ var settingsWindow = {
 		listeners:{
                         change: function(){dirtySettings = true}
                     }
-    }, {
+    }, { 
         xtype: 'selectfield',
         label: OpenHAB.i18n_strings[ui_language].theme,
         labelWidth: '40%',
@@ -459,7 +459,7 @@ var settingsWindow = {
 		listeners:{
                         change: function(){dirtySettings = true}
                     }
-    }, 
+    },
 	{
         xtype: 'selectfield',
         label: OpenHAB.i18n_strings[ui_language].transport_protocol,
@@ -478,7 +478,7 @@ var settingsWindow = {
                         change: function(){dirtySettings = true}
                     }
     },
-	{
+	/*{ // #Proserv to be removed
         xtype: 'selectfield',
         label: OpenHAB.i18n_strings[ui_language].chart_servlet,
         labelWidth: '40%',
@@ -486,11 +486,12 @@ var settingsWindow = {
 		listeners:{
                         change: function(){dirtySettings = true}
                     }
-    },
+    },*/
 	{
     xtype: 'button',
-        text: '<img style="height:100%;" src="./app/logo_tr.png" border="0" />',
-        style: 'clear:both;margin:0.7em 5%;height:3.6em;',
+        //text: '<img style="height:100%;" src="./app/logo_tr.png" border="0" />', // #Proserv
+        text: 'About proServ Logview',
+        style: 'background-color:black;clear:both;margin:0.7em 5%;height:3.6em;', // #Proserv
         scope: this,
 		cls: 'oph_about_btn',
         handler: function () {
@@ -521,7 +522,7 @@ var settingsWindow = {
                     cls: 'x-title',
                     centered: true,
 					zIndex:0,
-					html: 'GreenT UI'
+					html: 'About proServ Logview'
                 }, {
                     xtype: 'spacer'
                 },{
@@ -663,14 +664,16 @@ function loadUIData(sitemap_name) {
 
                 goToPage(result.homepage.id);
 
-
-
                 if (Ext.getCmp('leftPanel')) {
                     leftPanelstore.setRoot(UInavPanel);
                     setCurrentLeftNavPage(result.homepage.id);
                 }
 
-
+                clickOnLeaf = true;                     // #Proserv open "All Values" on startup - start
+                broadCrumb.push(["0000", "All values"]);// #Proserv 
+                goToPage("0000");                       // #Proserv
+                setCurrentLeftNavPage("0000");          // #Proserv open "All Values" on startup - end
+                
             //} catch (error) {
                 Ext.getCmp('content').unmask();
                // alert(OpenHAB.i18n_strings[ui_language].error_build_interface + "\r\n(" + error + ")");
@@ -961,7 +964,7 @@ function showSettingsWindow() {
         settingsPanel.setCls(deviceTypeCls + '_modal');
 
 
-        settingsPanel.getItems().items[0].getItems().items[1].setValue(getLocalStoreItem('openHAB_sitemap', 'choose'));
+        settingsPanel.getItems().items[0].getItems().items[1].setValue(getLocalStoreItem('openHAB_sitemap', 'proserv')); // #Proserv
         settingsPanel.getItems().items[0].getItems().items[2].setValue(getLocalStoreItem('openHAB_device_type', 'auto'));
 
 
@@ -984,7 +987,7 @@ function showSettingsWindow() {
             })
         }
         settingsPanel.getItems().items[0].getItems().items[4].setOptions(options_array);
-        settingsPanel.getItems().items[0].getItems().items[4].setValue(getLocalStoreItem('openHAB_theme', 'GreenT'));	
+        settingsPanel.getItems().items[0].getItems().items[4].setValue(getLocalStoreItem('openHAB_theme', 'black-glass'));	 // #Proserv
 		
 		settingsPanel.getItems().items[0].getItems().items[5].setOptions([
                         {text: OpenHAB.i18n_strings[ui_language].auto_detect,  value: 'auto'},
@@ -995,12 +998,12 @@ function showSettingsWindow() {
         settingsPanel.getItems().items[0].getItems().items[5].setValue(getLocalStoreItem('openHAB_transport', 'auto'));
 		settingsPanel.getItems().items[0].getItems().items[6].setValue(transitions);
 
-		settingsPanel.getItems().items[0].getItems().items[7].setOptions([
+		/*settingsPanel.getItems().items[0].getItems().items[7].setOptions([
 						{text: 'Chart engine', value: 'chart'},
                         {text: 'RRD chart engine',  value: 'rrdchart.png'}
-                    ]);
+                    ]);// #Proserv  to be removed
 
-        settingsPanel.getItems().items[0].getItems().items[7].setValue(getLocalStoreItem('openHAB_chart_servlet', 'chart'));
+        settingsPanel.getItems().items[0].getItems().items[7].setValue(getLocalStoreItem('openHAB_chart_servlet', 'chart')); */// #Proserv  to be removed
 		
 		logo_width = 50;
 		if(deviceType == 'Phone'){
@@ -1014,7 +1017,9 @@ function showSettingsWindow() {
 			update_link = ' <i>(up to date)</i>';
 		}
 		}
-		settingsPanel.getItems().items[1].getItems().items[1].setHtml('<div style="text-align:center;font-size:1em;"><img style="width:'+logo_width+'%;margin:1em;" src="./app/logo.png" border="0"/><br><b>GreenT UI installed version:</b> '+oph_greenT_version+'<br><b>GreenT UI available version:</b> '+oph_update_version+update_link+'<br><b>openHAB version:</b> '+oph_openHAB_version+'<br><br><b>Transport Protocol:</b> '+detectedTransport+'<br><a style="color:#87a600;" target="_blank" href="http://m-design.bg/greent/">GreenT UI Website</a></div>');
+    // #Proserv 
+		settingsPanel.getItems().items[1].getItems().items[1].setHtml('<div style="text-align:center;font-size:0.7em;"><img style="width:'+logo_width+'%;margin:0.2em;" src="./app/logoproknx.png" border="0"/><br><a>KNXWare proServ Logview is based on openHAB. proServ Logview and openHAB are distrubuted and licensed under the Eclipse Public License (EPL).</a><br><img style="width:'+logo_width+'%;margin:0.2em;" src="./app/logo.png" border="0"/><br><b>GreenT UI installed version:</b> '+oph_greenT_version+'<br><b>GreenT UI available version:</b> '+oph_update_version+update_link+'<br><b>openHAB version:</b> '+oph_openHAB_version+'<br><br><b>Transport Protocol:</b> '+detectedTransport+'<br><a target="_blank" href="http://www.proknx.com">proServ Website</a><br><a target="_blank" href="http://www.openhab.org">openHAB Website</a><br><a style="color:#87a600;" target="_blank" href="http://m-design.bg/greent/">GreenT UI Website</a></div>');
+    // #Proserv ^
 		settingsPanel.getItems().items[2].getItems().items[1].setHtml('<div style="padding-top:0.5em;text-align:center;font-size:1em;"><b>Installed version:</b> '+oph_greenT_version+' <i>(build '+oph_greenT_build+')</i><br><b>Version to update: </b>'+oph_update_version+' <i>(build '+oph_update_build+')</i><br><br><b>Update info:</b><br>'+oph_update_info+'</div><br><br>');
 		
 		
@@ -1051,7 +1056,7 @@ function NavBarItemTap(list, item, index, e, data) {
 	}
 	
 	
-    leftNavPanel.getBackButton().show();
+    //leftNavPanel.getBackButton().show(); // #Proserv
     //console.log(list.getStore().getAt(index).data.page_id);
 
     if (data.raw.leaf) { //if it is a leaf
@@ -1242,8 +1247,8 @@ function updateLeftNavMenu(updatedata) {
 
 function setProfile() {
 	if(force_transport == 'auto'){
-	force_transport = 'websocket';
-	fallbackProtocol = 'streaming';
+	force_transport = 'long-polling'; // #Proserv
+	fallbackProtocol = 'websocket'; // #Proserv
 	if (Ext.os.is.Android2){
 		fallbackProtocol = 'long-polling';
 	}
@@ -2293,8 +2298,11 @@ var oph_app = Ext.application({
 
 
         sitemap = localStorage.getItem('openHAB_sitemap');
-
-        if (sitemap == '' || sitemap == null || sitemap == 'null' || sitemap == 'choose') {
+      if (sitemap == '' || sitemap == null || sitemap == 'null') {
+        sitemap = 'proserv'; // #Proserv
+        loadUIData(sitemap);
+      }
+      else if ( sitemap == 'choose') { // #Proserv
 			sitemapsPanel = new Ext.Panel(sitemapsWindow);
 			//sitemapsPanel.setWidth(Ext.Viewport.getWindowWidth()*0.9);
 			//sitemapsPanel.setHeight(Ext.Viewport.getWindowHeight()*0.9);

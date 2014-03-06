@@ -1,0 +1,32 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+
+var Number counter = 1
+var Timer timer = null
+
+rule Startup
+when 
+	System started
+then
+	say("Hello pro serv!")
+end
+
+rule Goodbye
+when 
+	System shuts down
+then
+	say("Good bye!")
+end
+
+rule "Crontest"
+	when 
+		Time cron "0/15 * * * * ?"
+	then
+      if (counter < 3)
+      {
+         say(counter)
+      }
+		counter = counter + 1
+end	
+
