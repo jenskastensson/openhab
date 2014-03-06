@@ -80,7 +80,9 @@ public class ItemUIRegistryImpl implements ItemUIRegistry {
 
 	/* RegEx to extract and parse a function String <code>'\[(.*?)\((.*)\):(.*)\]'</code> */
 	protected static final Pattern EXTRACT_TRANSFORMFUNCTION_PATTERN = Pattern.compile("\\[(.*?)\\((.*)\\):(.*)\\]");
-	
+	protected static final Pattern EXTRACT_TRANSFORMFUNCTION_PATTERN_FOR_LABEL = Pattern
+			.compile("\\{(.*?)\\((.*)\\):(.*)\\}");
+
 	/* RegEx to identify format patterns */
 	protected static final String IDENTIFY_FORMAT_PATTERN_PATTERN = "%(\\d\\$)?(<)?(\\.\\d)?[a-zA-Z]{1,2}";
 
@@ -213,6 +215,8 @@ public class ItemUIRegistryImpl implements ItemUIRegistry {
 	public String getLabel(Widget w) {
 		String label = getLabelFromWidget(w);
 		
+		label = transformLabel(label);
+
 		// now insert the value, if the state is a string or decimal value and there is some formatting pattern defined in the label 
 		// (i.e. it contains at least a %)
 		String itemName = w.getItem();
@@ -324,6 +328,46 @@ public class ItemUIRegistryImpl implements ItemUIRegistry {
 				} else {
 					logger.warn("couldn't transform value in label because transformationService of type '{}' is unavailable", type);
 					label = label.substring(0, label.indexOf("[")+1) + value + "]";
+				}
+			}
+		}
+		return label;
+	}
+
+	/*
+	 * check if the label contains call to a transformation
+	 * service (e.g. "{MAP(proserv.map):STRING-TO-REPLACED}") and execute the transformation in this
+	 * case.
+	 */
+	private String transformLabel(String label) {
+		if (label.contains("{") && label.contains("}")) {
+			Matcher matcher = EXTRACT_TRANSFORMFUNCTION_PATTERN_FOR_LABEL.matcher(label);
+			if (matcher.find()) {
+				String type = matcher.group(1);
+				String pattern = matcher.group(2);
+				String value = matcher.group(3);
+				TransformationService transformation = TransformationHelper
+						.getTransformationService(UIActivator.getContext(),
+								type);
+				if (transformation != null) {
+					try {
+						label = label.substring(0, label.indexOf("{"))
+								+ transformation.transform(pattern, value)
+								+ label.substring(label.indexOf("}") + 1,label.length());
+					} catch (TransformationException e) {
+						logger.error(
+								"transformation throws exception {transformation="
+										+ transformation + ", value=" + value
+										+ "}", e);
+						label = label.substring(0, label.indexOf("{") + 1)
+								+ value + "}";
+					}
+				} else {
+					logger.warn(
+							"couldn't transform value in label because transformationService of type '{}' is unavailable",
+							type);
+					label = label.substring(0, label.indexOf("{") + 1) + value
+							+ "}";
 				}
 			}
 		}

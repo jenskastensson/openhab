@@ -246,6 +246,9 @@ public class DefaultChartProvider implements ChartProvider {
 			if (label != null && label.contains("[") && label.contains("]")) {
 				label = label.substring(0, label.indexOf('['));
 			}
+			if(label!=null && label.contains("{") && label.contains("}")) {
+				label = label.substring(label.indexOf('}')+1, label.length());
+			}			
 		}
 		if (label == null) {
 			label = item.getName();

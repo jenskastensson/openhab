@@ -175,9 +175,15 @@ public class RRD4jChartServlet implements Servlet, ChartProvider {
 		if(label!=null && label.contains("[") && label.contains("]")) {
 			label = label.substring(0, label.indexOf('['));
 		}
+		if(label!=null && label.contains("{") && label.contains("}")) {
+			label = label.substring(label.indexOf('}')+1, label.length());
+		}
 		if(item instanceof NumberItem) {
 			// we only draw a line
 			graphDef.datasource(Integer.toString(counter), "./etc/rrd4j/" + item.getName() + ".rrd", "state", RRD4jService.getConsolidationFunction(item));
+			if(label.trim().isEmpty())
+				graphDef.line(Integer.toString(counter), color, 2);
+			else
 			graphDef.line(Integer.toString(counter), color, label, 2);
 		} else {
 			// we draw a line and fill the area beneath it with a transparent color
