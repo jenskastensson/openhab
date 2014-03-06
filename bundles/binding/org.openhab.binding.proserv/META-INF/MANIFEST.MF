@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: openHAB proServ Binding
+Bundle-SymbolicName: org.openhab.binding.proserv
+Bundle-Version: 1.5.0.qualifier
+Bundle-Activator: org.openhab.binding.proserv.internal.ProservActivator
+Bundle-Vendor: openHAB.org
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Import-Package: org.apache.commons.collections,
+ org.apache.commons.io,
+ org.apache.commons.lang,
+ org.eclipse.osgi.util;version="1.1.0",
+ org.openhab.config.core,
+ org.openhab.core.binding,
+ org.openhab.core.events,
+ org.openhab.core.items,
+ org.openhab.core.library.items,
+ org.openhab.core.library.types,
+ org.openhab.core.service,
+ org.openhab.core.types,
+ org.openhab.model.item.binding,
+ org.osgi.framework,
+ org.osgi.service.cm,
+ org.osgi.service.component,
+ org.osgi.service.event,
+ org.slf4j
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/calimero-rxtx-2.0a3.jar,
+ lib/calimero-core-2.2.0-SNAPSHOT.jar,
+ .
+Export-Package: org.openhab.binding.proserv;uses:="org.openhab.core.binding",
+ org.openhab.binding.proserv.internal
+Service-Component: OSGI-INF/genericbindigprovider.xml, OSGI-INF/proservbinding.xml

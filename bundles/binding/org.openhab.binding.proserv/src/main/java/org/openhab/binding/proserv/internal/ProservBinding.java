@@ -1,0 +1,373 @@
+/**
+ * Copyright (c) 2010-2014, openHAB.org and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+package org.openhab.binding.proserv.internal;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import org.openhab.core.library.types.DecimalType;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.UnknownHostException;
+import java.util.Dictionary;
+import org.apache.commons.lang.StringUtils;
+import org.openhab.binding.proserv.ProservBindingProvider;
+import org.openhab.core.binding.AbstractActiveBinding;
+import org.osgi.service.cm.ConfigurationException;
+import org.osgi.service.cm.ManagedService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
+/**
+ * The proServ binding connects to a proServ device with the
+ * {@link ProservConnector} and read the internal state array every minute. With
+ * the state array each binding will be updated.
+ * 
+ * @author JEKA
+ * @since 1.0.0
+ */
+public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider> implements ManagedService {
+
+	private static final Logger logger = LoggerFactory.getLogger(ProservBinding.class);
+
+	private static ProservConnector connector = null;
+	
+	/** Default refresh interval (currently 1 minute) */
+	private long refreshInterval = 60000L;
+
+	/* The IP address to connect to */
+	protected static String ip;
+	protected static int port = 80;
+	protected ProservData proservData = null;
+
+	public void deactivate() {
+		connector.stopMonitor();
+		if (connector != null) {
+			connector.disconnect();
+		}
+		connector = null;
+	}
+
+	public void activate() {
+//		if(getRefreshInterval()>10000)
+//			execute();
+//		if(connector==null)
+//		{
+//			connector = new ProservConnector(ip, port);	
+//			connector.startMonitor();
+//		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("rawtypes")
+	public void updated(Dictionary config) throws ConfigurationException {
+		if (config != null) {
+			String ip = (String) config.get("ip");
+			String portString = (String) config.get("port");
+			int portTmp = 80;
+			if (StringUtils.isNotBlank(portString)) {
+				portTmp = (int) Long.parseLong(portString);
+			}
+
+			if ((StringUtils.isNotBlank(ip) && !ip.equals(ProservBinding.ip)) || portTmp != ProservBinding.port) {
+				// only do something if the ip or port has changed
+				ProservBinding.ip = ip;
+				ProservBinding.port = portTmp;
+
+				String refreshIntervalString = (String) config.get("refresh");
+				if (StringUtils.isNotBlank(refreshIntervalString)) {
+					refreshInterval = Long.parseLong(refreshIntervalString);
+				}
+
+				setProperlyConfigured(true);
+			}
+		}
+	}
+
+	public void postUpdate(int x, int y, byte[] dataValue) {
+		int startDatapoint = (48*x) + (y*3) + 1;
+		int Id = proservData.getFunctionMapId(x,y,0);
+		int IdPreset = proservData.getFunctionMapId(x,y,1);	
+		
+		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
+		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
+		case 0x01:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[1]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+		} break;
+		case 0x02:{
+			int i = proservData.parse1BytePercentValue(dataValue[1]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
+					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x12:{
+			int i = proservData.parse1BytePercentValue(dataValue[2]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x31:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+		} break;
+		case 0x26:
+		case 0x34:{
+			float f = proservData.parse2ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x38:{
+			float f = proservData.parse4ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x91:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				int i = proservData.parse1BytePercentValue(dataValue[0]);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
+						new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
+				int preset = proservData.parse1BytePercentValue(dataValue[2]);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+						 new DecimalType(new BigDecimal(preset).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+		} break;
+		case 0x92:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				int i = proservData.parse1ByteUnsignedValue(dataValue[0]);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
+				int preset = proservData.parse1ByteUnsignedValue(dataValue[2]);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset),new DecimalType(preset));										
+			}
+		} break;
+		case 0x94:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				float f = proservData.parse2ByteFloatValue(dataValue,0);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+4, x, y, 1);
+				float f = proservData.parse2ByteFloatValue(dataValue,4);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+		} break;
+		case 0x95:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				long uint32 = proservData.parse4ByteUnsignedValue(dataValue,0);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(uint32));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				long uint32Preset = proservData.parse4ByteUnsignedValue(dataValue,8);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+						new DecimalType(uint32Preset));
+			}
+		} break;
+		case 0x96:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				long int32 = proservData.parse4ByteSignedValue(dataValue,0);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(int32));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				long int32Preset = proservData.parse4ByteSignedValue(dataValue,8);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+						new DecimalType(int32Preset));
+			}
+		} break;
+		case 0x97:{
+			if(proservData.getFunctionLogThis(x,y,0)) {
+				float f = proservData.parse4ByteFloatValue(dataValue,0);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+			if(proservData.getFunctionLogThis(x,y,1)) {
+				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				float f = proservData.parse4ByteFloatValue(dataValue,8);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+		} break;
+		default:
+			proservData.setFunctionDataPoint(0, x, y, 0);
+			logger.debug("proserv binding, unhandled functioncode 0x{}", 
+					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
+		}		
+	}
+	
+
+	@Override
+	public void execute() {
+//		if (!bindingsExist()) {
+//			logger.debug("There is no existing proServ binding configuration => refresh cycle aborted!");
+//			return;
+//		}
+		logger.debug("proServ binding refresh cycle starts!");
+
+		if(connector==null)
+		{
+			connector = new ProservConnector(ip, port);	
+		}
+		
+		try {
+			connector.connect();
+			if (proservData == null) {
+				proservData = new ProservData();
+				byte[] proservAllConfigValues = getConfigValues();
+				if (proservAllConfigValues == null) {
+					logger.debug("------proServ getConfigValues failed try again");
+					proservAllConfigValues = getConfigValues(); // try again..
+				}
+				if (proservAllConfigValues != null) {
+					proservData.parseRawConfigData(proservAllConfigValues);
+					proservData.updateProservMapFile();
+					proservData.updateProservItemFile();
+					proservData.updateProservSitemapFile();
+					proservData.updateRrd4jPersistFile();
+					proservData.updateDb4oPersistFile();
+					connector.startMonitor(this.eventPublisher, this.proservData, this);
+				} else {
+					logger.debug("------proServ getConfigValues failed twice");
+					proservData = null; // force a reload of configdata
+				}
+			}
+
+			if (proservData != null) {
+				// function 1-1 .. function 18-16
+				for (int x = 0; x < 18; x++) {
+					for (int y = 0; y < 16; y++) {
+						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
+							int startDatapoint = (48*x) + (y*3) + 1;
+							int numberOfDatapoints = 3;
+							int Id = proservData.getFunctionMapId(x,y,0);
+							int IdPreset = proservData.getFunctionMapId(x,y,1);							
+							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
+							if (dataValue != null) {
+								postUpdate(x, y, dataValue);
+							}
+						}
+					}
+				}
+
+				// heating 1-18
+				for (int x = 0; x < 18; x++) {
+					if (proservData.getHeatingLogThis(x)) {
+						int startDatapoint = 865 + x * 5;
+						int numberOfDatapoints = 5;
+						int IdActual = proservData.getHeatingMapId(x,0);						
+						int IdPreset = proservData.getHeatingMapId(x,1);						
+						byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
+						if (dataValue != null) {
+							switch ( (int)(proservData.getHeatingCodes(x) & 0xFF) ) {
+							case 0x41:
+							case 0x42:
+							case 0x43:
+							case 0x44:
+								float f = proservData.parse2ByteFloatValue(dataValue, 0);
+								eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdActual),
+										new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+								f = proservData.parse2ByteFloatValue(dataValue, 4);
+								eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+										new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+								break;
+							default:
+								logger.debug("proserv binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
+							}
+						}
+					}
+				}
+			}
+			logger.debug("proServ binding refresh cycle completed");				
+		} catch (NullPointerException e) {
+			logger.warn("proserv NullPointerException");
+		} catch (UnsupportedEncodingException e) {
+			logger.warn("proserv UnsupportedEncodingException");
+		} catch (UnknownHostException e) {
+			logger.warn("the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
+		} catch (IOException e) {
+			logger.warn("couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
+		} catch (Exception e) {
+			logger.warn("Exception in execute error:{}", e);
+		} finally {
+			logger.debug("proServ binding refresh cycle reached finally");			
+			if (connector != null) {
+				connector.disconnect();
+			}
+		}
+	}
+
+//	private void shortDelayBetweenBusEvents() {
+//        try {
+//            Thread.sleep(0);
+//        }
+//        catch (InterruptedException ie) {
+//            // Handle the exception
+//        }
+//	}
+
+	private byte[] getConfigValues() {
+		byte[] proservAllConfigValues = null;
+		try {
+
+			short PROSERV_MEMORY_LENGTH = 19500;
+			short NUMBER_OF_BYTES_IN_CHUNK = 500;
+			proservAllConfigValues = new byte[PROSERV_MEMORY_LENGTH];
+
+			// read a chunk of values
+			short startByte = 1;
+			for (int chunkId = 0;; chunkId++) {
+				short numberOfBytesToRead = NUMBER_OF_BYTES_IN_CHUNK;
+				if (startByte + NUMBER_OF_BYTES_IN_CHUNK >= PROSERV_MEMORY_LENGTH)
+					numberOfBytesToRead = (short) (PROSERV_MEMORY_LENGTH - startByte);
+
+				byte[] proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
+				if(proServValues==null)
+				{
+					logger.debug("-----------Proserv getConfigValues failed proServValues==null");
+					return null;
+				}
+				int offset = chunkId * NUMBER_OF_BYTES_IN_CHUNK;
+				startByte += NUMBER_OF_BYTES_IN_CHUNK;
+				for (int i = 0; i < numberOfBytesToRead; i++) {
+					proservAllConfigValues[offset + i] = proServValues[i];
+				}
+				if (numberOfBytesToRead != NUMBER_OF_BYTES_IN_CHUNK)
+					break;
+				if (offset > 18000)
+					break; // quick fix for now
+			}
+			logger.debug("Proserv succesfully loaded all config values");
+		}
+		finally {
+			
+		}
+		return proservAllConfigValues;
+	}
+
+
+	@Override
+	protected long getRefreshInterval() {
+		return refreshInterval;
+	}
+
+	@Override
+	protected String getName() {
+		return "proServ Refresh Service";
+	}
+
+}
