@@ -372,15 +372,28 @@ public class ProservConnector {
 												dataPointValue[pos++] = datain.readByte();
 											}
 										}
+										boolean bFound = false;
 										for (int x = 0; x < 18; x++) {
 											for (int y = 0; y < 16; y++) {
 												for (int z = 0; z < 2; z++) {
 													if (proservData.getFunctionDataPoint(x, y, z) == dataPointIDs[0]) {
-														proservBinding.postUpdate(x, y, dataPointValue);
+														proservBinding.postUpdateFunction(x, y, dataPointValue);
+														bFound = true;
 														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());															
 													}
 												}
 											}
+										}
+										if(!bFound){
+											for (int x = 0; x < 18; x++) {
+												for (int z = 0; z < 2; z++) {
+													if (proservData.getHeatingDataPoint(x, z) == dataPointIDs[0]) {
+														proservBinding.postUpdateHeating(x, dataPointValue);
+														bFound = true;
+														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());															
+													}
+												}
+											}											
 										}
 									}
 									else

@@ -93,7 +93,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
-	public void postUpdate(int x, int y, byte[] dataValue) {
+	public void postUpdateFunction(int x, int y, byte[] dataValue) {
 		int startDatapoint = (48*x) + (y*3) + 1;
 		int Id = proservData.getFunctionMapId(x,y,0);
 		int IdPreset = proservData.getFunctionMapId(x,y,1);	
@@ -210,6 +210,32 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}		
 	}
 	
+	public void postUpdateHeating(int x, byte[] dataValue) {
+		int IdActual = proservData.getHeatingMapId(x,0);						
+		int IdPreset = proservData.getHeatingMapId(x,1);
+
+		int startDatapoint = 865 + x * 5;
+
+		switch ( (int)(proservData.getHeatingCodes(x) & 0xFF) ) {
+		case 0x41:
+		case 0x42:
+		case 0x43:
+		case 0x44:
+			proservData.setHeatingDataPoint(startDatapoint, x, 0);
+			float f = proservData.parse2ByteFloatValue(dataValue, 0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdActual),
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			
+			proservData.setHeatingDataPoint(startDatapoint+4, x, 1);
+			f = proservData.parse2ByteFloatValue(dataValue, 4);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			break;
+		default:
+			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
+		}		
+	}
+	
 
 	@Override
 	public void execute() {
@@ -257,7 +283,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 							int IdPreset = proservData.getFunctionMapId(x,y,1);							
 							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 							if (dataValue != null) {
-								postUpdate(x, y, dataValue);
+								postUpdateFunction(x, y, dataValue);
 							}
 						}
 					}
@@ -267,26 +293,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				for (int x = 0; x < 18; x++) {
 					if (proservData.getHeatingLogThis(x)) {
 						int startDatapoint = 865 + x * 5;
-						int numberOfDatapoints = 5;
-						int IdActual = proservData.getHeatingMapId(x,0);						
-						int IdPreset = proservData.getHeatingMapId(x,1);						
+						int numberOfDatapoints = 5;					
 						byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 						if (dataValue != null) {
-							switch ( (int)(proservData.getHeatingCodes(x) & 0xFF) ) {
-							case 0x41:
-							case 0x42:
-							case 0x43:
-							case 0x44:
-								float f = proservData.parse2ByteFloatValue(dataValue, 0);
-								eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdActual),
-										new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
-								f = proservData.parse2ByteFloatValue(dataValue, 4);
-								eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
-										new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
-								break;
-							default:
-								logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
-							}
+							postUpdateHeating(x, dataValue);
 						}
 					}
 				}

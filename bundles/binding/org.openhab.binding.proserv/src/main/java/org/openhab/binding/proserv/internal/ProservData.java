@@ -41,6 +41,7 @@ public class ProservData {
     private byte[] heatingDefs = new byte[18];
 	private boolean[] heatingLogThis = new boolean[18];
 	private int[][] heatingMapId = new int[18][2];
+	private int[][] heatingDataPoint = new int[18][2];
 
 	private String stringProservLang[];
 
@@ -77,6 +78,14 @@ public class ProservData {
 	}
 	public String getHeatingDescription(int x) {
 		return heatingDescriptions[x];
+	}
+	public int getHeatingDataPoint( int x, int i)
+	{
+		return heatingDataPoint[x][i];
+	}	
+	public void setHeatingDataPoint(int dataPoint, int x, int i)
+	{
+		heatingDataPoint[x][i] = dataPoint;
 	}
 
 
@@ -166,6 +175,9 @@ public class ProservData {
             {
             	heatingLogThis[x]=true;
             	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#l"));
+            	/*int startDatapoint = 865 + x * 5;
+				logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
+						heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);*/
             } 
 
 	    }
