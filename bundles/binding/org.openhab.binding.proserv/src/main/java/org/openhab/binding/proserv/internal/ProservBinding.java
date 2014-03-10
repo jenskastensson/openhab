@@ -205,7 +205,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		} break;
 		default:
 			proservData.setFunctionDataPoint(0, x, y, 0);
-			logger.debug("proserv binding, unhandled functioncode 0x{}", 
+			logger.debug("proServ binding, unhandled functioncode 0x{}", 
 					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
 		}		
 	}
@@ -213,10 +213,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 	@Override
 	public void execute() {
-//		if (!bindingsExist()) {
-//			logger.debug("There is no existing proServ binding configuration => refresh cycle aborted!");
-//			return;
-//		}
+
 		logger.debug("proServ binding refresh cycle starts!");
 
 		if(connector==null)
@@ -230,7 +227,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				proservData = new ProservData();
 				byte[] proservAllConfigValues = getConfigValues();
 				if (proservAllConfigValues == null) {
-					logger.debug("------proServ getConfigValues failed try again");
+					logger.debug("proServ getConfigValues failed try again");
 					proservAllConfigValues = getConfigValues(); // try again..
 				}
 				if (proservAllConfigValues != null) {
@@ -242,7 +239,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					proservData.updateDb4oPersistFile();
 					connector.startMonitor(this.eventPublisher, this.proservData, this);
 				} else {
-					logger.debug("------proServ getConfigValues failed twice");
+					logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
 					proservData = null; // force a reload of configdata
 				}
 			}
@@ -254,7 +251,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
 							int startDatapoint = (48*x) + (y*3) + 1;
 							int numberOfDatapoints = 3;
+							@SuppressWarnings("unused")
 							int Id = proservData.getFunctionMapId(x,y,0);
+							@SuppressWarnings("unused")
 							int IdPreset = proservData.getFunctionMapId(x,y,1);							
 							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 							if (dataValue != null) {
@@ -286,7 +285,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 										new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 								break;
 							default:
-								logger.debug("proserv binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
+								logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
 							}
 						}
 					}
@@ -294,15 +293,15 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 			logger.debug("proServ binding refresh cycle completed");				
 		} catch (NullPointerException e) {
-			logger.warn("proserv NullPointerException");
+			logger.warn("proServ NullPointerException");
 		} catch (UnsupportedEncodingException e) {
-			logger.warn("proserv UnsupportedEncodingException");
+			logger.warn("proServ UnsupportedEncodingException");
 		} catch (UnknownHostException e) {
-			logger.warn("the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
+			logger.warn("proServ the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
 		} catch (IOException e) {
-			logger.warn("couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
+			logger.warn("proServ couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
 		} catch (Exception e) {
-			logger.warn("Exception in execute error:{}", e);
+			logger.warn("proServ Exception in execute error:{}", e);
 		} finally {
 			logger.debug("proServ binding refresh cycle reached finally");			
 			if (connector != null) {
@@ -311,14 +310,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
-//	private void shortDelayBetweenBusEvents() {
-//        try {
-//            Thread.sleep(0);
-//        }
-//        catch (InterruptedException ie) {
-//            // Handle the exception
-//        }
-//	}
 
 	private byte[] getConfigValues() {
 		byte[] proservAllConfigValues = null;
@@ -338,7 +329,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				byte[] proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
 				if(proServValues==null)
 				{
-					logger.debug("-----------Proserv getConfigValues failed proServValues==null");
+					logger.debug("proServ getConfigValues failed proServValues==null");
 					return null;
 				}
 				int offset = chunkId * NUMBER_OF_BYTES_IN_CHUNK;
@@ -351,7 +342,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if (offset > 18000)
 					break; // quick fix for now
 			}
-			logger.debug("Proserv succesfully loaded all config values");
+			logger.debug("proServ succesfully loaded all config values");
 		}
 		finally {
 			

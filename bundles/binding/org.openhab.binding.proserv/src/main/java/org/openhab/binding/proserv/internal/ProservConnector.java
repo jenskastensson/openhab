@@ -8,18 +8,13 @@
  */
 package org.openhab.binding.proserv.internal;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Collection;
-
-
 import org.openhab.core.events.EventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -282,12 +277,10 @@ public class ProservConnector {
 		/** retry interval in ms, if connection fails */
 		private long waitBeforeRetry = 60000L;
 	
-		private EventPublisher eventPublisher;
 		private ProservData proservData;
 		private ProservBinding proservBinding;
 		
 		public MonitorThread(EventPublisher eventPublisher, ProservData proservData,  ProservBinding proservBinding) {
-			this.eventPublisher = eventPublisher;
 			this.proservData = proservData;
 			this.proservBinding = proservBinding;
 		}
@@ -299,15 +292,6 @@ public class ProservConnector {
 		 */
 		public void interrupt() {
 			this.interrupted = true;
-//			if (connection != null) {
-//				try {
-//					connection.close();
-//				} catch (IOException e) {
-//					logger.warn(
-//							"----Monitor Existing connection to Proserv on {} cannot be closed: {}",
-//							serverIp + ":" + serverPort, e.toString());
-//				}
-//			}
 		}
 	
 
@@ -367,15 +351,18 @@ public class ProservConnector {
 								{
 									byte mainService = datain.readByte();
 									byte subService = datain.readByte();
+									@SuppressWarnings("unused")
 									short startDataPoint = datain.readShort();
 									short numberOfDatapoints = datain.readShort();
 									if (mainService == (byte) 0xF0 &&  subService == (byte) 0xC1) {
 										short[] dataPointIDs = new short[16];
+										@SuppressWarnings("unused")
 										short nextDataPointID = 0;
 										byte[] dataPointValue = new byte[255];
 										int pos = 0;
 										for (int i = 0; i < numberOfDatapoints; i++) {
 											dataPointIDs[i] = datain.readShort();
+											@SuppressWarnings("unused")
 											byte dataPointState = datain.readByte();
 											byte dataPointLength = datain.readByte();
 											if(i>0){
@@ -416,6 +403,4 @@ public class ProservConnector {
 			}
 		}
 	}
-
-
 }

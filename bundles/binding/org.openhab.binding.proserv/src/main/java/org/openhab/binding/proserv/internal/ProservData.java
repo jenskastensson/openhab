@@ -131,14 +131,10 @@ public class ProservData {
 
 		            	
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#l"));	
-						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}",x, y, offset, 
-								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), functionLogThis[x][y][0], functionLogThis[x][y][1]);
+						/*logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}",x, y, offset, 
+								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), functionLogThis[x][y][0], functionLogThis[x][y][1]);*/
 		            }
-//		            else
-//		            {
-//						logger.debug("                       x{}y{}  offset:{}  {}",x, y, offset, functionDescriptions[x][y]);
-//		     
-//		            }
+
       
 	        	} catch (NullPointerException e) {
 		 			logger.warn("proserv NullPointerException");
