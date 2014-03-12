@@ -135,7 +135,7 @@ public class ProservData {
 		            	{		            	
 							if( (functionDefs[x][y] & 0x30) >= 0x10) // 'y' is 01, 10, 11 : show actual value
 								functionLogThis[x][y][0] = true;
-							if( (functionDefs[x][y] & 0x1) == 0) // 'x' is 01, 11 : show preset value
+							if( (functionDefs[x][y] & 0x1) == 1) // 'x' is 01, 11 : show preset value
 								functionLogThis[x][y][1] = true;
 		            	}
 		            	else
@@ -145,7 +145,7 @@ public class ProservData {
 
 		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
 		            	{	//State - 1 bit value	            	
-							if( (functionDefs[x][y] & 0x1) == 1) // x) 1=high activ; 0=low activ
+							if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high activ; 0=low activ
 								functionStateIsInverted[x][y] = true;
 		            	}
 		            	
