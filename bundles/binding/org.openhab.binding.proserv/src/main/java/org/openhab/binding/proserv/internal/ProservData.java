@@ -34,6 +34,8 @@ public class ProservData {
 	private boolean[][][] functionLogThis = new boolean[18][16][2];
 	private int[][][] functionMapId = new int[18][16][2];
 	private int[][][] functionDataPoint = new int[18][16][2];
+	private boolean[][] functionStateIsInverted = new boolean[18][16];
+	
 	
     private byte[] heatingCodes = new byte[18];
     private String[] heatingDescriptions = new String[18];
@@ -62,6 +64,9 @@ public class ProservData {
 	{
 		return functionDataPoint[x][y][i];
 	}	
+	public boolean getFunctionStateIsInverted(int x, int y) {
+		return functionStateIsInverted[x][y];
+	}
 	public void setFunctionDataPoint(int dataPoint, int x, int y, int i)
 	{
 		functionDataPoint[x][y][i] = dataPoint;
@@ -130,7 +135,7 @@ public class ProservData {
 		            	{		            	
 							if( (functionDefs[x][y] & 0x30) >= 0x10) // 'y' is 01, 10, 11 : show actual value
 								functionLogThis[x][y][0] = true;
-							if( (functionDefs[x][y] & 0x1) == 1) // 'x' is 01, 11 : show preset value
+							if( (functionDefs[x][y] & 0x1) == 0) // 'x' is 01, 11 : show preset value
 								functionLogThis[x][y][1] = true;
 		            	}
 		            	else
@@ -138,10 +143,17 @@ public class ProservData {
 		            		functionLogThis[x][y][0]=true;
 		            	}
 
+		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
+		            	{	//State - 1 bit value	            	
+							if( (functionDefs[x][y] & 0x1) == 1) // x) 1=high activ; 0=low activ
+								functionStateIsInverted[x][y] = true;
+		            	}
 		            	
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#l"));	
-						/*logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}",x, y, offset, 
-								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), functionLogThis[x][y][0], functionLogThis[x][y][1]);*/
+						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}",x, y, offset, 
+								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), 
+								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]
+										);
 		            }
 
       

@@ -116,6 +116,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		} break;
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			if(proservData.getFunctionStateIsInverted(x,y))
+				b = !b;
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
 		} break;
 		case 0x26:
