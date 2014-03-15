@@ -18,6 +18,7 @@ import org.apache.commons.mail.EmailAttachment;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
 import org.apache.commons.mail.SimpleEmail;
+import org.apache.commons.io.FilenameUtils;
 import org.openhab.core.scriptengine.action.ActionDoc;
 import org.openhab.core.scriptengine.action.ParamDoc;
 import org.slf4j.Logger;
@@ -89,7 +90,8 @@ import org.slf4j.LoggerFactory;
 					  EmailAttachment attachment = new EmailAttachment();
 					  attachment.setURL(new URL(attachmentUrl));
 					  attachment.setDisposition(EmailAttachment.ATTACHMENT);
-					  attachment.setName("Attachment");
+					  attachment.setName(FilenameUtils.getBaseName(attachmentUrl)+"."+FilenameUtils.getExtension(attachmentUrl));
+					  //attachment.setName("Attachment");
 					  ((MultiPartEmail) email).attach(attachment);
 				} catch (MalformedURLException e) {
 					logger.error("Invalid attachment url.", e);

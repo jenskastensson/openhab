@@ -8,11 +8,16 @@
  */
 package org.openhab.binding.proserv.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
+import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Dictionary;
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +27,8 @@ import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.action.mail.internal.Mail;
+
 
 
 
@@ -43,9 +50,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private long refreshInterval = 60000L;
 
 	/* The IP address to connect to */
-	protected static String ip;
-	protected static int port = 80;
-	protected ProservData proservData = null;
+	private static String ip;
+	private static int port = 80;
+	private static String mailTo = "";
+	private static String mailSubject = "";
+	private static String mailContent = "";
+	private static Boolean previousEmailTrigger = null;
+	
+	private ProservData proservData = null;
 
 	public void deactivate() {
 		connector.stopMonitor();
@@ -73,6 +85,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		if (config != null) {
 			String ip = (String) config.get("ip");
 			String portString = (String) config.get("port");
+			ProservBinding.mailTo = (String) config.get("mailto");
+			ProservBinding.mailSubject = (String) config.get("mailsubject");
+			ProservBinding.mailContent = (String) config.get("mailcontent");
 			int portTmp = 80;
 			if (StringUtils.isNotBlank(portString)) {
 				portTmp = (int) Long.parseLong(portString);
@@ -93,6 +108,22 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
+	public static String padRight(String s, int n) {
+	     return String.format("%1$-" + n + "s", s);  
+	}
+	
+	public void sendMail() {
+		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+				File.separator + "logs" + File.separator + "proserv.log";
+		URL url = null;
+		try {
+			url = new File(path).toURI().toURL();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		Mail.sendMail(mailTo, mailSubject, mailContent, url.toString());
+	}
+	
 	public void postUpdateFunction(int x, int y, byte[] dataValue) {
 		int startDatapoint = (48*x) + (y*3) + 1;
 		int Id = proservData.getFunctionMapId(x,y,0);
@@ -119,6 +150,11 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
+			{
+				sendMail();
+		    }
+			previousEmailTrigger = b;
 		} break;
 		case 0x26:
 		case 0x34:{
@@ -138,6 +174,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				int preset = proservData.parse1BytePercentValue(dataValue[2]);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -150,6 +187,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				int preset = proservData.parse1ByteUnsignedValue(dataValue[2]);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset),new DecimalType(preset));										
@@ -162,6 +200,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+4, x, y, 1);
 				float f = proservData.parse2ByteFloatValue(dataValue,4);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -174,6 +213,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(uint32));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
 				long uint32Preset = proservData.parse4ByteUnsignedValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -186,6 +226,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(int32));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
 				long int32Preset = proservData.parse4ByteSignedValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -199,6 +240,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
+				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
 				float f = proservData.parse4ByteFloatValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -209,7 +251,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			proservData.setFunctionDataPoint(0, x, y, 0);
 			logger.debug("proServ binding, unhandled functioncode 0x{}", 
 					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
-		}		
+		}	
+		shortDelayBetweenBusEvents();
 	}
 	
 	public void postUpdateHeating(int x, byte[] dataValue) {
@@ -224,14 +267,17 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		case 0x43:
 		case 0x44:
 			proservData.setHeatingDataPoint(startDatapoint, x, 0);
-			float f = proservData.parse2ByteFloatValue(dataValue, 0);
+			float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdActual),
-					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
-			
+					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
 			proservData.setHeatingDataPoint(startDatapoint+4, x, 1);
-			f = proservData.parse2ByteFloatValue(dataValue, 4);
+			float f1 = proservData.parse2ByteFloatValue(dataValue, 4);
+			shortDelayBetweenBusEvents();
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
-					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+					new DecimalType(new BigDecimal(f1).setScale(2, RoundingMode.HALF_EVEN)));
+			logger.info("{}{}: {}{}: {}", padRight(proservData.getHeatingDescription(x), 20), 
+					padRight(proservData.getStringProservLang(0), 5), padRight(Float.toString(f0), 10), 
+					padRight(proservData.getStringProservLang(1), 5), padRight(Float.toString(f1), 10));
 			break;
 		default:
 			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
@@ -322,6 +368,13 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
+	private void shortDelayBetweenBusEvents() {
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException ie) {
+			// Handle the exception
+		}
+	}
 
 	private byte[] getConfigValues() {
 		byte[] proservAllConfigValues = null;

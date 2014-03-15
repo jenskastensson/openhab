@@ -35,8 +35,8 @@ public class ProservData {
 	private int[][][] functionMapId = new int[18][16][2];
 	private int[][][] functionDataPoint = new int[18][16][2];
 	private boolean[][] functionStateIsInverted = new boolean[18][16];
-	
-	
+	private boolean[][] functionIsEmailTrigger = new boolean[18][16];
+		
     private byte[] heatingCodes = new byte[18];
     private String[] heatingDescriptions = new String[18];
     private byte[] heatingProfiles = new byte[18];
@@ -45,7 +45,11 @@ public class ProservData {
 	private int[][] heatingMapId = new int[18][2];
 	private int[][] heatingDataPoint = new int[18][2];
 
-	private String stringProservLang[];
+	private String stringProservLang[]; // TODO change to MAP
+	
+	public String getStringProservLang(int x) {
+		return stringProservLang[x];
+	}
 
 	
 	public byte getFunctionCodes(int x, int y) {
@@ -60,6 +64,9 @@ public class ProservData {
 	public String getFunctionDescription(int x, int y) {
 		return functionDescriptions[x][y];
 	}
+	public String getFunctionUnits(int x, int y) {
+		return functionUnits[x][y];
+	}
 	public int getFunctionDataPoint( int x, int y, int i)
 	{
 		return functionDataPoint[x][y][i];
@@ -67,6 +74,10 @@ public class ProservData {
 	public boolean getFunctionStateIsInverted(int x, int y) {
 		return functionStateIsInverted[x][y];
 	}
+	public boolean getFunctionIsEmailTrigger(int x, int y) {
+		return functionIsEmailTrigger[x][y];
+	}
+	
 	public void setFunctionDataPoint(int dataPoint, int x, int y, int i)
 	{
 		functionDataPoint[x][y][i] = dataPoint;
@@ -84,6 +95,7 @@ public class ProservData {
 	public String getHeatingDescription(int x) {
 		return heatingDescriptions[x];
 	}
+	
 	public int getHeatingDataPoint( int x, int i)
 	{
 		return heatingDataPoint[x][i];
@@ -129,6 +141,13 @@ public class ProservData {
 		            
 		            functionProfiles[x][y] = proServAllValues[offset+30];
 		            functionDefs[x][y] = proServAllValues[offset+31];
+		            if(functionDescriptions[x][y].contains("#m"))
+		            {
+		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
+		            	{
+		            		functionIsEmailTrigger[x][y] = true;
+		            	}
+		            }		            
 		            if(functionDescriptions[x][y].contains("#l"))
 		            {
 		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x91 && ((int)functionCodes[x][y] & 0xFF)<=0x97 )
@@ -152,10 +171,9 @@ public class ProservData {
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#l"));	
 						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}",x, y, offset, 
 								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), 
-								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]
-										);
+								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]); 
 		            }
-
+		            
       
 	        	} catch (NullPointerException e) {
 		 			logger.warn("proserv NullPointerException");

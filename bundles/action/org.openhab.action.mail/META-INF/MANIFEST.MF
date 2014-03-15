@@ -12,6 +12,7 @@ Bundle-Description: This is the Mail action of the open Home Aut
  omation Bus (openHAB)
 Import-Package: javax.mail;version="1.4.0",
  javax.mail.internet;version="1.4.0",
+ org.apache.commons.io;version="2.0.1",
  org.apache.commons.lang,
  org.openhab.core.items,
  org.openhab.core.library.items,
@@ -28,3 +29,4 @@ Service-Component: OSGI-INF/action.xml
 Bundle-ClassPath: .,
  lib/commons-email-1.2.jar
 Bundle-ActivationPolicy: lazy
+Export-Package: org.openhab.action.mail.internal

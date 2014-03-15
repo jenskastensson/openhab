@@ -373,13 +373,15 @@ public class ProservConnector {
 											}
 										}
 										boolean bFound = false;
+										outerloop:
 										for (int x = 0; x < 18; x++) {
 											for (int y = 0; y < 16; y++) {
 												for (int z = 0; z < 2; z++) {
 													if (proservData.getFunctionDataPoint(x, y, z) == dataPointIDs[0]) {
 														proservBinding.postUpdateFunction(x, y, dataPointValue);
 														bFound = true;
-														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());															
+														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());
+														break outerloop;
 													}
 												}
 											}
