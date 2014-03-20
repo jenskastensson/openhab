@@ -391,10 +391,15 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if (startByte + NUMBER_OF_BYTES_IN_CHUNK >= PROSERV_MEMORY_LENGTH)
 					numberOfBytesToRead = (short) (PROSERV_MEMORY_LENGTH - startByte);
 
-				byte[] proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
+				byte[] proServValues = null;
+				for(int attempt=0;attempt<4;attempt++){
+					proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
+					if(proServValues!=null) 
+						break;
+				}
 				if(proServValues==null)
 				{
-					logger.debug("proServ getConfigValues failed proServValues==null");
+					logger.info("proServ getConfigValues failed proServValues==null");
 					return null;
 				}
 				int offset = chunkId * NUMBER_OF_BYTES_IN_CHUNK;
@@ -404,7 +409,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				if (numberOfBytesToRead != NUMBER_OF_BYTES_IN_CHUNK)
 					break;
-				if (offset > 18000)
+				if (offset > 10300)
 					break; // quick fix for now
 			}
 			logger.debug("proServ succesfully loaded all config values");
