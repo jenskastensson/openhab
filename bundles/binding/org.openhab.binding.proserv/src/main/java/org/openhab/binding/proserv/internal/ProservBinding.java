@@ -60,6 +60,12 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String mailSubject = "";
 	private static String mailContent = "";
 	private static Boolean previousEmailTrigger = null;
+	private static String chartItemRefreshHour = null;
+	private static String chartItemRefreshDay = null;
+	private static String chartItemRefreshWeek = null;
+	private static String chartItemRefreshMonth = null;
+	private static String chartItemRefreshYear = null;
+
 	
 	private ProservData proservData = null;
 
@@ -92,6 +98,31 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			ProservBinding.mailTo = (String) config.get("mailto");
 			ProservBinding.mailSubject = (String) config.get("mailsubject");
 			ProservBinding.mailContent = (String) config.get("mailcontent");
+			ProservBinding.chartItemRefreshHour = (String) config.get("chartItemRefreshHour");
+			ProservBinding.chartItemRefreshDay = (String) config.get("chartItemRefreshDay");
+			ProservBinding.chartItemRefreshWeek = (String) config.get("chartItemRefreshWeek");
+			ProservBinding.chartItemRefreshMonth = (String) config.get("chartItemRefreshMonth");
+			ProservBinding.chartItemRefreshYear = (String) config.get("chartItemRefreshYear");
+			if(ProservBinding.chartItemRefreshHour != null)
+				if(Integer.parseInt(ProservBinding.chartItemRefreshHour)<5000)
+					ProservBinding.chartItemRefreshHour = "5000";
+			
+			if(ProservBinding.chartItemRefreshDay != null)
+				if(Integer.parseInt(ProservBinding.chartItemRefreshDay)<5000)
+					ProservBinding.chartItemRefreshDay = "5000";
+			
+			if(ProservBinding.chartItemRefreshWeek != null)
+				if(Integer.parseInt(ProservBinding.chartItemRefreshWeek)<5000)
+					ProservBinding.chartItemRefreshWeek = "5000";
+			
+			if(ProservBinding.chartItemRefreshMonth != null)
+				if(Integer.parseInt(ProservBinding.chartItemRefreshMonth)<5000)
+					ProservBinding.chartItemRefreshMonth = "5000";
+			
+			if(ProservBinding.chartItemRefreshYear != null)
+				if(Integer.parseInt(ProservBinding.chartItemRefreshYear)<5000)
+					ProservBinding.chartItemRefreshYear = "5000";
+					
 			int portTmp = 80;
 			if (StringUtils.isNotBlank(portString)) {
 				portTmp = (int) Long.parseLong(portString);
@@ -320,7 +351,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		try {
 			connector.connect();
 			if (proservData == null) {
-				proservData = new ProservData();
+				proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear );
 				byte[] proservAllConfigValues = getConfigValues();
 				if (proservAllConfigValues == null) {
 					logger.debug("proServ getConfigValues failed try again");

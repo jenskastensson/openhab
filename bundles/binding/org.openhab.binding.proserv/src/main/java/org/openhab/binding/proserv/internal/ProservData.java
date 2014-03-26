@@ -25,7 +25,11 @@ import org.openhab.config.core.ConfigDispatcher;
 
 public class ProservData {
 	private static final Logger logger = LoggerFactory.getLogger(ProservData.class);
-	
+	private static String chartItemRefreshHour = null;
+	private static String chartItemRefreshDay = null;
+	private static String chartItemRefreshWeek = null;
+	private static String chartItemRefreshMonth = null;
+	private static String chartItemRefreshYear = null;	
     private byte[][] functionCodes = new byte[18][16];
     private String[][] functionDescriptions = new String[18][16];
     private String[][] functionUnits = new String[18][16];
@@ -47,6 +51,18 @@ public class ProservData {
 
 	private String stringProservLang[]; // TODO change to MAP
 	
+	public ProservData(String chartItemRefreshHour, String chartItemRefreshDay,
+			String chartItemRefreshWeek, String chartItemRefreshMonth,
+			String chartItemRefreshYear) {
+		this.chartItemRefreshHour = chartItemRefreshHour;
+		this.chartItemRefreshDay = chartItemRefreshDay;
+		this.chartItemRefreshWeek = chartItemRefreshWeek;
+		this.chartItemRefreshMonth = chartItemRefreshMonth;
+		this.chartItemRefreshYear = chartItemRefreshYear;
+		
+	}
+
+
 	public String getStringProservLang(int x) {
 		return stringProservLang[x];
 	}
@@ -471,7 +487,7 @@ public class ProservData {
 	public void updateProservSitemapFile() {
 
 		String filename = "proserv.sitemap";
-		try {
+		try {			
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filename;
 
 			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
@@ -492,11 +508,16 @@ public class ProservData {
 							} else {
 								writer.println("         Frame {");
 							}
-							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=5000");
-							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=60000");
-							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=60000");
-							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=60000");
-							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=60000");
+							if(chartItemRefreshHour!=null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=" + chartItemRefreshHour);
+							if(chartItemRefreshDay!=null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=" + chartItemRefreshDay);
+							if(chartItemRefreshWeek!=null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=" + chartItemRefreshWeek);
+							if(chartItemRefreshMonth!=null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=" + chartItemRefreshMonth);
+							if(chartItemRefreshYear!=null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=" + chartItemRefreshYear);
 							writer.println("        }\n      }\n   }");
 						}
 						else {
@@ -511,11 +532,16 @@ public class ProservData {
 									} else {
 										writer.println("         Frame {");
 									}
-									writer.println("			Chart item=itemProServLog" + index + " period=h refresh=5000");
-									writer.println("			Chart item=itemProServLog" + index + " period=D refresh=60000");
-									writer.println("			Chart item=itemProServLog" + index + " period=W refresh=60000");
-									writer.println("			Chart item=itemProServLog" + index + " period=M refresh=60000");
-									writer.println("			Chart item=itemProServLog" + index + " period=Y refresh=60000");
+									if(chartItemRefreshHour!=null)
+										writer.println("			Chart item=itemProServLog" + index + " period=h refresh=" + chartItemRefreshHour);
+									if(chartItemRefreshDay!=null)
+										writer.println("			Chart item=itemProServLog" + index + " period=D refresh=" + chartItemRefreshDay);
+									if(chartItemRefreshWeek!=null)
+										writer.println("			Chart item=itemProServLog" + index + " period=W refresh=" + chartItemRefreshWeek);
+									if(chartItemRefreshMonth!=null)
+										writer.println("			Chart item=itemProServLog" + index + " period=M refresh=" + chartItemRefreshMonth);
+									if(chartItemRefreshYear!=null)
+										writer.println("			Chart item=itemProServLog" + index + " period=Y refresh=" + chartItemRefreshYear);
 									writer.println("        }\n      }\n   }");
 								}
 							}
@@ -538,11 +564,16 @@ public class ProservData {
 						} else {
 							writer.println("         Frame {");
 						}
-						writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=5000");
-						writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=60000");
-						writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=60000");
-						writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=60000");
-						writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=60000");
+						if(chartItemRefreshHour!=null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=" + chartItemRefreshHour);
+						if(chartItemRefreshDay!=null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=" + chartItemRefreshDay);
+						if(chartItemRefreshWeek!=null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=" + chartItemRefreshWeek);
+						if(chartItemRefreshMonth!=null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=" + chartItemRefreshMonth);
+						if(chartItemRefreshYear!=null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=" + chartItemRefreshYear);
 						writer.println("        }\n      }\n   }");
 					}
 				}
