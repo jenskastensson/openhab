@@ -8,10 +8,10 @@
  */
 package org.openhab.binding.proserv.internal;
 
+//import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-
 import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
 import java.math.BigDecimal;
@@ -28,7 +28,10 @@ import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openhab.action.mail.internal.Mail;
-
+//import java.io.PrintWriter;
+//import org.rrd4j.core.RrdDb;
+//import org.rrd4j.graph.RrdGraph;
+//import org.rrd4j.graph.RrdGraphDef;
 
 
 
@@ -40,6 +43,7 @@ import org.openhab.action.mail.internal.Mail;
  * @author JEKA
  * @since 1.0.0
  */
+@SuppressWarnings("unused")
 public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider> implements ManagedService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProservBinding.class);
@@ -113,6 +117,24 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 	
 	public void sendMail() {
+
+//		String pathrrd = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.rrd";
+//		String pathxml = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.xml";
+//		String pathdmp = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.txt";
+//		try {
+//			RrdDb rrd = new RrdDb(pathrrd);
+//			rrd.dumpXml(pathxml);
+//			PrintWriter writer = new PrintWriter(pathdmp, "ISO-8859-1");
+//			writer.write(rrd.dump());
+//			writer.close();		
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		} 
+				
 		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
 				File.separator + "logs" + File.separator + "proserv.log";
 		URL url = null;
@@ -325,9 +347,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
 							int startDatapoint = (48*x) + (y*3) + 1;
 							int numberOfDatapoints = 3;
-							@SuppressWarnings("unused")
 							int Id = proservData.getFunctionMapId(x,y,0);
-							@SuppressWarnings("unused")
 							int IdPreset = proservData.getFunctionMapId(x,y,1);							
 							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 							if (dataValue != null) {
