@@ -344,7 +344,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				// function 1-1 .. function 18-16
 				for (int x = 0; x < 18; x++) {
 					for (int y = 0; y < 16; y++) {
-						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
+						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1) ||
+								proservData.getFunctionIsEmailTrigger(x,y)) {
 							int startDatapoint = (48*x) + (y*3) + 1;
 							int numberOfDatapoints = 3;
 							int Id = proservData.getFunctionMapId(x,y,0);
