@@ -177,6 +177,30 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		Mail.sendMail(mailTo, mailSubject, mailContent, url.toString());
 	}
 	
+	public void updateSendEmail(int x, int y, byte[] dataValue) {
+		int startDatapoint = (48*x) + (y*3) + 1;
+		int Id = proservData.getFunctionMapId(x,y,0);
+		int IdPreset = proservData.getFunctionMapId(x,y,1);	
+		
+		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
+		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
+		case 0x31:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			if(proservData.getFunctionStateIsInverted(x,y))
+				b = !b;
+			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
+			{
+				sendMail();
+		    }
+			previousEmailTrigger = b;
+		} break;
+		default:
+			proservData.setFunctionDataPoint(0, x, y, 0);
+			logger.debug("proServ binding, unhandled functioncode 0x{}", 
+					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
+		}		
+	}
+	
 	public void postUpdateFunction(int x, int y, byte[] dataValue) {
 		int startDatapoint = (48*x) + (y*3) + 1;
 		int Id = proservData.getFunctionMapId(x,y,0);
@@ -203,11 +227,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
-			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
-			{
-				sendMail();
-		    }
-			previousEmailTrigger = b;
 		} break;
 		case 0x26:
 		case 0x34:{
@@ -375,15 +394,19 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				// function 1-1 .. function 18-16
 				for (int x = 0; x < 18; x++) {
 					for (int y = 0; y < 16; y++) {
-						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1) ||
-								proservData.getFunctionIsEmailTrigger(x,y)) {
+						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
 							int startDatapoint = (48*x) + (y*3) + 1;
 							int numberOfDatapoints = 3;
 							int Id = proservData.getFunctionMapId(x,y,0);
 							int IdPreset = proservData.getFunctionMapId(x,y,1);							
 							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 							if (dataValue != null) {
-								postUpdateFunction(x, y, dataValue);
+								if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {								
+									postUpdateFunction(x, y, dataValue);
+								}
+								if(proservData.getFunctionIsEmailTrigger(x,y)) {
+									updateSendEmail(x, y, dataValue);
+								}
 							}
 						}
 					}
