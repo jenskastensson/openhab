@@ -255,6 +255,7 @@ public class RRD4jChartServlet implements Servlet, ChartProvider {
 		graphDef.setTextAntiAliasing(true);
 		graphDef.setLargeFont(new Font("SansSerif", Font.PLAIN, 15));
 		graphDef.setSmallFont(new Font("SansSerif", Font.PLAIN, 11));
+		graphDef.setAltAutoscale(true);
 		
 		int seriesCounter = 0;
 
