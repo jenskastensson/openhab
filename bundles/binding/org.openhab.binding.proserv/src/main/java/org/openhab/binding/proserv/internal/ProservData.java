@@ -184,7 +184,7 @@ public class ProservData {
 								functionStateIsInverted[x][y] = true;
 		            	}
 		            	
-						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#l"));	
+						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#"));	
 						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}",x, y, offset, 
 								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), 
 								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]); 
