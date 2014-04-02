@@ -372,9 +372,12 @@ public class ProservConnector {
 														if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
 															bFound = true;
 															proservBinding.postUpdateSingleValueFunction(x, y, z, dataPointValue);
+															if(proservData.getFunctionIsEmailTrigger(x,y)) {
+																proservBinding.updateSendEmail(x, y, dataPointValue);
+															}															
 															logger.debug("----Monitor function DP:{} x:{} y:{} z:{}", dataPointID, x, y, z);
 															break outerloop1;
-														}
+														}																														
 													}
 												}
 											}	
