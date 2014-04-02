@@ -54,11 +54,11 @@ public class ProservData {
 	public ProservData(String chartItemRefreshHour, String chartItemRefreshDay,
 			String chartItemRefreshWeek, String chartItemRefreshMonth,
 			String chartItemRefreshYear) {
-		this.chartItemRefreshHour = chartItemRefreshHour;
-		this.chartItemRefreshDay = chartItemRefreshDay;
-		this.chartItemRefreshWeek = chartItemRefreshWeek;
-		this.chartItemRefreshMonth = chartItemRefreshMonth;
-		this.chartItemRefreshYear = chartItemRefreshYear;
+		ProservData.chartItemRefreshHour = chartItemRefreshHour;
+		ProservData.chartItemRefreshDay = chartItemRefreshDay;
+		ProservData.chartItemRefreshWeek = chartItemRefreshWeek;
+		ProservData.chartItemRefreshMonth = chartItemRefreshMonth;
+		ProservData.chartItemRefreshYear = chartItemRefreshYear;
 		
 	}
 
@@ -221,9 +221,9 @@ public class ProservData {
             {
             	heatingLogThis[x]=true;
             	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#l"));
-            	/*int startDatapoint = 865 + x * 5;
+            	int startDatapoint = 865 + x * 5;
 				logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
-						heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);*/
+						heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);
             } 
 
 	    }

@@ -178,11 +178,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
-		int startDatapoint = (48*x) + (y*3) + 1;
-		int Id = proservData.getFunctionMapId(x,y,0);
-		int IdPreset = proservData.getFunctionMapId(x,y,1);	
 		
-		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
@@ -195,12 +191,89 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			previousEmailTrigger = b;
 		} break;
 		default:
-			proservData.setFunctionDataPoint(0, x, y, 0);
 			logger.debug("proServ binding, unhandled functioncode 0x{}", 
 					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
 		}		
 	}
 	
+	// The postUpdateSingleValueFunction function takes one function value, identified by x, y & z 
+	// (z signifies actual or setpoint) and a single value as input and post update on the event bus.
+	// It is called from the the Monitor thread when the proServ notifies for a value change. 
+	public void postUpdateSingleValueFunction(int x, int y, int z, byte[] dataValue) {
+		int startDatapoint = (48*x) + (y*3) + 1;
+		int Id = proservData.getFunctionMapId(x,y,z);
+		
+		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
+		case 0x01:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+		} break;
+		case 0x02:{
+			int i = proservData.parse1BytePercentValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
+					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x12:{
+			int i = proservData.parse1BytePercentValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x31:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			if(proservData.getFunctionStateIsInverted(x,y))
+				b = !b;
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+		} break;
+		case 0x26:
+		case 0x34:{
+			float f = proservData.parse2ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x38:{
+			float f = proservData.parse4ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x91:{
+			int i = proservData.parse1BytePercentValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
+					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x92:{
+			int i = proservData.parse1ByteUnsignedValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
+		} break;
+		case 0x94:{
+			float f = proservData.parse2ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		case 0x95:{
+			long uint32 = proservData.parse4ByteUnsignedValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(uint32));
+		} break;
+		case 0x96:{
+			long int32 = proservData.parse4ByteSignedValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(int32));
+		} break;
+		case 0x97:{
+			float f = proservData.parse4ByteFloatValue(dataValue,0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+		} break;
+		default:
+			logger.debug("proServ binding, unhandled functioncode 0x{}", 
+					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
+		}	
+		shortDelayBetweenBusEvents();
+	}
+
+	// The postUpdateFunction function takes one function value, x & y 
+	// and a buffer with 3 data values as input and post update on the event bus.
+	// It is called from the the polling thread. 
+	// The postUpdateFunction also fill the proservData functionDataPoint values which are later used 
+	// for lookup in the monitor thread. That is the async value update will only work after one successful data poll.
 	public void postUpdateFunction(int x, int y, byte[] dataValue) {
 		int startDatapoint = (48*x) + (y*3) + 1;
 		int Id = proservData.getFunctionMapId(x,y,0);
@@ -209,15 +282,18 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
 		case 0x01:{
+			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[1]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
 		} break;
 		case 0x02:{
+			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
 			int i = proservData.parse1BytePercentValue(dataValue[1]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
 					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
 		} break;
 		case 0x12:{
+			proservData.setFunctionDataPoint(startDatapoint+2, x, y, 0);
 			int i = proservData.parse1BytePercentValue(dataValue[2]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
 					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
@@ -273,7 +349,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
 				shortDelayBetweenBusEvents();
-				proservData.setFunctionDataPoint(startDatapoint+4, x, y, 1);
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				float f = proservData.parse2ByteFloatValue(dataValue,4);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
 						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
@@ -286,7 +362,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
 				shortDelayBetweenBusEvents();
-				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				long uint32Preset = proservData.parse4ByteUnsignedValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
 						new DecimalType(uint32Preset));
@@ -299,7 +375,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
 				shortDelayBetweenBusEvents();
-				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				long int32Preset = proservData.parse4ByteSignedValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
 						new DecimalType(int32Preset));
@@ -313,20 +389,44 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
 				shortDelayBetweenBusEvents();
-				proservData.setFunctionDataPoint(startDatapoint+8, x, y, 1);
+				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				float f = proservData.parse4ByteFloatValue(dataValue,8);
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
 						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 		} break;
 		default:
-			proservData.setFunctionDataPoint(0, x, y, 0);
 			logger.debug("proServ binding, unhandled functioncode 0x{}", 
 					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
 		}	
 		shortDelayBetweenBusEvents();
 	}
-	
+
+	// The postUpdateSingleValueHeating function takes one heating value, x (z signifies actual or setpoint)
+	// and a single value as input and post update on the event bus.
+	// It is called from the the Monitor thread when the proServ notifies for a value change. 
+	public void postUpdateSingleValueHeating(int x, int z, byte[] dataValue) {
+		int Id = proservData.getHeatingMapId(x,z);						
+		int startDatapoint = 865 + x * 5;
+		switch ( (int)(proservData.getHeatingCodes(x) & 0xFF) ) {
+		case 0x41:
+		case 0x42:
+		case 0x43:
+		case 0x44:
+			float f = proservData.parse2ByteFloatValue(dataValue, 0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			break;
+		default:
+			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
+		}		
+	}
+
+	// The postUpdateHeating function takes one heating value, x 
+	// and a buffer with 3 data values as input and post update on the event bus.
+	// It is called from the the polling thread. 
+	// The postUpdateHeating also fill the proservData heatingDataPoint values which are later used 
+	// for lookup in the monitor thread. That is the async value update will only work after one successful data poll.
 	public void postUpdateHeating(int x, byte[] dataValue) {
 		int IdActual = proservData.getHeatingMapId(x,0);						
 		int IdPreset = proservData.getHeatingMapId(x,1);
@@ -342,7 +442,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdActual),
 					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
-			proservData.setHeatingDataPoint(startDatapoint+4, x, 1);
+			proservData.setHeatingDataPoint(startDatapoint+2, x, 1);
 			float f1 = proservData.parse2ByteFloatValue(dataValue, 4);
 			shortDelayBetweenBusEvents();
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
@@ -397,8 +497,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {
 							int startDatapoint = (48*x) + (y*3) + 1;
 							int numberOfDatapoints = 3;
-							int Id = proservData.getFunctionMapId(x,y,0);
-							int IdPreset = proservData.getFunctionMapId(x,y,1);							
 							byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
 							if (dataValue != null) {
 								if(proservData.getFunctionLogThis(x,y,0) || proservData.getFunctionLogThis(x,y,1)) {								

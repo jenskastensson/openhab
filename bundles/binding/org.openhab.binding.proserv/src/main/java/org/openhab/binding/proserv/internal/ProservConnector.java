@@ -337,17 +337,15 @@ public class ProservConnector {
 								connection.setSoTimeout(5000);
 								InputStream in = connection.getInputStream();
 								datain = new DataInputStream(in);								
-								int nofBytesToRead = 0;
+								int nofBytesRead = 0;
 								try {
 									// read past the KNXnet/IP header and Connection header
-									//logger.debug("----Monitor before skipBytes ");
-									nofBytesToRead = datain.skipBytes(10);
-									//logger.debug("----Monitor after skipBytes ");
+									nofBytesRead = datain.skipBytes(10);
 								} catch (IOException e) {
 									while (datain.available() > 0)
 										datain.readByte();									
 								}								
-								if(nofBytesToRead > 0)
+								while (datain.available() > 0)
 								{
 									byte mainService = datain.readByte();
 									byte subService = datain.readByte();
@@ -355,55 +353,56 @@ public class ProservConnector {
 									short startDataPoint = datain.readShort();
 									short numberOfDatapoints = datain.readShort();
 									if (mainService == (byte) 0xF0 &&  subService == (byte) 0xC1) {
-										short[] dataPointIDs = new short[16];
-										@SuppressWarnings("unused")
-										short nextDataPointID = 0;
-										byte[] dataPointValue = new byte[255];
-										int pos = 0;
+										byte[] dataPointValue = new byte[0xf];
 										for (int i = 0; i < numberOfDatapoints; i++) {
-											dataPointIDs[i] = datain.readShort();
+											short dataPointID = datain.readShort();
+											logger.debug("------------------------------------------------------Monitor DP:{}", dataPointID);
 											@SuppressWarnings("unused")
 											byte dataPointState = datain.readByte();
 											byte dataPointLength = datain.readByte();
-											if(i>0){
-												pos += (dataPointIDs[i] - dataPointIDs[i-1] - 1 ) * dataPointLength;
-											}
 											for (int n = 0; n < dataPointLength; n++) {
-												dataPointValue[pos++] = datain.readByte();
+												dataPointValue[n] = datain.readByte();
 											}
-										}
-										boolean bFound = false;
-										outerloop:
-										for (int x = 0; x < 18; x++) {
-											for (int y = 0; y < 16; y++) {
-												for (int z = 0; z < 2; z++) {
-													if (proservData.getFunctionDataPoint(x, y, z) == dataPointIDs[0]) {
-														proservBinding.postUpdateFunction(x, y, dataPointValue);
-														bFound = true;
-														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());
-														break outerloop;
-													}
-												}
-											}
-										}
-										if(!bFound){
+											// Check if this is a datapoint we're interested in:
+											boolean bFound = false;
+											outerloop1:
 											for (int x = 0; x < 18; x++) {
-												for (int z = 0; z < 2; z++) {
-													if (proservData.getHeatingDataPoint(x, z) == dataPointIDs[0]) {
-														proservBinding.postUpdateHeating(x, dataPointValue);
-														bFound = true;
-														//logger.debug("----Monitor New value DP:{} x:{} y:{} z:{} value:{}", dataPointIDs[0], x, y, z, dataPointValue.toString());															
+												for (int y = 0; y < 16; y++) {
+													for (int z = 0; z < 2; z++) {
+														if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
+															bFound = true;
+															proservBinding.postUpdateSingleValueFunction(x, y, z, dataPointValue);
+															logger.debug("----Monitor function DP:{} x:{} y:{} z:{}", dataPointID, x, y, z);
+															break outerloop1;
+														}
 													}
 												}
-											}											
+											}	
+											outerloop2:
+											if(!bFound){
+												for (int x = 0; x < 18; x++) {
+													for (int z = 0; z < 2; z++) {
+														if (proservData.getHeatingDataPoint(x, z) == dataPointID) {
+															proservBinding.postUpdateSingleValueHeating(x, z, dataPointValue);
+															bFound = true;
+															logger.debug("----Monitor heating DP:{} x:{} z:{}", dataPointID, x, z);															
+															break outerloop2;
+														}
+													}
+												}											
+											}
 										}
 									}
-									else
-									{
-										while (datain.available() > 0)
-											datain.readByte();									
+									// a short delay to check if there's more data available (if not it may be lost in connection.close)
+									try {
+										Thread.sleep(300);
+									} catch (InterruptedException ie) {
+									}									
+									if(datain.available()>10){
+										datain.skipBytes(10);
 									}
 								}
+
 								connection.close();
 
 							} catch (IOException e) {
