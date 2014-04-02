@@ -211,13 +211,11 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		} break;
 		case 0x02:{
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
-					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x12:{
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
-					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
@@ -238,8 +236,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		} break;
 		case 0x91:{
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
-					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x92:{
 			int i = proservData.parse1ByteUnsignedValue(dataValue[0]);
@@ -290,14 +287,12 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		case 0x02:{
 			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
 			int i = proservData.parse1BytePercentValue(dataValue[1]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
-					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x12:{
 			proservData.setFunctionDataPoint(startDatapoint+2, x, y, 0);
 			int i = proservData.parse1BytePercentValue(dataValue[2]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
-					new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
@@ -319,15 +314,13 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		case 0x91:{
 			if(proservData.getFunctionLogThis(x,y,0)) {
 				int i = proservData.parse1BytePercentValue(dataValue[0]);
-				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  
-						new DecimalType(new BigDecimal(i).setScale(2, RoundingMode.HALF_EVEN)));
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 			}
 			if(proservData.getFunctionLogThis(x,y,1)) {
 				shortDelayBetweenBusEvents();
 				proservData.setFunctionDataPoint(startDatapoint+2, x, y, 1);
 				int preset = proservData.parse1BytePercentValue(dataValue[2]);
-				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
-						 new DecimalType(new BigDecimal(preset).setScale(2, RoundingMode.HALF_EVEN)));
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), new DecimalType(preset));
 			}
 		} break;
 		case 0x92:{
