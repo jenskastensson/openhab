@@ -28,6 +28,7 @@ Import-Package: org.apache.commons.collections,
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/calimero-rxtx-2.0a3.jar,
  lib/calimero-core-2.2.0-SNAPSHOT.jar,
+ lib/rrd4j-2.1.1.jar,
  .
 Export-Package: org.openhab.binding.proserv;uses:="org.openhab.core.binding",
  org.openhab.binding.proserv.internal
