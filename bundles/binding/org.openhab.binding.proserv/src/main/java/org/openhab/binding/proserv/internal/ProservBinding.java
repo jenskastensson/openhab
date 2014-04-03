@@ -165,7 +165,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 //			// TODO Auto-generated catch block
 //			e1.printStackTrace();
 //		} 
-				
+		
+		/*		
 		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
 				File.separator + "logs" + File.separator + "proserv.log";
 		URL url = null;
@@ -175,6 +176,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			e.printStackTrace();
 		}
 		Mail.sendMail(mailTo, mailSubject, mailContent, url.toString());
+		*/
+		Mail.sendMail(mailTo, mailSubject, mailContent);
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
@@ -441,9 +444,11 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			shortDelayBetweenBusEvents();
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), 
 					new DecimalType(new BigDecimal(f1).setScale(2, RoundingMode.HALF_EVEN)));
+			/*
 			logger.info("{}{}: {}{}: {}", padRight(proservData.getHeatingDescription(x), 20), 
 					padRight(proservData.getStringProservLang(0), 5), padRight(Float.toString(f0), 10), 
 					padRight(proservData.getStringProservLang(1), 5), padRight(Float.toString(f1), 10));
+					*/
 			break;
 		default:
 			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getHeatingCodes(x) & 0xFF)));
