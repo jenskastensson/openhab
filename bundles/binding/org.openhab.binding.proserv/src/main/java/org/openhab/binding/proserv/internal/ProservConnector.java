@@ -337,6 +337,7 @@ public class ProservConnector {
 								connection.setSoTimeout(5000);
 								InputStream in = connection.getInputStream();
 								datain = new DataInputStream(in);								
+								@SuppressWarnings("unused")
 								int nofBytesRead = 0;
 								try {
 									// read past the KNXnet/IP header and Connection header
