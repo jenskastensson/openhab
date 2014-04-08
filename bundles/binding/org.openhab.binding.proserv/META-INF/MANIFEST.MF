@@ -17,9 +17,14 @@ Import-Package: org.apache.commons.collections,
  org.openhab.core.items,
  org.openhab.core.library.items,
  org.openhab.core.library.types,
+ org.openhab.core.persistence,
  org.openhab.core.service,
  org.openhab.core.types,
+ org.openhab.model.core,
  org.openhab.model.item.binding,
+ org.openhab.model.items,
+ org.openhab.model.sitemap,
+ org.openhab.ui.items,
  org.osgi.framework,
  org.osgi.service.cm,
  org.osgi.service.component,
@@ -32,4 +37,6 @@ Bundle-ClassPath: lib/calimero-rxtx-2.0a3.jar,
  .
 Export-Package: org.openhab.binding.proserv;uses:="org.openhab.core.binding",
  org.openhab.binding.proserv.internal
-Service-Component: OSGI-INF/genericbindigprovider.xml, OSGI-INF/proservbinding.xml
+Service-Component: OSGI-INF/genericbindigprovider.xml, OSGI-INF/proservbinding.xml, 
+ OSGI-INF/proservlogfileprovider.xml
+ 

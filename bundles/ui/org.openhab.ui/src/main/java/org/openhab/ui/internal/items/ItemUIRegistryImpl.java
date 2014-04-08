@@ -339,7 +339,7 @@ public class ItemUIRegistryImpl implements ItemUIRegistry {
 	 * service (e.g. "{MAP(proserv.map):STRING-TO-REPLACED}") and execute the transformation in this
 	 * case.
 	 */
-	private String transformLabel(String label) {
+	public String transformLabel(String label) {
 		if (label.contains("{") && label.contains("}")) {
 			Matcher matcher = EXTRACT_TRANSFORMFUNCTION_PATTERN_FOR_LABEL.matcher(label);
 			if (matcher.find()) {

@@ -166,9 +166,12 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 //			e1.printStackTrace();
 //		} 
 		
-		/*		
+		
+		ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
+		proservLogfileProvider.getLogfiles(proservData.getAllItemNames());
+		
 		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-				File.separator + "logs" + File.separator + "proserv.log";
+				File.separator + "logs" + File.separator + "Logfiles.zip";
 		URL url = null;
 		try {
 			url = new File(path).toURI().toURL();
@@ -176,8 +179,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			e.printStackTrace();
 		}
 		Mail.sendMail(mailTo, mailSubject, mailContent, url.toString());
-		*/
-		Mail.sendMail(mailTo, mailSubject, mailContent);
+		
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
@@ -190,6 +192,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				b = !b;
 			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
 			{
+				previousEmailTrigger = b;
 				sendMail();
 		    }
 			previousEmailTrigger = b;

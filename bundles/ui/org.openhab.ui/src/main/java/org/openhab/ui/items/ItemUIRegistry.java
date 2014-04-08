@@ -155,4 +155,5 @@ public interface ItemUIRegistry extends ItemRegistry, ItemUIProvider {
 	 * @return State of the item
 	 */
 	public State getItemState(String itemName);
+	public String transformLabel(String label);
 }

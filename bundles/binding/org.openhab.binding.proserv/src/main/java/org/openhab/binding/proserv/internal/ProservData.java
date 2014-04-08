@@ -50,6 +50,7 @@ public class ProservData {
 	private int[][] heatingDataPoint = new int[18][2];
 
 	private String stringProservLang[]; // TODO change to MAP
+	private String allItemNames;
 	
 	public ProservData(String chartItemRefreshHour, String chartItemRefreshDay,
 			String chartItemRefreshWeek, String chartItemRefreshMonth,
@@ -63,10 +64,12 @@ public class ProservData {
 	}
 
 
+	public String getAllItemNames() {
+		return allItemNames;
+	}
 	public String getStringProservLang(int x) {
 		return stringProservLang[x];
 	}
-
 	
 	public byte getFunctionCodes(int x, int y) {
 		return functionCodes[x][y];
@@ -591,6 +594,7 @@ public class ProservData {
 	public void updateRrd4jPersistFile() {
 
 		String filename = "rrd4j.persist";
+		allItemNames = "";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "persistence" + File.separator + filename;
 
@@ -604,7 +608,9 @@ public class ProservData {
 						for (int z = 0; z <=1; z++) {
 							if (functionLogThis[x][y][z]) {
 								String index = Integer.toString(functionMapId[x][y][z]);
-								writer.println("	itemProServLog" + index + ",");
+								String thisItem = "itemProServLog" + index + ",";
+								writer.println("	" + thisItem);
+								allItemNames += thisItem;
 							}
 						}
 					}
@@ -615,9 +621,13 @@ public class ProservData {
 				if (heatingLogThis[x]) {
 					if (heatingDescriptions[x] != null && !heatingDescriptions[x].isEmpty()){
 						String indexActual = Integer.toString(heatingMapId[x][0]);
-						writer.println("	itemProServLog" + indexActual + ",");
+						String thisItem = "itemProServLog" + indexActual + ",";
+						writer.println("	" + thisItem);
+						allItemNames += thisItem;
 						String indexPreset = Integer.toString(heatingMapId[x][1]);
-						writer.println("	itemProServLog" + indexPreset + ",");
+						thisItem = "itemProServLog" + indexPreset + ",";
+						writer.println("	" + thisItem);
+						allItemNames += thisItem;
 					}
 				}
 			}			
