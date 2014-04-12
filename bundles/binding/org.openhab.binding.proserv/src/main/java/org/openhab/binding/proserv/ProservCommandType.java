@@ -11,6 +11,7 @@ package org.openhab.binding.proserv;
 import org.openhab.core.items.Item;
 import org.openhab.core.library.items.NumberItem;
 import org.openhab.core.library.items.StringItem;
+import org.openhab.core.library.items.SwitchItem;
 
 
 
@@ -33,6 +34,36 @@ public enum ProservCommandType {
 		{
 			command = "proserv_boot";
 			itemClass = NumberItem.class;
+		}
+	},
+	TYPE_PROSERV_BACKUP_RESET_RRD {
+		{
+			command = "proserv_backup_reset_rrd";
+			itemClass = SwitchItem.class;
+		}
+	},
+	TYPE_PROSERV_BACKUP_RRD {
+		{
+			command = "proserv_backup_rrd";
+			itemClass = SwitchItem.class;
+		}
+	},
+	TYPE_PROSERV_SEND_RRD_BACKUP {
+		{
+			command = "proserv_send_rrd_backup";
+			itemClass = SwitchItem.class;
+		}
+	},
+	TYPE_PROSERV_EXPORT_CSV_FILES {
+		{
+			command = "proserv_export_csv_files";
+			itemClass = SwitchItem.class;
+		}
+	},
+	TYPE_PROSERV_SEND_CSV_FILES {
+		{
+			command = "proserv_send_csv_files";
+			itemClass = SwitchItem.class;
 		}
 	};
 

@@ -242,6 +242,9 @@ var transitions = getLocalStoreItem('openHAB_transitions', '1');
 var force_transport = getLocalStoreItem('openHAB_transport', 'auto');
 var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'rrdchart.png'); //#proserv
 
+Ext.override(Ext.data.Connection,{timeout: 60000});
+Ext.Ajax.timeout = 60000;
+Ext.override(Ext.data.proxy.Ajax, { timeout: 60000 }); 
 
 var sitemapStoreLoadTries = 3;
 var sitemapsStoreSelection = new Ext.data.Store({
@@ -374,13 +377,12 @@ var settingsWindow = {
               ui : 'normal',
               handler : function () {
                 if (dirtySettings) {
-                  localStorage.setItem('openHAB_sitemap', settingsPanel.getItems().items[0].getItems().items[1].getValue());
-
-                  localStorage.setItem('openHAB_device_type', settingsPanel.getItems().items[0].getItems().items[2].getValue());
-                  localStorage.setItem('openHAB_language', settingsPanel.getItems().items[0].getItems().items[3].getValue());
-                  localStorage.setItem('openHAB_theme', settingsPanel.getItems().items[0].getItems().items[4].getValue());
-                  localStorage.setItem('openHAB_transport', settingsPanel.getItems().items[0].getItems().items[5].getValue());
-                  localStorage.setItem('openHAB_transitions', settingsPanel.getItems().items[0].getItems().items[6].getValue());
+                  //localStorage.setItem('openHAB_sitemap', settingsPanel.getItems().items[0].getItems().items[1].getValue()); // #proserv
+                  localStorage.setItem('openHAB_device_type', settingsPanel.getItems().items[0].getItems().items[1].getValue());
+                  localStorage.setItem('openHAB_language', settingsPanel.getItems().items[0].getItems().items[2].getValue());
+                  //localStorage.setItem('openHAB_theme', settingsPanel.getItems().items[0].getItems().items[4].getValue()); // #proserv
+                  //localStorage.setItem('openHAB_transport', settingsPanel.getItems().items[0].getItems().items[5].getValue()); // #proserv
+                  //localStorage.setItem('openHAB_transitions', settingsPanel.getItems().items[0].getItems().items[6].getValue()); // #proserv
                   //localStorage.setItem('openHAB_chart_servlet', settingsPanel.getItems().items[0].getItems().items[7].getValue()); // #proserv
 
                   alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect);
@@ -393,7 +395,7 @@ var settingsWindow = {
             }
 
           ]
-        }, {
+        }, /*{ // #Proserv remove openHAB_sitemap
           xtype : 'selectfield',
           label : OpenHAB.i18n_strings[ui_language].default_sitemap,
           labelWidth : '40%',
@@ -406,7 +408,7 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        }, {
+        },*/ {
           xtype : 'selectfield',
           label : OpenHAB.i18n_strings[ui_language].this_device_is,
           labelWidth : '40%',
@@ -441,7 +443,7 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        }, {
+        },/* { #Proserv remove openHAB_theme
           xtype : 'selectfield',
           label : OpenHAB.i18n_strings[ui_language].theme,
           labelWidth : '40%',
@@ -451,7 +453,7 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        }, {
+        },*//* { #Proserv remove openHAB_transport
           xtype : 'selectfield',
           label : OpenHAB.i18n_strings[ui_language].transport_protocol,
           labelWidth : '40%',
@@ -461,7 +463,7 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        }, {
+        },*//* { #Proserv remove openHAB_transitions
           xtype : 'togglefield',
           label : OpenHAB.i18n_strings[ui_language].transitions,
           labelWidth : '40%',
@@ -471,8 +473,7 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        },
-        /*{ // #Proserv to be removed
+        },*//*{ // #Proserv remove openHAB_chart_servlet
         xtype: 'selectfield',
         label: OpenHAB.i18n_strings[ui_language].chart_servlet,
         labelWidth: '40%',
@@ -483,11 +484,91 @@ var settingsWindow = {
         },*/
         {
           xtype : 'button',
-          //text: '<img style="height:100%;" src="./app/logo_tr.png" border="0" />', // #Proserv
-          text : 'About proServ Logview',
-          style : 'background-color:black;clear:both;margin:0.7em 5%;height:3.6em;', // #Proserv
+          text : 'Save & reset history data',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
           scope : this,
-          cls : 'oph_about_btn',
+          //cls : 'oph_about_btn',
+          id : 'reset_history_data_btn',
+          iconMask : true,
+          handler : function () {;
+            Ext.Msg.confirm('Confirm reset of history data', 'Are you sure you want to reset the history data? This should only be done if the configuration of the proServ has changed. This operation cannot be undone!', function (e) {
+              if (e == 'yes') {
+                Ext.getCmp('reset_history_data_btn').setDisabled(true);
+                Ext.Ajax.request({
+                  url : '/CMD?ProservBackupResetRrd=ON',
+                  method : "GET",
+                  disableCaching : false,
+                  success : function (response) {
+                    Ext.getCmp('reset_history_data_btn').setIconCls('arrow_right');
+                    Ext.getCmp('reset_history_data_btn').setIconMask(true);
+                  },
+                  failure : function (response) {
+                    Ext.getCmp('reset_history_data_btn').setDisabled(false);
+                  }
+                });
+              }
+            });
+          }
+        },        {
+          xtype : 'button',
+          text : 'Save only history data',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          scope : this,
+          //cls : 'oph_about_btn',
+          id : 'save_history_data_btn',
+          iconMask : true,
+          handler : function () {;
+            Ext.Msg.alert('Save history data', 'This will save a snapshot of the history data that can be send by e-mail.', function (e) {
+                Ext.getCmp('save_history_data_btn').setDisabled(true);
+                Ext.Ajax.request({
+                  url : '/CMD?ProservBackupRrd=ON',
+                  method : "GET",
+                  disableCaching : false,
+                  success : function (response) {
+                    Ext.getCmp('save_history_data_btn').setIconCls('arrow_right');
+                    Ext.getCmp('save_history_data_btn').setIconMask(true);
+                  },
+                  failure : function (response) {
+                    Ext.getCmp('save_history_data_btn').setDisabled(false);
+                  }
+                });
+            });
+          }
+        }, {
+          xtype : 'button',
+          text : 'Send history data by e-mail',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          scope : this,
+          //cls : 'oph_about_btn',
+          id : 'send_history_data_btn',
+          iconMask : true,
+          handler : function () {
+         
+            Ext.Msg.confirm('Confirm sending history data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail?  (Note this operation may take several minutes!)', function (e) {
+              if (e == 'yes') {
+                Ext.getCmp('send_history_data_btn').setDisabled(true);
+                Ext.Ajax.request({
+                  url : '/CMD?ProservSendRrdBackup=ON',
+                  method : "GET",
+                  timeout : 120000,
+                  disableCaching : false,
+                  success : function (response) {
+                    Ext.getCmp('send_history_data_btn').setIconCls('arrow_right');
+                    Ext.getCmp('send_history_data_btn').setIconMask(true);
+                  },
+                  failure : function (response) {
+                    Ext.getCmp('send_history_data_btn').setDisabled(false);
+                  }
+                });
+              }
+            });
+          }
+        }, {
+          xtype : 'button',
+          text : 'About proServ Logview',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          scope : this,
+          //cls : 'oph_about_btn',
           handler : function () {
             settingsPanel.setActiveItem(1);
           }
@@ -913,8 +994,8 @@ function showSettingsWindow() {
     settingsPanel = new Ext.Panel(settingsWindow);
     settingsPanel.setCls(deviceTypeCls + '_modal');
 
-    settingsPanel.getItems().items[0].getItems().items[1].setValue(getLocalStoreItem('openHAB_sitemap', 'proserv')); // #Proserv
-    settingsPanel.getItems().items[0].getItems().items[2].setValue(getLocalStoreItem('openHAB_device_type', 'auto'));
+    //settingsPanel.getItems().items[0].getItems().items[1].setValue(getLocalStoreItem('openHAB_sitemap', 'proserv')); // #Proserv
+    settingsPanel.getItems().items[0].getItems().items[1].setValue(getLocalStoreItem('openHAB_device_type', 'auto'));
 
     var options_array = new Array();
     for (var i in OpenHAB.i18n_strings) {
@@ -923,8 +1004,8 @@ function showSettingsWindow() {
         value : i
       })
     }
-    settingsPanel.getItems().items[0].getItems().items[3].setOptions(options_array);
-    settingsPanel.getItems().items[0].getItems().items[3].setValue(getLocalStoreItem('openHAB_language', 'en'));
+    settingsPanel.getItems().items[0].getItems().items[2].setOptions(options_array);
+    settingsPanel.getItems().items[0].getItems().items[2].setValue(getLocalStoreItem('openHAB_language', 'en'));
 
     options_array = [];
     for (var i in OpenHAB.themes) {
@@ -933,6 +1014,7 @@ function showSettingsWindow() {
         value : OpenHAB.themes[i]
       })
     }
+    /* #Proserv
     settingsPanel.getItems().items[0].getItems().items[4].setOptions(options_array);
     settingsPanel.getItems().items[0].getItems().items[4].setValue(getLocalStoreItem('openHAB_theme', 'black-glass')); // #Proserv
 
@@ -952,12 +1034,14 @@ function showSettingsWindow() {
       ]);
     settingsPanel.getItems().items[0].getItems().items[5].setValue(getLocalStoreItem('openHAB_transport', 'auto'));
     settingsPanel.getItems().items[0].getItems().items[6].setValue(transitions);
+    
+    
+    settingsPanel.getItems().items[0].getItems().items[7].setOptions([{text: 'Chart engine', value: 'chart'},{text: 'RRD chart engine',  value: 'rrdchart.png'}
+    ]);
 
-    /*settingsPanel.getItems().items[0].getItems().items[7].setOptions([{text: 'Chart engine', value: 'chart'},{text: 'RRD chart engine',  value: 'rrdchart.png'}
-    ]);// #Proserv  to be removed
-
-    settingsPanel.getItems().items[0].getItems().items[7].setValue(getLocalStoreItem('openHAB_chart_servlet', 'chart')); */// #Proserv  to be removed
-
+    settingsPanel.getItems().items[0].getItems().items[7].setValue(getLocalStoreItem('openHAB_chart_servlet', 'chart'));
+    */ // #Proserv
+    
     logo_width = 50;
     if (deviceType == 'Phone') {
       logo_width = 85;

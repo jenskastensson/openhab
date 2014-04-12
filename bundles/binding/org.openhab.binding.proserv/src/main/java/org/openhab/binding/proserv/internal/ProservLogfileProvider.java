@@ -91,8 +91,8 @@ public class ProservLogfileProvider {
 	protected void deactivate() {
 	}
 
-	public synchronized void getLogfiles(String itemNames)  {
-		logger.debug("-------------------------------------getLogfiles start");
+	public synchronized void doSnapshot(String itemNames)  {
+		logger.debug("doSnapshot start");
 		totalDelayInZipCreate = 0;
 		Date now = new Date();
 	    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -243,7 +243,7 @@ public class ProservLogfileProvider {
 
 		String csvFileContent = new String("Time;Value\r\n");
 		int count = 0;
-		for(Object x : xData) {
+		for(@SuppressWarnings("unused") Object x : xData) {
 			  Date time = ((ArrayList<Date>) xData).get(count);
 		      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		      csvFileContent += simpleDateFormat.format(time);		  
@@ -262,7 +262,7 @@ public class ProservLogfileProvider {
 	}
 
 
-	public void updateLogfile(String zipFolderName, String label, String periodName, String data) {
+	private void updateLogfile(String zipFolderName, String label, String periodName, String data) {
 		try {
 			label = label.replaceAll("[^a-zA-Z0-9.-]", "_");			
 			String filename = label + "-" + periodName + ".csv";
@@ -296,12 +296,6 @@ public class ProservLogfileProvider {
 	        URI root = fs.getPath("/").toUri();    
 	        logger.debug("createZip: ",root);
 	    } 
-	    
-//	    try {
-//	    	FileSystems.newFileSystem(zipUri, env);
-//	    } 
-//	    catch(Throwable e){	    
-//	    }
  
 	    try (FileSystem zipfs = FileSystems.newFileSystem(zipLocation, null)) {
 	        Path internalTargetPath = zipfs.getPath(internalPath);
@@ -311,8 +305,9 @@ public class ProservLogfileProvider {
 	        Files.copy(toBeAdded, internalTargetPath, StandardCopyOption.REPLACE_EXISTING);
 	    }
         catch(Throwable e){
-        	logger.error("Error when adding file to zip (FileSystemException?), delay and try again:", e);
+        	logger.error("Error when adding file to zip (FileSystemException?), run garbage collector, delay and try again:", e);
 			try {
+				System.gc();
 				totalDelayInZipCreate += delayInZipCreate;
 				if(totalDelayInZipCreate<maxTotalDelayInZipCreate)
 					Thread.sleep(delayInZipCreate);
@@ -327,35 +322,6 @@ public class ProservLogfileProvider {
     	    }        	
         }	    
 
-//	    try { 
-//	    	FileSystem zipfs = FileSystems.newFileSystem(zipLocation, null);
-//	        Path internalTargetPath = zipfs.getPath(internalPath);
-//	        if (!Files.exists(internalTargetPath.getParent())) {
-//	        	Path p = internalTargetPath.getParent();
-//	            Files.createDirectory(internalTargetPath.getParent());
-//	        }
-//	        Files.copy(toBeAdded, internalTargetPath, StandardCopyOption.REPLACE_EXISTING);
-//	    }
-//        catch(Throwable e){
-//        	logger.error("Error when adding file to zip (FileSystemException?), delay and try again:", e);
-//			try {
-//				totalDelayInZipCreate += delayInZipCreate;
-//				if(totalDelayInZipCreate<maxTotalDelayInZipCreate)
-//					Thread.sleep(delayInZipCreate);
-//			} catch (InterruptedException ie) {
-//			}
-//    	    try {
-//    	    	FileSystem zipfs = FileSystems.newFileSystem(zipLocation, null);
-//    	        Path internalTargetPath = zipfs.getPath(internalPath);
-//    	        if (!Files.exists(internalTargetPath.getParent())) {
-//    	            Files.createDirectory(internalTargetPath.getParent());
-//    	        }
-//    	        Files.copy(toBeAdded, internalTargetPath, StandardCopyOption.REPLACE_EXISTING);
-//    	    }
-//    	    finally{
-//    	    }
-//    	    
-//        }	    
 	
 	}
 }

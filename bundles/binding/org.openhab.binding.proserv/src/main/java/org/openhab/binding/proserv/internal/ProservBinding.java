@@ -14,13 +14,20 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.types.Command;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Dictionary;
 import org.apache.commons.lang.StringUtils;
+import org.openhab.binding.proserv.ProservBindingProvider;
 import org.openhab.binding.proserv.ProservBindingProvider;
 import org.openhab.core.binding.AbstractActiveBinding;
 import org.osgi.service.cm.ConfigurationException;
@@ -78,13 +85,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 
 	public void activate() {
-//		if(getRefreshInterval()>10000)
-//			execute();
-//		if(connector==null)
-//		{
-//			connector = new ProservConnector(ip, port);	
-//			connector.startMonitor();
-//		}
+		super.activate();
+		setProperlyConfigured(true);
 	}
 
 	/**
@@ -143,32 +145,87 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
-	public static String padRight(String s, int n) {
+	@Override
+	//http://localhost:8080/CMD?ProservBackupResetRrd=ON
+	public void internalReceiveCommand(String itemName, Command command) {
+		logger.debug("proServ received commaBnd for itemName:{}, command:{}", itemName, command.toString());
+		
+		String pathLogsDir = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs";
+	    Path pathBackupRrd = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "BackupRrd.zip").toAbsolutePath();
+	    Path pathLogfilesZip = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "Logfiles.zip").toAbsolutePath();
+		
+		if (itemName.equals("ProservBackupResetRrd") && command.toString().equals("ON") || 
+				itemName.equals("ProservBackupRrd") && command.toString().equals("ON")) {
+			// save a copy of all rrd files in BackupRrd.zip
+			Date now = new Date();
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String zipFolderName = simpleDateFormat.format(now);
+
+			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
+			File directory = new File(ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "etc" + File.separator + "rrd4j");
+			for (File f : directory.listFiles()) {
+				if (f.getName().startsWith("itemProServLog")) {
+					try {
+						proservLogfileProvider.createZip(pathBackupRrd, f.toPath(), zipFolderName + "/" + f.getName());
+					} catch (Throwable e) {
+						logger.error("createZip error:{}", e.toString());
+					}
+					if (itemName.equals("ProservBackupResetRrd")) {
+						// delete all rrd files
+						int count = 0;
+						while (!f.delete()) {
+							try {
+								System.gc();
+								Thread.sleep(300);
+								if (++count > 10)
+									break;
+							} catch (InterruptedException e) {
+							}
+						}
+					}
+				}
+			}
+		}
+		//http://localhost:8080/CMD?ProservSendRrdBackup=ON
+		else if(itemName.equals("ProservSendRrdBackup") && command.toString().equals("ON")){
+			Mail.sendMail(mailTo, mailSubject, mailContent, pathBackupRrd.toUri().toString());		
+		}
+		//http://localhost:8080/CMD?ProservExportCsvFiles=ON
+		else if(itemName.equals("ProservExportCsvFiles") && command.toString().equals("ON")){
+			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
+			proservLogfileProvider.doSnapshot(proservData.getAllItemNames());
+		}
+		//http://localhost:8080/CMD?ProservSendCsvFiles=ON
+		else if(itemName.equals("ProservSendCsvFiles") && command.toString().equals("ON")){
+			Mail.sendMail(mailTo, mailSubject, mailContent, pathLogfilesZip.toUri().toString());		
+		}
+
+	}
+	
+	private static String padRight(String s, int n) {
 	     return String.format("%1$-" + n + "s", s);  
 	}
 	
-	public void sendMail() {
+	private void sendMail() {
 
-//		String pathrrd = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.rrd";
-//		String pathxml = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.xml";
-//		String pathdmp = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-//				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.txt";
-//		try {
-//			RrdDb rrd = new RrdDb(pathrrd);
-//			rrd.dumpXml(pathxml);
-//			PrintWriter writer = new PrintWriter(pathdmp, "ISO-8859-1");
-//			writer.write(rrd.dump());
-//			writer.close();		
-//		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		} 
+/*		The following code snippet uses rrdDb to dumpXml, potentially it could be used to generate png files
+  		String pathrrd = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.rrd";
+		String pathxml = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
+				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.xml";
+		try {
+			RrdDb rrd = new RrdDb(pathrrd);
+			rrd.dumpXml(pathxml);
+			PrintWriter writer = new PrintWriter(pathdmp, "ISO-8859-1");
+			writer.write(rrd.dump());
+			writer.close();		
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} */
 		
 		
-		ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
-		proservLogfileProvider.getLogfiles(proservData.getAllItemNames());
+
 		
 		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
 				File.separator + "logs" + File.separator + "Logfiles.zip";
@@ -606,5 +663,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	protected String getName() {
 		return "proServ Refresh Service";
 	}
-
+	@Override
+	public void addBindingProvider(ProservBindingProvider provider) {
+		super.addBindingProvider(provider);		
+		setProperlyConfigured(true);
+	}
 }

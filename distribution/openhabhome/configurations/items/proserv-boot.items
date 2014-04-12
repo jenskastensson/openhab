@@ -1,4 +1,9 @@
 Number itemBoot  "use this item to load proserv binding command 'proserv_boot'"  { proserv="proserv_boot" }
 Switch OS_Shutdown  "OS_Shutdown"   { exec="OFF:sudo halt"} 
 Switch OS_Reboot  "OS_Reboot"   { exec="ON:sudo reboot"} 
+Switch ProservBackupResetRrd  "ProservBackupResetRrd"   { proserv="proserv_backup_reset_rrd" }
+Switch ProservBackupRrd  "ProservBackupRrd"   { proserv="proserv_backup_rrd" }
+Switch ProservSendRrdBackup  "ProservSendRrdBackup"   { proserv="proserv_send_rrd_backup" }
+Switch ProservExportCsvFiles  "ProservExportCsvFiles"   { proserv="proserv_export_csv_files" }
+Switch ProservSendCsvFiles  "ProservSendCsvFiles"   { proserv="proserv_send_csv_files" }
 
