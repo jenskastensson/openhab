@@ -9,7 +9,7 @@
  *
  * -----------------------------------------------------------
  */
-
+ 
 // ------------------------------------
 // Security is not fully implemented yet
 
@@ -396,19 +396,20 @@ var settingsWindow = {
 
           ]
         }, /*{ // #Proserv remove openHAB_sitemap
-          xtype : 'selectfield',
-          label : OpenHAB.i18n_strings[ui_language].default_sitemap,
-          labelWidth : '40%',
-          store : sitemapsStoreSelection,
-          displayField : 'name',
-          valueField : 'value',
-          style : 'border-bottom: 1px solid E6E6E6;',
-          listeners : {
-            change : function () {
-              dirtySettings = true
-            }
-          }
-        },*/ {
+        xtype : 'selectfield',
+        label : OpenHAB.i18n_strings[ui_language].default_sitemap,
+        labelWidth : '40%',
+        store : sitemapsStoreSelection,
+        displayField : 'name',
+        valueField : 'value',
+        style : 'border-bottom: 1px solid E6E6E6;',
+        listeners : {
+        change : function () {
+        dirtySettings = true
+        }
+        }
+        },*/
+        {
           xtype : 'selectfield',
           label : OpenHAB.i18n_strings[ui_language].this_device_is,
           labelWidth : '40%',
@@ -443,37 +444,40 @@ var settingsWindow = {
               dirtySettings = true
             }
           }
-        },/* { #Proserv remove openHAB_theme
-          xtype : 'selectfield',
-          label : OpenHAB.i18n_strings[ui_language].theme,
-          labelWidth : '40%',
-          style : 'border-bottom: 1px solid E6E6E6;',
-          listeners : {
-            change : function () {
-              dirtySettings = true
-            }
-          }
-        },*//* { #Proserv remove openHAB_transport
-          xtype : 'selectfield',
-          label : OpenHAB.i18n_strings[ui_language].transport_protocol,
-          labelWidth : '40%',
-          style : 'border-bottom: 1px solid E6E6E6;',
-          listeners : {
-            change : function () {
-              dirtySettings = true
-            }
-          }
-        },*//* { #Proserv remove openHAB_transitions
-          xtype : 'togglefield',
-          label : OpenHAB.i18n_strings[ui_language].transitions,
-          labelWidth : '40%',
-          style : 'border-bottom: 1px solid E6E6E6;',
-          listeners : {
-            change : function () {
-              dirtySettings = true
-            }
-          }
-        },*//*{ // #Proserv remove openHAB_chart_servlet
+        }, /* { #Proserv remove openHAB_theme
+        xtype : 'selectfield',
+        label : OpenHAB.i18n_strings[ui_language].theme,
+        labelWidth : '40%',
+        style : 'border-bottom: 1px solid E6E6E6;',
+        listeners : {
+        change : function () {
+        dirtySettings = true
+        }
+        }
+        },*/
+        /* { #Proserv remove openHAB_transport
+        xtype : 'selectfield',
+        label : OpenHAB.i18n_strings[ui_language].transport_protocol,
+        labelWidth : '40%',
+        style : 'border-bottom: 1px solid E6E6E6;',
+        listeners : {
+        change : function () {
+        dirtySettings = true
+        }
+        }
+        },*/
+        /* { #Proserv remove openHAB_transitions
+        xtype : 'togglefield',
+        label : OpenHAB.i18n_strings[ui_language].transitions,
+        labelWidth : '40%',
+        style : 'border-bottom: 1px solid E6E6E6;',
+        listeners : {
+        change : function () {
+        dirtySettings = true
+        }
+        }
+        },*/
+        /*{ // #Proserv remove openHAB_chart_servlet
         xtype: 'selectfield',
         label: OpenHAB.i18n_strings[ui_language].chart_servlet,
         labelWidth: '40%',
@@ -485,79 +489,245 @@ var settingsWindow = {
         {
           xtype : 'button',
           text : 'Save & reset history data',
-          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
-          //cls : 'oph_about_btn',
           id : 'reset_history_data_btn',
           iconMask : true,
-          handler : function () {;
-            Ext.Msg.confirm('Confirm reset of history data', 'Are you sure you want to reset the history data? This should only be done if the configuration of the proServ has changed. This operation cannot be undone!', function (e) {
+          handler : function () { ;
+            Ext.Msg.confirm('Confirm reset of history data', 'Are you sure you want to reset the history data? This should only be done if the configuration of the proServ has changed.\nThis operation cannot be undone!', function (e) {
               if (e == 'yes') {
                 Ext.getCmp('reset_history_data_btn').setDisabled(true);
+                Ext.getCmp('reset_history_data_btn').setIconCls('time');                
                 Ext.Ajax.request({
-                  url : '/CMD?ProservBackupResetRrd=ON',
+                  url : '/CMD?ProservBackupResetRrd=START',
                   method : "GET",
                   disableCaching : false,
                   success : function (response) {
-                    Ext.getCmp('reset_history_data_btn').setIconCls('arrow_right');
-                    Ext.getCmp('reset_history_data_btn').setIconMask(true);
+                    Ext.Ajax.request({
+                      url : '/rest/items/ProservBackupResetRrd/state',
+                      timeout : 5000,
+                      success : function (response) {
+                        if (response.responseText == 'SUCCESS') {
+                          Ext.getCmp('reset_history_data_btn').setIconCls('check2');
+                        }
+                        if (response.responseText.indexOf('FAILED') >= 0) {
+                          Ext.getCmp('reset_history_data_btn').setIconCls('warming_dotted');
+                          Ext.getCmp('reset_history_data_btn').setDisabled(false);
+                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        }
+                      }
+                    });
                   },
                   failure : function (response) {
+                    Ext.getCmp('reset_history_data_btn').setIconCls('warming_dotted');
                     Ext.getCmp('reset_history_data_btn').setDisabled(false);
+                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
                   }
                 });
               }
             });
           }
-        },        {
+        }, {
           xtype : 'button',
-          text : 'Save only history data',
-          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          text : 'Save history data',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
-          //cls : 'oph_about_btn',
           id : 'save_history_data_btn',
           iconMask : true,
-          handler : function () {;
-            Ext.Msg.alert('Save history data', 'This will save a snapshot of the history data that can be send by e-mail.', function (e) {
-                Ext.getCmp('save_history_data_btn').setDisabled(true);
-                Ext.Ajax.request({
-                  url : '/CMD?ProservBackupRrd=ON',
-                  method : "GET",
-                  disableCaching : false,
-                  success : function (response) {
-                    Ext.getCmp('save_history_data_btn').setIconCls('arrow_right');
-                    Ext.getCmp('save_history_data_btn').setIconMask(true);
-                  },
-                  failure : function (response) {
-                    Ext.getCmp('save_history_data_btn').setDisabled(false);
-                  }
-                });
+          handler : function () { ;
+            Ext.Msg.alert('Save history data(backup)', 'This will save a snapshot of the history data that later can be send by e-mail.', function (e) {
+              Ext.getCmp('save_history_data_btn').setDisabled(true);
+              Ext.getCmp('save_history_data_btn').setIconCls('time');              
+              Ext.Ajax.request({
+                url : '/CMD?ProservBackupRrd=START',
+                method : "GET",
+                disableCaching : false,
+                success : function (response) {
+                  Ext.Ajax.request({
+                    url : '/rest/items/ProservBackupRrd/state',
+                    timeout : 5000,
+                    success : function (response) {
+                      if (response.responseText == 'SUCCESS') {
+                        Ext.getCmp('save_history_data_btn').setIconCls('check2');
+                      }
+                      if (response.responseText.indexOf('FAILED') >= 0) {
+                        Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
+                        Ext.getCmp('save_history_data_btn').setDisabled(false);
+                        Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                      }
+                    }
+                  });
+                },
+                failure : function (response) {
+                  Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
+                  Ext.getCmp('save_history_data_btn').setDisabled(false);
+                  Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                }
+              });
             });
           }
         }, {
           xtype : 'button',
           text : 'Send history data by e-mail',
-          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
-          //cls : 'oph_about_btn',
           id : 'send_history_data_btn',
           iconMask : true,
           handler : function () {
-         
-            Ext.Msg.confirm('Confirm sending history data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail?  (Note this operation may take several minutes!)', function (e) {
+
+            Ext.Msg.confirm('Confirm sending history backup data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail?  (Note this operation may take several minutes!)', function (e) {
               if (e == 'yes') {
                 Ext.getCmp('send_history_data_btn').setDisabled(true);
+                Ext.getCmp('send_history_data_btn').setIconCls('time');                
                 Ext.Ajax.request({
-                  url : '/CMD?ProservSendRrdBackup=ON',
+                  url : '/CMD?ProservSendRrdBackup=START',
                   method : "GET",
                   timeout : 120000,
                   disableCaching : false,
                   success : function (response) {
-                    Ext.getCmp('send_history_data_btn').setIconCls('arrow_right');
-                    Ext.getCmp('send_history_data_btn').setIconMask(true);
+                    Ext.Ajax.request({
+                      url : '/rest/items/ProservSendRrdBackup/state',
+                      timeout : 5000,
+                      success : function (response) {
+                        if (response.responseText == 'SUCCESS') {
+                          Ext.getCmp('send_history_data_btn').setIconCls('check2');
+                        }
+                        if (response.responseText.indexOf('FAILED') >= 0) {
+                          Ext.getCmp('send_history_data_btn').setIconCls('warming_dotted');
+                          Ext.getCmp('send_history_data_btn').setDisabled(false);
+                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        }
+                      }
+                    });
                   },
                   failure : function (response) {
+                    Ext.getCmp('send_history_data_btn').setIconCls('warming_dotted');
                     Ext.getCmp('send_history_data_btn').setDisabled(false);
+                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                  }
+                });
+              }
+            });
+          }
+        }, {
+          xtype : 'button',
+          text : 'Export history data as text',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
+          scope : this,
+          id : 'export_csv_data_btn',
+          iconMask : true,
+          handler : function () { ;
+            Ext.Msg.alert('Export history data as text', 'This will export the history data in text file format (zipped CSV-format). The exported data can later be send by e-mail.', function (e) {
+              Ext.getCmp('export_csv_data_btn').setDisabled(true);
+              Ext.getCmp('export_csv_data_btn').setIconCls('time');              
+              Ext.Ajax.request({
+                url : '/CMD?ProservExportCsvFiles=START',
+                method : "GET",
+                disableCaching : false,
+                success : function (response) {
+                  Ext.Ajax.request({
+                    url : '/rest/items/ProservExportCsvFiles/state',
+                    timeout : 5000,
+                    success : function (response) {
+                      if (response.responseText == 'SUCCESS') {
+                        Ext.getCmp('export_csv_data_btn').setIconCls('check2');
+                      }
+                      if (response.responseText.indexOf('FAILED') >= 0) {
+                        Ext.getCmp('export_csv_data_btn').setIconCls('warming_dotted');
+                        Ext.getCmp('export_csv_data_btn').setDisabled(false);
+                        Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                      }
+                    }
+                  });
+                },
+                failure : function (response) {
+                  Ext.getCmp('export_csv_data_btn').setIconCls('warming_dotted');
+                  Ext.getCmp('export_csv_data_btn').setDisabled(false);
+                  Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                }
+              });
+            });
+          }
+        }, {
+          xtype : 'button',
+          text : 'Send history data (text) by e-mail',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
+          scope : this,
+          id : 'send_csv_data_btn',
+          iconMask : true,
+          handler : function () {
+            Ext.Msg.confirm('Confirm sending history data', 'Assuming you have exported history data as text, do you want to send the the history data in text/csv format by e-mail?  (Note this operation may take several minutes!)', function (e) {
+              if (e == 'yes') {
+                Ext.getCmp('send_csv_data_btn').setDisabled(true);
+                Ext.getCmp('send_csv_data_btn').setIconCls('time');                
+                Ext.Ajax.request({
+                  url : '/CMD?ProservSendCsvFiles=START',
+                  method : "GET",
+                  timeout : 120000,
+                  disableCaching : false,
+                  success : function (response) {
+                    Ext.Ajax.request({
+                      url : '/rest/items/ProservSendCsvFiles/state',
+                      timeout : 5000,
+                      success : function (response) {
+                        if (response.responseText == 'SUCCESS') {
+                          Ext.getCmp('send_csv_data_btn').setIconCls('check2');
+                        }
+                        if (response.responseText.indexOf('FAILED') >= 0) {
+                          Ext.getCmp('send_csv_data_btn').setIconCls('warming_dotted');
+                          Ext.getCmp('send_csv_data_btn').setDisabled(false);
+                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        }
+                      }
+                    });
+                  },
+                  failure : function (response) {
+                    Ext.getCmp('send_csv_data_btn').setIconCls('warming_dotted');
+                    Ext.getCmp('send_csv_data_btn').setDisabled(false);
+                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                  }
+                });
+              }
+            });
+          }
+        }, {
+          xtype : 'button',
+          text : 'Test exec ',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
+          scope : this,
+          id : 'test_exe_btn',
+          iconMask : true,
+          handler : function () {
+
+            Ext.Msg.confirm('TEST button', 'Do it? (Note this operation may take several minutes!)', function (e) {
+              if (e == 'yes') {
+                Ext.getCmp('test_exe_btn').setDisabled(true);
+                Ext.getCmp('test_exe_btn').setIconCls('time');
+                Ext.Ajax.request({
+                  url : '/CMD?ProservTest=START',
+                  method : "GET",
+                  //timeout : 120000,
+                  disableCaching : false,
+                  success : function (response) {
+                    Ext.Ajax.request({
+                      url : '/rest/items/ProservTest/state',
+                      timeout : 5000,
+                      success : function (response) {
+                        if (response.responseText == 'SUCCESS') {
+                          Ext.getCmp('test_exe_btn').setIconCls('check2');
+                        }
+                        if (response.responseText.indexOf('FAILED') >= 0) {
+                          Ext.getCmp('test_exe_btn').setIconCls('warming_dotted');
+                          Ext.getCmp('test_exe_btn').setDisabled(false);
+                           Ext.Msg.alert('The TEST operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        }
+                      }
+                    });
+                  },
+                  failure : function (response) {
+                    Ext.getCmp('test_exe_btn').setIconCls('warming_dotted');
+                    Ext.getCmp('test_exe_btn').setDisabled(false);
+                    Ext.Msg.alert('Timeout', 'The TEST operation timed out waiting for a response from the server, it did not complete in time.');
                   }
                 });
               }
@@ -566,7 +736,7 @@ var settingsWindow = {
         }, {
           xtype : 'button',
           text : 'About proServ Logview',
-          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:2%;;height:2.5em',
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           //cls : 'oph_about_btn',
           handler : function () {
