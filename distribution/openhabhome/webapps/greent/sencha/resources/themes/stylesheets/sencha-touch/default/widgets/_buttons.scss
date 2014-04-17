@@ -310,6 +310,9 @@ $include-button-highlights: $include-highlights !default;
     @include pictos-iconmask('maps');
     @include pictos-iconmask('locate');
     @include pictos-iconmask('home');
+    @include pictos-iconmask('check2');  
+    @include pictos-iconmask('time');  
+    @include pictos-iconmask('warming_dotted'); 
   }
 
   @if $include-button-uis {

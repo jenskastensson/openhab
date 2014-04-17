@@ -91,7 +91,7 @@ public class ProservLogfileProvider {
 	protected void deactivate() {
 	}
 
-	public synchronized void doSnapshot(String itemNames)  {
+	public synchronized void doSnapshot(String itemNames) throws Throwable  {
 		logger.debug("doSnapshot start");
 		totalDelayInZipCreate = 0;
 		Date now = new Date();
@@ -113,7 +113,7 @@ public class ProservLogfileProvider {
 		        f.delete();
 	}
 	
-	public void createLogfile(Date startTime, Date endTime, String periodName, String zipFolderName, String items){
+	public void createLogfile(Date startTime, Date endTime, String periodName, String zipFolderName, String items) throws Throwable{
 
 		QueryablePersistenceService persistenceService;
 
@@ -142,17 +142,15 @@ public class ProservLogfileProvider {
 					if(addItem(persistenceService, startTime, endTime, item, periodName, zipFolderName, seriesCounter))
 						seriesCounter++;
 				} catch (ItemNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					throw e;
 				}
 			}
 		}
-
-
 	}
 
 	private boolean addItem( QueryablePersistenceService service, Date timeBegin, Date timeEnd, Item item, 
-			String periodName, String zipFolderName, int seriesCounter) {
+			String periodName, String zipFolderName, int seriesCounter) throws Throwable {
 
 		// Get the item label
 		String label = null;
@@ -262,7 +260,7 @@ public class ProservLogfileProvider {
 	}
 
 
-	private void updateLogfile(String zipFolderName, String label, String periodName, String data) {
+	private void updateLogfile(String zipFolderName, String label, String periodName, String data) throws Throwable {
 		try {
 			label = label.replaceAll("[^a-zA-Z0-9.-]", "_");			
 			String filename = label + "-" + periodName + ".csv";
@@ -272,7 +270,7 @@ public class ProservLogfileProvider {
 			writer.write(data);
 			writer.flush();
 			writer.close();			
-			String pathZip = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs" + File.separator + "Logfiles.zip";
+			String pathZip = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs" + File.separator + "ZippedCsvFiles.zip";
 		    Path zipLocation = FileSystems.getDefault().getPath(pathZip).toAbsolutePath();
 		    Path toBeAdded = FileSystems.getDefault().getPath(csvFilePath).toAbsolutePath();
 		    createZip(zipLocation, toBeAdded, zipFolderName + "/" + filename);
@@ -280,8 +278,8 @@ public class ProservLogfileProvider {
 		} catch (Throwable e) {
 			String message = "handling" + label + "' throws exception";
 			logger.error(message, e);
-		} finally {
-			
+			throw e;
+		} finally {		
 		}
 	}
 
@@ -294,7 +292,6 @@ public class ProservLogfileProvider {
 	    
 	    try (FileSystem fs = FileSystems.newFileSystem(zipUri, env)) {
 	        URI root = fs.getPath("/").toUri();    
-	        logger.debug("createZip: ",root);
 	    } 
  
 	    try (FileSystem zipfs = FileSystems.newFileSystem(zipLocation, null)) {
@@ -303,6 +300,7 @@ public class ProservLogfileProvider {
 	            Files.createDirectory(internalTargetPath.getParent());
 	        }
 	        Files.copy(toBeAdded, internalTargetPath, StandardCopyOption.REPLACE_EXISTING);
+	        logger.debug("Add file:\"{}\"",  internalPath);
 	    }
         catch(Throwable e){
         	logger.error("Error when adding file to zip (FileSystemException?), run garbage collector, delay and try again:", e);
@@ -321,7 +319,5 @@ public class ProservLogfileProvider {
     	        Files.copy(toBeAdded, internalTargetPath, StandardCopyOption.REPLACE_EXISTING);
     	    }        	
         }	    
-
-	
 	}
 }

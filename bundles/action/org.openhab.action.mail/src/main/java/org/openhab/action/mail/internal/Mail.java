@@ -45,6 +45,11 @@ import org.slf4j.LoggerFactory;
 	static boolean tls;
 	static boolean popBeforeSmtp = false;
 
+	static String lastError;
+	static public String getLastError(){
+		return lastError;
+	}
+	
 	/**
 	 * Sends an email via SMTP
 	 * 
@@ -95,8 +100,10 @@ import org.slf4j.LoggerFactory;
 					  ((MultiPartEmail) email).attach(attachment);
 				} catch (MalformedURLException e) {
 					logger.error("Invalid attachment url.", e);
+					lastError = "Invalid attachment url. " + e.toString();
 				} catch (EmailException e) {
 					logger.error("Error adding attachment to email.", e);
+					lastError = "Error adding attachment to email. " + e.toString();
 				}
 			}
 
@@ -122,11 +129,13 @@ import org.slf4j.LoggerFactory;
 				success = true;
 			} catch (EmailException e) {
 				logger.error("Could not send e-mail to '" + to + "‘.", e);
-			}
+				lastError = "Could not send e-mail to '" + to + "‘." + e.toString();
+}
 		} else {
 			logger.error("Cannot send e-mail because of missing configuration settings. The current settings are: " +
 					"Host: '{}', port '{}', from '{}', useTLS: {}, username: '{}', password '{}'",
 					new String[] { hostname, String.valueOf(port), from, String.valueOf(tls), username, password} );
+			lastError = "Cannot send e-mail because of missing configuration settings.";
 		}
 		
 		return success;

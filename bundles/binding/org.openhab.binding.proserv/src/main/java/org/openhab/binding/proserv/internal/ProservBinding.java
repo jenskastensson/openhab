@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.Command;
 
 import java.math.BigDecimal;
@@ -146,97 +147,120 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 
 	@Override
-	//http://localhost:8080/CMD?ProservBackupResetRrd=ON
 	public void internalReceiveCommand(String itemName, Command command) {
 		logger.debug("proServ received commaBnd for itemName:{}, command:{}", itemName, command.toString());
 		
 		String pathLogsDir = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs";
 	    Path pathBackupRrd = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "BackupRrd.zip").toAbsolutePath();
-	    Path pathLogfilesZip = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "Logfiles.zip").toAbsolutePath();
+	    Path pathZippedCsvFiles = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "ZippedCsvFiles.zip").toAbsolutePath();
 		
-		if (itemName.equals("ProservBackupResetRrd") && command.toString().equals("ON") || 
-				itemName.equals("ProservBackupRrd") && command.toString().equals("ON")) {
-			// save a copy of all rrd files in BackupRrd.zip
-			Date now = new Date();
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String zipFolderName = simpleDateFormat.format(now);
-
-			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
-			File directory = new File(ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "etc" + File.separator + "rrd4j");
-			for (File f : directory.listFiles()) {
-				if (f.getName().startsWith("itemProServLog")) {
-					try {
+		if (itemName.equals("ProservTest") && command.toString().equals("START")) {
+			eventPublisher.postUpdate(itemName, new StringType("PROCESSING"));
+			try {Thread.sleep(3000);} catch (InterruptedException ie) {}
+			//eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+			eventPublisher.postUpdate(itemName, new StringType("FAILED:Please see the logfile for details. This is a very long message which includes a log gfile path : C:\\Users\\jeka\\Documents\\OpenHAB\\source\\openhab-fork\\distribution\\openhabhome\\logs"));
+		}
+		
+		//http://localhost:8080/CMD?ProservBackupResetRrd=START		
+		//http://localhost:8080/CMD?ProservBackupRrd=START
+		if (itemName.equals("ProservBackupResetRrd") && command.toString().equals("START") || 
+				itemName.equals("ProservBackupRrd") && command.toString().equals("START")) {
+			try {
+				// save a copy of all rrd files in BackupRrd.zip
+				Date now = new Date();
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String zipFolderName = simpleDateFormat.format(now);
+				ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
+				File directory = new File(ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "etc" + File.separator
+						+ "rrd4j");
+				for (File f : directory.listFiles()) {
+					if (f.getName().startsWith("itemProServLog")) {
 						proservLogfileProvider.createZip(pathBackupRrd, f.toPath(), zipFolderName + "/" + f.getName());
-					} catch (Throwable e) {
-						logger.error("createZip error:{}", e.toString());
 					}
-					if (itemName.equals("ProservBackupResetRrd")) {
-						// delete all rrd files
-						int count = 0;
-						while (!f.delete()) {
-							try {
+				}
+				
+				// clean up garbage from java.nio
+				File directoryLogs = new File(ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs");
+				for(File f: directoryLogs.listFiles())
+				    if(f.getName().startsWith("zipfstmp"))
+				        f.delete();
+				
+				// delete all rrd files
+				if (itemName.equals("ProservBackupResetRrd")) {
+					int failedToDeleteFiles = 0;
+					for (File f : directory.listFiles()) {
+						if (f.getName().startsWith("itemProServLog")) {
+							int count = 0;
+							while (!f.delete()) {
 								System.gc();
 								Thread.sleep(300);
-								if (++count > 10)
+								if (++count > 10) {
+									failedToDeleteFiles++;
 									break;
-							} catch (InterruptedException e) {
+								}
 							}
 						}
 					}
+					if (failedToDeleteFiles > 0) {
+						eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to delete all history data files, but the backup is done. Number of files that couldn't be deleted: "
+								+ new Integer(failedToDeleteFiles).toString()));
+					} else {
+						eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+					}
+				} else {
+					eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
 				}
+				
+			} catch (Throwable e) {
+				logger.error("ProservBackupResetRrd exception: {}", e.toString());
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:" + e.toString()));
+			}
+			
+		}
+		//http://localhost:8080/CMD?ProservSendRrdBackup=START
+		else if(itemName.equals("ProservSendRrdBackup") && command.toString().equals("START")){
+			File f = new File(pathBackupRrd.toString());
+			if(f.exists() && !f.isDirectory()){
+				if(Mail.sendMail(mailTo, mailSubject, mailContent, pathBackupRrd.toUri().toString())){
+					eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+				} else {
+					eventPublisher.postUpdate(itemName, new StringType("FAILED:" + Mail.getLastError()));
+				}
+			} else {
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:The history data file is missing, please save history data!"));
 			}
 		}
-		//http://localhost:8080/CMD?ProservSendRrdBackup=ON
-		else if(itemName.equals("ProservSendRrdBackup") && command.toString().equals("ON")){
-			Mail.sendMail(mailTo, mailSubject, mailContent, pathBackupRrd.toUri().toString());		
-		}
-		//http://localhost:8080/CMD?ProservExportCsvFiles=ON
-		else if(itemName.equals("ProservExportCsvFiles") && command.toString().equals("ON")){
+		//http://localhost:8080/CMD?ProservExportCsvFiles=START
+		else if(itemName.equals("ProservExportCsvFiles") && command.toString().equals("START")){
 			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
-			proservLogfileProvider.doSnapshot(proservData.getAllItemNames());
+			try {
+				proservLogfileProvider.doSnapshot(proservData.getAllItemNames());
+				eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+			} catch (Throwable e) {
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:" + e.toString()));
+			}
 		}
-		//http://localhost:8080/CMD?ProservSendCsvFiles=ON
-		else if(itemName.equals("ProservSendCsvFiles") && command.toString().equals("ON")){
-			Mail.sendMail(mailTo, mailSubject, mailContent, pathLogfilesZip.toUri().toString());		
+		//http://localhost:8080/CMD?ProservSendCsvFiles=START
+		else if(itemName.equals("ProservSendCsvFiles") && command.toString().equals("START")){
+			File f = new File(pathZippedCsvFiles.toString());
+			if(f.exists() && !f.isDirectory()){
+				if(Mail.sendMail(mailTo, mailSubject, mailContent, pathZippedCsvFiles.toUri().toString())){
+					eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+				} else {
+					eventPublisher.postUpdate(itemName, new StringType("FAILED:" + Mail.getLastError()));
+				}
+			} else {
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:The CSV data file is missing, please export csv data file!"));
+			}
 		}
-
 	}
 	
 	private static String padRight(String s, int n) {
 	     return String.format("%1$-" + n + "s", s);  
 	}
 	
-	private void sendMail() {
-
-/*		The following code snippet uses rrdDb to dumpXml, potentially it could be used to generate png files
-  		String pathrrd = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.rrd";
-		String pathxml = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-				File.separator + "etc" + File.separator + "rrd4j" + File.separator + "itemProServLog0.xml";
-		try {
-			RrdDb rrd = new RrdDb(pathrrd);
-			rrd.dumpXml(pathxml);
-			PrintWriter writer = new PrintWriter(pathdmp, "ISO-8859-1");
-			writer.write(rrd.dump());
-			writer.close();		
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} */
-		
-		
-
-		
-		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." +  
-				File.separator + "logs" + File.separator + "Logfiles.zip";
-		URL url = null;
-		try {
-			url = new File(path).toURI().toURL();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		Mail.sendMail(mailTo, mailSubject, mailContent, url.toString());
-		
+	private void sendAlertMail() {
+		Mail.sendMail(mailTo, "Alert", "This is an alert mail triggered by proserv #m");		
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
@@ -250,7 +274,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
 			{
 				previousEmailTrigger = b;
-				sendMail();
+				sendAlertMail();
 		    }
 			previousEmailTrigger = b;
 		} break;

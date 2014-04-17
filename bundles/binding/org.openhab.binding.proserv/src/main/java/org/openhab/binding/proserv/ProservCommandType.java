@@ -39,31 +39,37 @@ public enum ProservCommandType {
 	TYPE_PROSERV_BACKUP_RESET_RRD {
 		{
 			command = "proserv_backup_reset_rrd";
-			itemClass = SwitchItem.class;
+			itemClass = StringItem.class;
 		}
 	},
 	TYPE_PROSERV_BACKUP_RRD {
 		{
 			command = "proserv_backup_rrd";
-			itemClass = SwitchItem.class;
+			itemClass = StringItem.class;
 		}
 	},
 	TYPE_PROSERV_SEND_RRD_BACKUP {
 		{
 			command = "proserv_send_rrd_backup";
-			itemClass = SwitchItem.class;
+			itemClass = StringItem.class;
 		}
 	},
 	TYPE_PROSERV_EXPORT_CSV_FILES {
 		{
 			command = "proserv_export_csv_files";
-			itemClass = SwitchItem.class;
+			itemClass = StringItem.class;
 		}
 	},
 	TYPE_PROSERV_SEND_CSV_FILES {
 		{
 			command = "proserv_send_csv_files";
-			itemClass = SwitchItem.class;
+			itemClass = StringItem.class;
+		}
+	},
+	TYPE_PROSERV_TEST {
+		{
+			command = "proserv_test";
+			itemClass = StringItem.class;
 		}
 	};
 
