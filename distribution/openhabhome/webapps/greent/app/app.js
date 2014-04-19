@@ -240,7 +240,7 @@ function setTheme() {
 var ui_language = getLocalStoreItem('openHAB_language', 'en');
 var transitions = getLocalStoreItem('openHAB_transitions', '1');
 var force_transport = getLocalStoreItem('openHAB_transport', 'auto');
-var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'rrdchart.png'); //#proserv
+var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'chart'); //#proserv
 
 Ext.override(Ext.data.Connection,{timeout: 60000});
 Ext.Ajax.timeout = 60000;
