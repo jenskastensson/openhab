@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.Command;
 
@@ -260,7 +261,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 	
 	private void sendAlertMail() {
-		Mail.sendMail(mailTo, "Alert", "This is an alert mail triggered by proserv #m");		
+		if(!mailTo.isEmpty())
+			Mail.sendMail(mailTo, "Alert", "This is an alert mail triggered by proserv #m");
+		else
+			logger.warn("proserv:mailto adress is not configured");
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
@@ -294,7 +298,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
 		case 0x01:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
 		} break;
 		case 0x02:{
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
@@ -308,7 +312,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
 		} break;
 		case 0x26:
 		case 0x34:{
@@ -369,7 +373,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		case 0x01:{
 			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[1]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
 		} break;
 		case 0x02:{
 			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
@@ -385,7 +389,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(b?1:0));
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  b ? OnOffType.ON : OnOffType.OFF);
 		} break;
 		case 0x26:
 		case 0x34:{

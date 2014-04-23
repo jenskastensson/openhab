@@ -34,7 +34,7 @@ public class Db4oConfiguration implements ManagedService {
 	public static String backupInterval = "0 0 1 * * ?";
 	
 	/** the commit interval in seconds (optional, default to '5') */
-	public static int commitInterval = 5;
+	public static int commitInterval = 60;
 
 	/** the amount of backup files allowed in DB_FOLDER_NAME (optional, defaults to '7') */
 	public static int maxBackups = 7;

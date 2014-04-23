@@ -1071,7 +1071,8 @@ function addsWidget(id, data, container, nav_parent) {
     } else if (data.item && data.item.type == "GroupItem" && data.mapping) {
       widget = createButtonsWidget(data.item ? data.item.name : '', data.mapping, data.label, data.icon);
     } else {
-      widget = createToggleWidget(data.item ? data.item.name : '', data.label, data.icon);
+      widget = createTextWidget(data.label, data.icon);
+      //widget = createToggleWidget(data.item ? data.item.name : '', data.label, data.icon);
     }
 
   } else if (data.type == "Slider") {

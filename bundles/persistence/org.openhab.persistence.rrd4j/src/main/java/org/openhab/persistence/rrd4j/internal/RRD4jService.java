@@ -240,27 +240,20 @@ public class RRD4jService implements QueryablePersistenceService {
 	private RrdDef getRrdDef(ConsolFun function, File file) {
     	RrdDef rrdDef = new RrdDef(file.getAbsolutePath());
     	if(function==ConsolFun.AVERAGE) {
-    		// for measurement values, we define archives that are suitable for charts
-    		rrdDef.setStep(60);
+        // for measurement values, we define archives that are suitable for charts
+			rrdDef.setStep(60);
 	        rrdDef.setStartTime(System.currentTimeMillis()/1000-1);
 	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 60, Double.NaN, Double.NaN);
-	        rrdDef.addArchive(function, 0.5, 1, 480); // 8 hours (granularity 1 min)
-	        rrdDef.addArchive(function, 0.5, 4, 360); // one day (granularity 4 min)
-	        rrdDef.addArchive(function, 0.5, 15, 644); // one week (granularity 15 min)
-	        rrdDef.addArchive(function, 0.5, 60, 720); // one month (granularity 1 hour)
-	        rrdDef.addArchive(function, 0.5, 720, 730); // one year (granularity 12 hours)
-	        rrdDef.addArchive(function, 0.5, 10080, 520); // ten years (granularity 7 days)
+	        rrdDef.addArchive(function, 0.5, 1, 40320); // 4 week (granularity 1 min)
+	        rrdDef.addArchive(function, 0.5, 10, 52560); // one year (granularity 10 min)
+	        rrdDef.addArchive(function, 0.5, 60, 26280); // three years (granularity 1 hour)
     	} else {
-    		// for other things, we mainly provide a high level of detail for the last hour
-    		rrdDef.setStep(1);
+			rrdDef.setStep(20);
 	        rrdDef.setStartTime(System.currentTimeMillis()/1000-1);
-	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 3600, Double.NaN, Double.NaN);
-	        rrdDef.addArchive(function, .999, 1, 3600); // 1 hour (granularity 1 sec)
-	        rrdDef.addArchive(function, .999, 10, 1440); // 4 hours (granularity 10 sec)
-	        rrdDef.addArchive(function, .999, 60, 1440); // one day (granularity 1 min)
-	        rrdDef.addArchive(function, .999, 900, 2880); // one month (granularity 15 min)
-	        rrdDef.addArchive(function, .999, 21600, 1460); // one year (granularity 6 hours)
-	        rrdDef.addArchive(function, .999, 86400, 3650); // ten years (granularity 1 day)
+	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 180, Double.NaN, Double.NaN);
+	        rrdDef.addArchive(function, 0.5, 1, 30240); // 1 week (granularity 20 sec)
+	        rrdDef.addArchive(function, 0.5, 30, 52560); // one year (granularity 10 min)
+	        rrdDef.addArchive(function, 0.5, 180, 26280); // three years (granularity 1 hour)    		
     	}
 		return rrdDef;
 	}

@@ -24,18 +24,6 @@ import org.openhab.core.library.items.SwitchItem;
 */
 public enum ProservCommandType {
 
-	TYPE_PROSERV_BOOT {
-		{
-			command = "proserv_boot";
-			itemClass = StringItem.class;
-		}
-	},
-	TYPE_PROSERV_BOOT_1 {
-		{
-			command = "proserv_boot";
-			itemClass = NumberItem.class;
-		}
-	},
 	TYPE_PROSERV_BACKUP_RESET_RRD {
 		{
 			command = "proserv_backup_reset_rrd";

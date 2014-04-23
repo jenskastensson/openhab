@@ -37,6 +37,7 @@ import org.openhab.core.persistence.PersistenceService;
 import org.openhab.core.persistence.QueryablePersistenceService;
 import org.openhab.core.items.ItemNotFoundException;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.persistence.FilterCriteria;
 import org.openhab.core.persistence.FilterCriteria.Ordering;
 import org.slf4j.Logger;
@@ -197,6 +198,10 @@ public class ProservLogfileProvider {
 				xData.add(timeBegin);
 				yData.add((DecimalType) state);
 			}
+			if (state instanceof OnOffType) {
+				xData.add(timeBegin);
+				yData.add((OnOffType) state == OnOffType.ON ? 1:0);
+			}			
 		}
 
 		// Now, get all the data between the start and end time
@@ -217,6 +222,10 @@ public class ProservLogfileProvider {
 				xData.add(historicItem.getTimestamp());
 				yData.add((DecimalType) state);
 			}
+			if (state instanceof OnOffType) {
+				xData.add(historicItem.getTimestamp());
+				yData.add((OnOffType) state == OnOffType.ON ? 1:0);
+			}
 		}
 
 		// Lastly, add the final state at the endtime
@@ -224,6 +233,10 @@ public class ProservLogfileProvider {
 			xData.add(timeEnd);
 			yData.add((DecimalType) state);
 		}
+		if (state != null && state instanceof OnOffType) {
+			xData.add(timeEnd);;
+			yData.add((OnOffType) state == OnOffType.ON ? 1:0);
+		}		
 
 		// Add the new series to the chart - only if there's data elements to display
 		// The chart engine will throw an exception if there's no data

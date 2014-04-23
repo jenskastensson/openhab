@@ -20,9 +20,6 @@ import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
 import tuwien.auto.calimero.exception.KNXFormatException;
 import org.openhab.config.core.ConfigDispatcher;
 
-
-
-
 public class ProservData {
 	private static final Logger logger = LoggerFactory.getLogger(ProservData.class);
 	private static String chartItemRefreshHour = null;
@@ -124,10 +121,8 @@ public class ProservData {
 		heatingDataPoint[x][i] = dataPoint;
 	}
 
-
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException
 	{
-
 	    int lengthDescription = 24;
 	    int lengthUnit = 5;
 
@@ -191,9 +186,7 @@ public class ProservData {
 						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}",x, y, offset, 
 								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), 
 								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]); 
-		            }
-		            
-      
+		            }     
 	        	} catch (NullPointerException e) {
 		 			logger.warn("proserv NullPointerException");
 		 		} finally {
@@ -408,24 +401,24 @@ public class ProservData {
 							String indexActual = Integer.toString(functionMapId[x][y][0]);
 							String indexPreset = Integer.toString(functionMapId[x][y][1]);
 							writer.println("Group gitemProServLog" + indexActual + indexPreset);
-							String item0 = "Number itemProServLog" + indexActual + 
+							String item0 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexActual + 
 									"   \"{MAP(proserv.map):STRING-" + indexActual + 
 									"} " + stringProservLang[0] + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
-									"\"  (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
+									"\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item0);
-							String item1 = "Number itemProServLog" + indexPreset + 
+							String item1 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexPreset + 
 									"   \"{MAP(proserv.map):STRING-" + indexPreset + 
 									"} " + stringProservLang[1] + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
-									"\"  (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
+									"\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item1);
 						}
 						else { 
 							for (int z = 0; z <=1; z++) {
 								if (functionLogThis[x][y][z]) {
 									String index = Integer.toString(functionMapId[x][y][z]);
-									String item = "Number itemProServLog" + index + 
+									String item = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + index + 
 											"   \"{MAP(proserv.map):STRING-" + index + "} " + stringProservLang[z] + " " + 
-											getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\"  (gProserv)";
+											getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv)";
 									writer.println(item);
 								}
 							}
@@ -441,12 +434,12 @@ public class ProservData {
 						writer.println("Group gitemProServLog" + indexActual + indexPreset);
 						String item0 = "Number itemProServLog" + indexActual + 
 								"   \"{MAP(proserv.map):STRING-" + indexActual + 
-								"} " + stringProservLang[0] + " " + getFormatString(heatingCodes[x], "°C") + "\"  (gProserv, gitemProServLog" 
+								"} " + stringProservLang[0] + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
 								+ indexActual + indexPreset + ")";
 						writer.println(item0);
 						String item1 = "Number itemProServLog" + indexPreset + 
 								"   \"{MAP(proserv.map):STRING-" + indexPreset + 
-								"} " + stringProservLang[1] + " " + getFormatString(heatingCodes[x], "°C") + "\"  (gProserv, gitemProServLog" 
+								"} " + stringProservLang[1] + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
 								+ indexActual + indexPreset +  ")";
 						writer.println(item1);
 					}
@@ -461,6 +454,19 @@ public class ProservData {
 		}
 	}
 
+	private String getDataTypeString(int functionCode) {
+		String dataTypeString = new String();
+		dataTypeString = "Number";
+		switch (functionCode & 0xFF){
+		case 0x1:
+		case 0x31:{
+			dataTypeString = "Switch";
+		} break;		
+		}
+		return dataTypeString;
+	}	
+	
+	
 	private String getFormatString(int functionCode, String unit) {
 		unit = unit.replace("%", "%%");
 		unit = unit.replace("°", "Â°"); // ugly fix or it won't show up as a °

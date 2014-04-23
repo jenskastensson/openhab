@@ -11,6 +11,7 @@ package org.openhab.ui.internal.chart;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemNotFoundException;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.persistence.FilterCriteria;
 import org.openhab.core.persistence.FilterCriteria.Ordering;
 import org.openhab.core.persistence.HistoricItem;
@@ -41,6 +43,8 @@ import com.xeiam.xchart.Chart;
 import com.xeiam.xchart.ChartBuilder;
 import com.xeiam.xchart.Series;
 import com.xeiam.xchart.SeriesMarker;
+import com.xeiam.xchart.StyleManager.ChartTheme;
+import com.xeiam.xchart.StyleManager.ChartType;
 import com.xeiam.xchart.StyleManager.LegendPosition;
 
 /**
@@ -78,7 +82,7 @@ public class DefaultChartProvider implements ChartProvider {
 	static protected Map<String, QueryablePersistenceService> persistenceServices = new HashMap<String, QueryablePersistenceService>();
 
 	private int legendPosition = 0;
-	
+
 	public void setItemUIRegistry(ItemUIRegistry itemUIRegistry) {
 		this.itemUIRegistry = itemUIRegistry;
 	}
@@ -127,11 +131,11 @@ public class DefaultChartProvider implements ChartProvider {
 
 		// Create Chart
 		Chart chart = new ChartBuilder().width(width).height(height).build();
-		
+
 		// Define the time axis - the defaults are not very nice
 		long period = (endTime.getTime() - startTime.getTime()) / 1000;
 		String pattern = "HH:mm";
-		if(period <= 600) {				// 10 minutes
+		if (period <= 600) { // 10 minutes
 			pattern = "mm:ss";
 		}
 		else if(period <= 86400) {		// 1 day
@@ -147,9 +151,9 @@ public class DefaultChartProvider implements ChartProvider {
 		chart.getStyleManager().setDatePattern(pattern);
 		chart.getStyleManager().setAxisTickLabelsFont(new Font("SansSerif", Font.PLAIN, 11));
 		chart.getStyleManager().setChartPadding(5);
-		chart.getStyleManager().setPlotBackgroundColor(new Color(254,254,254));
-		chart.getStyleManager().setLegendBackgroundColor(new Color(224,224,224,160));
-		chart.getStyleManager().setChartBackgroundColor(new Color(224,224,224,224));
+		chart.getStyleManager().setPlotBackgroundColor(new Color(254, 254, 254));
+		chart.getStyleManager().setLegendBackgroundColor(new Color(224, 224, 224, 160));
+		chart.getStyleManager().setChartBackgroundColor(new Color(224, 224, 224, 224));
 
 		chart.getStyleManager().setLegendFont(new Font("SansSerif", Font.PLAIN, 10));
 		chart.getStyleManager().setLegendSeriesLineLength(10);
@@ -164,7 +168,7 @@ public class DefaultChartProvider implements ChartProvider {
 		} else {
 			// Otherwise, just get the first service
 			Set<Entry<String, QueryablePersistenceService>> serviceEntry = getPersistenceServices().entrySet();
-			if(serviceEntry != null && serviceEntry.size() != 0)
+			if (serviceEntry != null && serviceEntry.size() != 0)
 				persistenceService = serviceEntry.iterator().next().getValue();
 		}
 
@@ -178,7 +182,7 @@ public class DefaultChartProvider implements ChartProvider {
 			String[] itemNames = items.split(",");
 			for (String itemName : itemNames) {
 				Item item = itemUIRegistry.getItem(itemName);
-				if(addItem(chart, persistenceService, startTime, endTime, item, seriesCounter))
+				if (addItem(chart, persistenceService, startTime, endTime, item, seriesCounter))
 					seriesCounter++;
 			}
 		}
@@ -191,7 +195,7 @@ public class DefaultChartProvider implements ChartProvider {
 				if (item instanceof GroupItem) {
 					GroupItem groupItem = (GroupItem) item;
 					for (Item member : groupItem.getMembers()) {
-						if(addItem(chart, persistenceService, startTime, endTime, member, seriesCounter))
+						if (addItem(chart, persistenceService, startTime, endTime, member, seriesCounter))
 							seriesCounter++;
 					}
 				} else {
@@ -201,7 +205,7 @@ public class DefaultChartProvider implements ChartProvider {
 		}
 
 		// If there are no series, render a blank chart
-		if(seriesCounter == 0) {
+		if (seriesCounter == 0) {
 			chart.getStyleManager().setLegendVisible(false);
 
 			Collection<Date> xData = new ArrayList<Date>();
@@ -219,7 +223,7 @@ public class DefaultChartProvider implements ChartProvider {
 
 		// Legend position (top-left or bottom-left) is dynamically selected based on the data
 		// This won't be perfect, but it's a good compromise
-		if(legendPosition < 0) {
+		if (legendPosition < 0) {
 			chart.getStyleManager().setLegendPosition(LegendPosition.InsideNW);
 		}
 		else {
@@ -246,9 +250,9 @@ public class DefaultChartProvider implements ChartProvider {
 			if (label != null && label.contains("[") && label.contains("]")) {
 				label = label.substring(0, label.indexOf('['));
 			}
-			if(label!=null && label.contains("{") && label.contains("}")) {
-				label = label.substring(label.indexOf('}')+1, label.length());
-			}			
+			if (label != null && label.contains("{") && label.contains("}")) {
+				label = label.substring(label.indexOf('}') + 1, label.length());
+			}
 		}
 		if (label == null) {
 			label = item.getName();
@@ -260,7 +264,7 @@ public class DefaultChartProvider implements ChartProvider {
 		// Generate data collections
 		Collection<Date> xData = new ArrayList<Date>();
 		Collection<Number> yData = new ArrayList<Number>();
-		
+
 		// Declare state here so it will hold the last value at the end of the process
 		org.openhab.core.types.State state = null;
 
@@ -273,13 +277,17 @@ public class DefaultChartProvider implements ChartProvider {
 		filter.setPageSize(1);
 		filter.setOrdering(Ordering.DESCENDING);
 		result = service.query(filter);
-		if(result.iterator().hasNext()) {
+		if (result.iterator().hasNext()) {
 			HistoricItem historicItem = result.iterator().next();
 
 			state = historicItem.getState();
 			if (state instanceof DecimalType) {
 				xData.add(timeBegin);
 				yData.add((DecimalType) state);
+			}
+			if (state instanceof OnOffType) {
+				xData.add(timeBegin);
+				yData.add((OnOffType) state == OnOffType.ON ? 1 : 0);
 			}
 		}
 
@@ -288,7 +296,7 @@ public class DefaultChartProvider implements ChartProvider {
 		filter.setEndDate(timeEnd);
 		filter.setPageSize(Integer.MAX_VALUE);
 		filter.setOrdering(Ordering.ASCENDING);
-		
+
 		// Get the data from the persistence store
 		result = service.query(filter);
 		Iterator<HistoricItem> it = result.iterator();
@@ -301,6 +309,10 @@ public class DefaultChartProvider implements ChartProvider {
 				xData.add(historicItem.getTimestamp());
 				yData.add((DecimalType) state);
 			}
+			if (state instanceof OnOffType) {
+				xData.add(historicItem.getTimestamp());
+				yData.add((OnOffType) state == OnOffType.ON ? 1 : 0);
+			}
 		}
 
 		// Lastly, add the final state at the endtime
@@ -308,15 +320,24 @@ public class DefaultChartProvider implements ChartProvider {
 			xData.add(timeEnd);
 			yData.add((DecimalType) state);
 		}
+		if (state != null && state instanceof OnOffType) {
+			xData.add(timeEnd);
+			;
+			yData.add((OnOffType) state == OnOffType.ON ? 1 : 0);
+			chart.getStyleManager().setYAxisTicksVisible(false);
+			chart.getStyleManager().setPlotGridLinesVisible(false);
+			chart.getStyleManager().setYAxisMin(0);
+			chart.getStyleManager().setYAxisMax(1);
+		}
 
 		// Add the new series to the chart - only if there's data elements to display
 		// The chart engine will throw an exception if there's no data
-		if(xData.size() == 0) {
+		if (xData.size() == 0) {
 			return false;
 		}
 
 		// If there's only 1 data point, plot it again!
-		if(xData.size() == 1) {
+		if (xData.size() == 1) {
 
 			xData.add(xData.iterator().next());
 			yData.add(yData.iterator().next());
@@ -326,7 +347,7 @@ public class DefaultChartProvider implements ChartProvider {
 		series.setLineStyle(new BasicStroke(1.5f));
 		series.setMarker(SeriesMarker.NONE);
 		series.setLineColor(color);
-		
+
 		// If the start value is below the median, then count legend position down
 		// Otherwise count up.
 		// We use this to decide whether to put the legend in the top or bottom corner.
@@ -336,7 +357,7 @@ public class DefaultChartProvider implements ChartProvider {
 		else {
 			legendPosition--;
 		}
-		
+
 		return true;
 	}
 

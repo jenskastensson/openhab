@@ -1,4 +1,3 @@
-Number itemBoot  "use this item to load proserv binding command 'proserv_boot'"  { proserv="proserv_boot" }
 Switch OS_Shutdown  "OS_Shutdown"   { exec="OFF:sudo halt"} 
 Switch OS_Reboot  "OS_Reboot"   { exec="ON:sudo reboot"} 
 String ProservBackupResetRrd  "ProservBackupResetRrd"   { proserv="proserv_backup_reset_rrd", autoupdate="false" }
