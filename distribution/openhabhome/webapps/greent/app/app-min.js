@@ -575,14 +575,14 @@ var settingsWindow = {
           iconMask : true,
           handler : function () {
 
-            Ext.Msg.confirm('Confirm sending history backup data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail?  (Note this operation may take several minutes!)', function (e) {
+            Ext.Msg.confirm('Confirm sending history backup data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail? (Note this operation may take several minutes!)', function (e) {
               if (e == 'yes') {
                 Ext.getCmp('send_history_data_btn').setDisabled(true);
                 Ext.getCmp('send_history_data_btn').setIconCls('time');                
                 Ext.Ajax.request({
                   url : '/CMD?ProservSendRrdBackup=START',
                   method : "GET",
-                  timeout : 120000,
+                  timeout : 240000,
                   disableCaching : false,
                   success : function (response) {
                     Ext.Ajax.request({
@@ -617,12 +617,13 @@ var settingsWindow = {
           id : 'export_csv_data_btn',
           iconMask : true,
           handler : function () { ;
-            Ext.Msg.alert('Export history data as text', 'This will export the history data in text file format (zipped CSV-format). The exported data can later be send by e-mail.', function (e) {
+            Ext.Msg.alert('Export history data as text', 'This will export the history data in text file format (zipped CSV-format). The exported data can later be send by e-mail. Note this operation may take several minutes!', function (e) {
               Ext.getCmp('export_csv_data_btn').setDisabled(true);
               Ext.getCmp('export_csv_data_btn').setIconCls('time');              
               Ext.Ajax.request({
                 url : '/CMD?ProservExportCsvFiles=START',
                 method : "GET",
+                timeout : 240000,                
                 disableCaching : false,
                 success : function (response) {
                   Ext.Ajax.request({
@@ -663,7 +664,7 @@ var settingsWindow = {
                 Ext.Ajax.request({
                   url : '/CMD?ProservSendCsvFiles=START',
                   method : "GET",
-                  timeout : 120000,
+                  timeout : 240000,
                   disableCaching : false,
                   success : function (response) {
                     Ext.Ajax.request({

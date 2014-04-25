@@ -39,7 +39,10 @@ public class Db4oConfiguration implements ManagedService {
 	/** the amount of backup files allowed in DB_FOLDER_NAME (optional, defaults to '7') */
 	public static int maxBackups = 7;
 	
+	/**  */
+	public static boolean disableService = false;
 	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -68,6 +71,16 @@ public class Db4oConfiguration implements ManagedService {
 				}
 				catch (IllegalArgumentException iae) {
 					logger.warn("couldn't parse '{}' to an integer");
+				}
+			}
+			
+			String disableServiceString = (String) config.get("disableService");
+			if (StringUtils.isNotBlank(disableServiceString)) {
+				try {
+					disableService = Boolean.valueOf(disableServiceString);
+				}
+				catch (IllegalArgumentException iae) {
+					logger.warn("couldn't parse '{}' to an disableService");
 				}
 			}
 		}

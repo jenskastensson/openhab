@@ -59,8 +59,9 @@ public class ProservLogfileProvider {
 
 	static {
 //		PERIODS.put("12h", 43200000L);
-		PERIODS.put("Day", 86400000L);
-		PERIODS.put("Week", 604800000L);
+//		PERIODS.put("Day", 86400000L);
+//		PERIODS.put("Week", 604800000L);
+		PERIODS.put("4Weeks", 4*604800000L);
 //		PERIODS.put("Month", 2592000000L);
 		PERIODS.put("Year", 31536000000L);
 	}
@@ -171,7 +172,7 @@ public class ProservLogfileProvider {
 			label = item.getName();
 		}
 
-		Iterable<HistoricItem> result;
+		Iterable<HistoricItem> result = null;
 		FilterCriteria filter;
 
 		// Generate data collections
@@ -189,7 +190,14 @@ public class ProservLogfileProvider {
 		filter.setItemName(item.getName());
 		filter.setPageSize(1);
 		filter.setOrdering(Ordering.DESCENDING);
-		result = service.query(filter);
+		try {
+			result = service.query(filter);
+		} catch (Throwable e) {
+			String message = "handling " + label + "' throws exception";
+			logger.error(message, e);
+			return false;
+		}
+		
 		if(result.iterator().hasNext()) {
 			HistoricItem historicItem = result.iterator().next();
 

@@ -251,7 +251,7 @@ public class RRD4jService implements QueryablePersistenceService {
 			rrdDef.setStep(20);
 	        rrdDef.setStartTime(System.currentTimeMillis()/1000-1);
 	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 180, Double.NaN, Double.NaN);
-	        rrdDef.addArchive(function, 0.5, 1, 30240); // 1 week (granularity 20 sec)
+	        rrdDef.addArchive(function, 0.5, 1, 4*30240); // 4 weeks (granularity 20 sec)
 	        rrdDef.addArchive(function, 0.5, 30, 52560); // one year (granularity 10 min)
 	        rrdDef.addArchive(function, 0.5, 180, 26280); // three years (granularity 1 hour)    		
     	}
