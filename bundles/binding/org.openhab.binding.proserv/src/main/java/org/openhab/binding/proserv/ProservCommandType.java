@@ -54,6 +54,12 @@ public enum ProservCommandType {
 			itemClass = StringItem.class;
 		}
 	},
+	TYPE_PROSERV_LANGUAGE {
+		{
+			command = "proserv_language";
+			itemClass = StringItem.class;
+		}
+	},
 	TYPE_PROSERV_TEST {
 		{
 			command = "proserv_test";

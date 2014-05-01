@@ -1,5 +1,6 @@
 package org.openhab.binding.proserv.internal;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -8,6 +9,10 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -27,6 +32,7 @@ public class ProservData {
 	private static String chartItemRefreshWeek = null;
 	private static String chartItemRefreshMonth = null;
 	private static String chartItemRefreshYear = null;	
+	private static String language = null;
     private byte[][] functionCodes = new byte[18][16];
     private String[][] functionDescriptions = new String[18][16];
     private String[][] functionUnits = new String[18][16];
@@ -46,28 +52,30 @@ public class ProservData {
 	private int[][] heatingMapId = new int[18][2];
 	private int[][] heatingDataPoint = new int[18][2];
 
-	private String stringProservLang[]; // TODO change to MAP
+	private Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
+	public boolean refresh = false;
+
 	
 	public ProservData(String chartItemRefreshHour, String chartItemRefreshDay,
 			String chartItemRefreshWeek, String chartItemRefreshMonth,
-			String chartItemRefreshYear) {
+			String chartItemRefreshYear, String language) {
 		ProservData.chartItemRefreshHour = chartItemRefreshHour;
 		ProservData.chartItemRefreshDay = chartItemRefreshDay;
 		ProservData.chartItemRefreshWeek = chartItemRefreshWeek;
 		ProservData.chartItemRefreshMonth = chartItemRefreshMonth;
 		ProservData.chartItemRefreshYear = chartItemRefreshYear;
-		
+		ProservData.language = language;		
 	}
 
 
 	public String getAllItemNames() {
 		return allItemNames;
 	}
-	public String getStringProservLang(int x) {
-		return stringProservLang[x];
-	}
 	
+	public String getmapProservLang(String x) {
+		return mapProservLang.get(x);
+	}	
 	public byte getFunctionCodes(int x, int y) {
 		return functionCodes[x][y];
 	}	
@@ -321,19 +329,53 @@ public class ProservData {
 	    }
 	}
 
+	private static void changeProperty(String filename, String key, String value) throws IOException {
+	    final File tmpFile = new File(filename + ".tmp");
+	    final File file = new File(filename);
+	    PrintWriter pw = new PrintWriter(tmpFile);
+	    BufferedReader br = new BufferedReader(new FileReader(file));
+	    boolean found = false;
+	    final String toAdd = key + '=' + value;
+	    for (String line; (line = br.readLine()) != null; ) {
+	        if (line.startsWith(key + '=')) {
+	            line = toAdd;
+	            found = true;
+	        }
+	        pw.println(line);
+	    }
+	    if (!found)
+	        pw.println(toAdd);
+	    br.close();
+	    pw.close();
+	    Files.move(tmpFile.toPath(),file.toPath(),StandardCopyOption.REPLACE_EXISTING );
+	}
+	
+	public void writeConfigData(String key, String value){
+		String filename = "openhab.cfg";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + filename ;
+			changeProperty(path, key, value);
+		} catch (Throwable e) {
+			String message = "writeConfigData value: " + value + " key: " + key + " file: " + filename + " throws exception" + e.toString();
+			logger.error(message, e);
+		} 
+	}
+	
 	public void loadProservLang() {
 		Reader reader = null;
-		String filename = "proserv-lang.map";
+		String filename = ProservData.language + ".map";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "transform" + File.separator + filename ;
 			Properties properties = new Properties();
 			reader = new FileReader(path);
 			properties.load(reader);
-			
-			stringProservLang = new String[3];
-			stringProservLang[0] = properties.getProperty("ACTUAL");
-			stringProservLang[1] = properties.getProperty("PRESET");
-			stringProservLang[2] = properties.getProperty("SCROLL-FOR-MORE-CHARTS");
+						
+			mapProservLang.put("ACTUAL", properties.getProperty("ACTUAL"));
+			mapProservLang.put("PRESET", properties.getProperty("PRESET"));
+			mapProservLang.put("SCROLL-FOR-MORE-CHARTS", properties.getProperty("SCROLL-FOR-MORE-CHARTS"));
+			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
+			mapProservLang.put("ALL-VALUES", properties.getProperty("ALL-VALUES"));
+			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
 
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
@@ -403,12 +445,12 @@ public class ProservData {
 							writer.println("Group gitemProServLog" + indexActual + indexPreset);
 							String item0 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexActual + 
 									"   \"{MAP(proserv.map):STRING-" + indexActual + 
-									"} " + stringProservLang[0] + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
+									"} " + mapProservLang.get("ACTUAL") + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
 									"\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item0);
 							String item1 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexPreset + 
 									"   \"{MAP(proserv.map):STRING-" + indexPreset + 
-									"} " + stringProservLang[1] + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
+									"} " + mapProservLang.get("PRESET") + " " + getFormatString(functionCodes[x][y], functionUnits[x][y]) + 
 									"\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item1);
 						}
@@ -416,8 +458,9 @@ public class ProservData {
 							for (int z = 0; z <=1; z++) {
 								if (functionLogThis[x][y][z]) {
 									String index = Integer.toString(functionMapId[x][y][z]);
+									String actualOrPreset = (z==0?mapProservLang.get("ACTUAL"):mapProservLang.get("ACTUAL"));
 									String item = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + index + 
-											"   \"{MAP(proserv.map):STRING-" + index + "} " + stringProservLang[z] + " " + 
+											"   \"{MAP(proserv.map):STRING-" + index + "} " + actualOrPreset + " " + 
 											getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv)";
 									writer.println(item);
 								}
@@ -434,12 +477,12 @@ public class ProservData {
 						writer.println("Group gitemProServLog" + indexActual + indexPreset);
 						String item0 = "Number itemProServLog" + indexActual + 
 								"   \"{MAP(proserv.map):STRING-" + indexActual + 
-								"} " + stringProservLang[0] + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
+								"} " + mapProservLang.get("ACTUAL") + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
 								+ indexActual + indexPreset + ")";
 						writer.println(item0);
 						String item1 = "Number itemProServLog" + indexPreset + 
 								"   \"{MAP(proserv.map):STRING-" + indexPreset + 
-								"} " + stringProservLang[1] + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
+								"} " + mapProservLang.get("PRESET") + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
 								+ indexActual + indexPreset +  ")";
 						writer.println(item1);
 					}
@@ -500,7 +543,9 @@ public class ProservData {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filename;
 
 			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
-			writer.println("sitemap proserv label=\"Proserv charts\"\n{\n   Frame {\n\n		Group item=gProserv icon=\"pie\" label=\"All values\"\n   }\n");			
+			String labelAllValues = 	mapProservLang.get("ALL-VALUES");
+			String labelProservCharts = mapProservLang.get("PROSERV-CHARTS");
+			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n\n		Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"\n   }\n");			
 		
 			for (int x = 0; x < 18; x++) {
 				for (int y = 0; y < 16; y++) {
@@ -512,8 +557,8 @@ public class ProservData {
 							writer.println("         Text item=itemProServLog" + indexActual);
 							writer.println("         Text item=itemProServLog" + indexPreset);
 							//writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
-							if(!stringProservLang[2].isEmpty()){
-								writer.println("         Frame label=\"" + stringProservLang[2] + "\"{");
+							if(!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()){
+								writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
 							} else {
 								writer.println("         Frame {");
 							}
@@ -536,8 +581,8 @@ public class ProservData {
 									writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
 									writer.println("         Text item=itemProServLog" + index);
 									//writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
-									if(!stringProservLang[2].isEmpty()){
-										writer.println("         Frame label=\"" + stringProservLang[2] + "\"{");
+									if(!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()){
+										writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
 									} else {
 										writer.println("         Frame {");
 									}
@@ -568,8 +613,8 @@ public class ProservData {
 						writer.println("         Text item=itemProServLog" + indexActual);
 						writer.println("         Text item=itemProServLog" + indexPreset);
 						//writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
-						if(!stringProservLang[2].isEmpty()){
-							writer.println("         Frame label=\"" + stringProservLang[2] + "\"{");
+						if(!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()){
+							writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
 						} else {
 							writer.println("         Frame {");
 						}

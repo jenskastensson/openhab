@@ -6,4 +6,5 @@ String ProservSendRrdBackup  "ProservSendRrdBackup"   { proserv="proserv_send_rr
 String ProservExportCsvFiles  "ProservExportCsvFiles"   { proserv="proserv_export_csv_files", autoupdate="false" }
 String ProservSendCsvFiles  "ProservSendCsvFiles"   { proserv="proserv_send_csv_files", autoupdate="false" }
 String ProservTest  "ProservTest"   { proserv="proserv_test", autoupdate="false" }
+String ProservLanguage  "ProservLanguage"  { proserv="proserv_language", autoupdate="false" }
 

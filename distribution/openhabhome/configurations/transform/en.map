@@ -1,4 +1,13 @@
 CLOSED=closed
 OPEN=open
 undefined=unknown
- 
+ACTUAL=actual
+PRESET=setpoint
+SCROLL-FOR-MORE-CHARTS=Scroll down for more charts
+PROSERV-CHARTS=Proserv charts
+ALL-VALUES=All values
+PROSERV-CHARTS=Proserv charts
+MAIL-SUBJECT=Logfile
+MAIL-CONTENT=Hello, the logfile you requested is attached.
+
+

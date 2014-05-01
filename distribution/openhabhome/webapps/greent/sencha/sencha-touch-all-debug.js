@@ -67017,7 +67017,7 @@ Ext.define('Ext.MessageBox', {
             value: ''
         }, initialConfig);
 
-        var buttons        = initialConfig.buttons || Ext.MessageBox.OK || [],
+        var buttons        = initialConfig.buttons /*|| Ext.MessageBox.OK*/ || [],
             buttonBarItems = [],
             userConfig     = initialConfig;
 

@@ -8,9 +8,10 @@
  */
 package org.openhab.binding.proserv.internal;
 
-//import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import org.openhab.config.core.ConfigDispatcher;
 import org.openhab.core.library.types.DecimalType;
@@ -28,6 +29,9 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Dictionary;
+import java.util.Properties;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openhab.binding.proserv.ProservBindingProvider;
 import org.openhab.binding.proserv.ProservBindingProvider;
@@ -37,10 +41,7 @@ import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openhab.action.mail.internal.Mail;
-//import java.io.PrintWriter;
-//import org.rrd4j.core.RrdDb;
-//import org.rrd4j.graph.RrdGraph;
-//import org.rrd4j.graph.RrdGraphDef;
+
 
 
 
@@ -69,6 +70,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String mailSubject = "";
 	private static String mailContent = "";
 	private static Boolean previousEmailTrigger = null;
+	private static String language = null;
 	private static String chartItemRefreshHour = null;
 	private static String chartItemRefreshDay = null;
 	private static String chartItemRefreshWeek = null;
@@ -76,7 +78,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String chartItemRefreshYear = null;
 
 	
-	private ProservData proservData = null;
+	private static ProservData proservData = null;
 
 	public void deactivate() {
 		connector.stopMonitor();
@@ -91,6 +93,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		setProperlyConfigured(true);
 	}
 
+	private boolean isSupportedLanguage(String language) {
+		if (language.equals("en") || language.equals("de")){
+			return true;
+		}
+		logger.error("Unsupported language: {}", language);
+		return false;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -100,8 +110,19 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			String ip = (String) config.get("ip");
 			String portString = (String) config.get("port");
 			ProservBinding.mailTo = (String) config.get("mailto");
-			ProservBinding.mailSubject = (String) config.get("mailsubject");
-			ProservBinding.mailContent = (String) config.get("mailcontent");
+			
+			ProservBinding.language = (String) config.get("language");
+			if(ProservBinding.language != null)
+			{
+				if(!isSupportedLanguage(ProservBinding.language))
+					ProservBinding.language = "en";
+			}
+			else
+			{
+				logger.error("Mising config proserv:language");
+				ProservBinding.language = "en";
+			}
+			
 			ProservBinding.chartItemRefreshHour = (String) config.get("chartItemRefreshHour");
 			ProservBinding.chartItemRefreshDay = (String) config.get("chartItemRefreshDay");
 			ProservBinding.chartItemRefreshWeek = (String) config.get("chartItemRefreshWeek");
@@ -144,12 +165,37 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 				setProperlyConfigured(true);
 			}
+			
+			// Load language strings
+			Reader reader = null;
+			String filename = ProservBinding.language + ".map";
+			try {
+				String path = ConfigDispatcher.getConfigFolder() + File.separator + "transform" + File.separator + filename ;
+				Properties properties = new Properties();
+				reader = new FileReader(path);
+				properties.load(reader);
+							
+				ProservBinding.mailSubject = properties.getProperty("MAIL-SUBJECT");
+				ProservBinding.mailContent = properties.getProperty("MAIL-CONTENT");
+
+			} catch (Throwable e) {
+				String message = "opening file '" + filename + "' throws exception";
+				logger.error(message, e);
+			} finally {
+				IOUtils.closeQuietly(reader);
+			}		
+			
+			if(proservData != null){
+				logger.debug("proServ force a reload of configdata!");
+				proservData.refresh = true; // force a reload of configdata
+				//execute();
+			}
 		}
 	}
 
 	@Override
-	public void internalReceiveCommand(String itemName, Command command) {
-		logger.debug("proServ received commaBnd for itemName:{}, command:{}", itemName, command.toString());
+	public synchronized void internalReceiveCommand(String itemName, Command command) {
+		logger.debug("proServ received command for itemName:{}, command:{}", itemName, command.toString());
 		
 		String pathLogsDir = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "logs";
 	    Path pathBackupRrd = FileSystems.getDefault().getPath(pathLogsDir + File.separator + "BackupRrd.zip").toAbsolutePath();
@@ -253,6 +299,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			} else {
 				eventPublisher.postUpdate(itemName, new StringType("FAILED:The CSV data file is missing, please export csv data file!"));
 			}
+		}
+		//http://localhost:8080/CMD?ProservLanguage=de
+		else if(itemName.equals("ProservLanguage") ){
+			if(isSupportedLanguage(command.toString())){
+				ProservBinding.language = command.toString();
+				proservData.writeConfigData("proserv:language", ProservBinding.language);		
+			}
+			eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
 		}
 	}
 	
@@ -545,19 +599,22 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	
 
 	@Override
-	public void execute() {
+	public synchronized void execute() {
 
 		logger.debug("proServ binding refresh cycle starts!");
-
-		if(connector==null)
-		{
-			connector = new ProservConnector(ip, port);	
-		}
-		
+	
 		try {
+			if(connector==null)
+			{
+				connector = new ProservConnector(ip, port);	
+				
+			}			
 			connector.connect();
-			if (proservData == null) {
-				proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear );
+			
+			if (proservData == null || proservData.refresh == true) {
+				proservData = null;
+				proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, 
+						chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear, language );
 				byte[] proservAllConfigValues = getConfigValues();
 				if (proservAllConfigValues == null) {
 					logger.debug("proServ getConfigValues failed try again");
@@ -570,10 +627,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					proservData.updateProservSitemapFile();
 					proservData.updateRrd4jPersistFile();
 					proservData.updateDb4oPersistFile();
-					connector.startMonitor(this.eventPublisher, this.proservData, this);
+					connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);
 				} else {
 					logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
-					proservData = null; // force a reload of configdata
+					proservData.refresh = true; // force a reload of configdata
 				}
 			}
 

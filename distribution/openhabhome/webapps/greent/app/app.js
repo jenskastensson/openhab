@@ -33,6 +33,7 @@ var oph_update_available = false;
 var oph_update_version;
 var oph_update_build;
 var oph_update_info;
+var g_AllValues = 'All Values';
 
 var firstload = true;
 
@@ -377,23 +378,62 @@ var settingsWindow = {
               ui : 'normal',
               handler : function () {
                 if (dirtySettings) {
+                  new_ui_language = settingsPanel.getItems().items[0].getItems().items[2].getValue();
                   //localStorage.setItem('openHAB_sitemap', settingsPanel.getItems().items[0].getItems().items[1].getValue()); // #proserv
                   localStorage.setItem('openHAB_device_type', settingsPanel.getItems().items[0].getItems().items[1].getValue());
-                  localStorage.setItem('openHAB_language', settingsPanel.getItems().items[0].getItems().items[2].getValue());
+                  //localStorage.setItem('openHAB_language', new_ui_language);
                   //localStorage.setItem('openHAB_theme', settingsPanel.getItems().items[0].getItems().items[4].getValue()); // #proserv
                   //localStorage.setItem('openHAB_transport', settingsPanel.getItems().items[0].getItems().items[5].getValue()); // #proserv
                   //localStorage.setItem('openHAB_transitions', settingsPanel.getItems().items[0].getItems().items[6].getValue()); // #proserv
                   //localStorage.setItem('openHAB_chart_servlet', settingsPanel.getItems().items[0].getItems().items[7].getValue()); // #proserv
 
-                  alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect);
-                  window.location.reload();
-                }
-                settingsPanel.destroy();
-                settingsPanel = null;
-              },
-
+                  if (new_ui_language != ui_language) {                    
+                      title = OpenHAB.i18n_strings[ui_language].restart_server;
+                      msg = OpenHAB.i18n_strings[ui_language].this_will_restart_the_software;
+                      Ext.Msg.show({ 
+                        message: msg,
+                        title: title,
+                        buttons: null                     
+                      });
+                      Ext.Ajax.request({
+                        url : '/CMD?ProservLanguage=' + new_ui_language,
+                        method : "GET",
+                        disableCaching : false,
+                        success : function (response) {
+                          Ext.Ajax.request({
+                            url : '/rest/items/ProservLanguage/state',
+                            timeout : 5000,
+                            success : function (response) {
+                              if (response.responseText != new_ui_language) {
+                                title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                                msg = OpenHAB.i18n_strings[ui_language].changing_language_failed;
+                                Ext.Msg.alert(title, msg);
+                              } else {
+                                localStorage.setItem('openHAB_language', new_ui_language);
+                                setTimeout(function(){ 
+                                  alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect); 
+                                  window.location.reload(true); 
+                                  },60000);                    
+                              }
+                            }
+                          });
+                        },
+                        failure : function (response) {
+                          title = OpenHAB.i18n_strings[ui_language].timeout;
+                          msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                          Ext.Msg.alert(title, msg);
+                        }
+                      });
+                    }
+                    else {
+                      alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect); 
+                      window.location.reload(true);                    
+                    }
+                  }
+                  settingsPanel.destroy();
+                  settingsPanel = null;
+                },
             }
-
           ]
         }, /*{ // #Proserv remove openHAB_sitemap
         xtype : 'selectfield',
@@ -488,13 +528,15 @@ var settingsWindow = {
         },*/
         {
           xtype : 'button',
-          text : 'Save & reset history data',
+          text : OpenHAB.i18n_strings[ui_language].button_save_reset_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           id : 'reset_history_data_btn',
           iconMask : true,
-          handler : function () { ;
-            Ext.Msg.confirm('Confirm reset of history data', 'Are you sure you want to reset the history data? This should only be done if the configuration of the proServ has changed.\nThis operation cannot be undone!', function (e) {
+          handler : function () { 
+              title = OpenHAB.i18n_strings[ui_language].confirm_reset_of_history_data;
+              msg = OpenHAB.i18n_strings[ui_language].are_you_sure_you_want_to_reset;
+              Ext.Msg.confirm(title, msg, function (e) {
               if (e == 'yes') {
                 Ext.getCmp('reset_history_data_btn').setDisabled(true);
                 Ext.getCmp('reset_history_data_btn').setIconCls('time');                
@@ -513,7 +555,9 @@ var settingsWindow = {
                         if (response.responseText.indexOf('FAILED') >= 0) {
                           Ext.getCmp('reset_history_data_btn').setIconCls('warming_dotted');
                           Ext.getCmp('reset_history_data_btn').setDisabled(false);
-                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                          title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                          msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                          Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
                         }
                       }
                     });
@@ -521,7 +565,9 @@ var settingsWindow = {
                   failure : function (response) {
                     Ext.getCmp('reset_history_data_btn').setIconCls('warming_dotted');
                     Ext.getCmp('reset_history_data_btn').setDisabled(false);
-                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                    title = OpenHAB.i18n_strings[ui_language].timeout;
+                    msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                    Ext.Msg.alert(title, msg);
                   }
                 });
               }
@@ -529,13 +575,15 @@ var settingsWindow = {
           }
         }, {
           xtype : 'button',
-          text : 'Save history data',
+          text : OpenHAB.i18n_strings[ui_language].button_save_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           id : 'save_history_data_btn',
           iconMask : true,
-          handler : function () { ;
-            Ext.Msg.alert('Save history data(backup)', 'This will save a snapshot of the history data that later can be send by e-mail.', function (e) {
+          handler : function () { 
+            title = OpenHAB.i18n_strings[ui_language].save_history_data_backup;
+            msg = OpenHAB.i18n_strings[ui_language].this_will_save_a_snapshot;
+            Ext.Msg.alert(title, msg, function (e) {
               Ext.getCmp('save_history_data_btn').setDisabled(true);
               Ext.getCmp('save_history_data_btn').setIconCls('time');              
               Ext.Ajax.request({
@@ -553,7 +601,9 @@ var settingsWindow = {
                       if (response.responseText.indexOf('FAILED') >= 0) {
                         Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
                         Ext.getCmp('save_history_data_btn').setDisabled(false);
-                        Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                        msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                        Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
                       }
                     }
                   });
@@ -561,21 +611,24 @@ var settingsWindow = {
                 failure : function (response) {
                   Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
                   Ext.getCmp('save_history_data_btn').setDisabled(false);
-                  Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                  title = OpenHAB.i18n_strings[ui_language].timeout;
+                  msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                  Ext.Msg.alert(title, msg);
                 }
               });
             });
           }
         }, {
           xtype : 'button',
-          text : 'Send history data by e-mail',
+          text : OpenHAB.i18n_strings[ui_language].button_send_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           id : 'send_history_data_btn',
           iconMask : true,
           handler : function () {
-
-            Ext.Msg.confirm('Confirm sending history backup data', 'Assuming you have saved history data, either by reseting or by saving, do you want to send the the history data by e-mail? (Note this operation may take several minutes!)', function (e) {
+            title = OpenHAB.i18n_strings[ui_language].confirm_sending_history;
+            msg = OpenHAB.i18n_strings[ui_language].assuming_you_have_saved_history_data;
+            Ext.Msg.confirm(title, msg, function (e) {
               if (e == 'yes') {
                 Ext.getCmp('send_history_data_btn').setDisabled(true);
                 Ext.getCmp('send_history_data_btn').setIconCls('time');                
@@ -595,7 +648,9 @@ var settingsWindow = {
                         if (response.responseText.indexOf('FAILED') >= 0) {
                           Ext.getCmp('send_history_data_btn').setIconCls('warming_dotted');
                           Ext.getCmp('send_history_data_btn').setDisabled(false);
-                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                          title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                          msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                          Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
                         }
                       }
                     });
@@ -603,7 +658,9 @@ var settingsWindow = {
                   failure : function (response) {
                     Ext.getCmp('send_history_data_btn').setIconCls('warming_dotted');
                     Ext.getCmp('send_history_data_btn').setDisabled(false);
-                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                    title = OpenHAB.i18n_strings[ui_language].timeout;
+                    msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                    Ext.Msg.alert(title, msg);
                   }
                 });
               }
@@ -611,13 +668,15 @@ var settingsWindow = {
           }
         }, {
           xtype : 'button',
-          text : 'Export history data as text',
+          text : OpenHAB.i18n_strings[ui_language].button_export_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           id : 'export_csv_data_btn',
           iconMask : true,
-          handler : function () { ;
-            Ext.Msg.alert('Export history data as text', 'This will export the history data in text file format (zipped CSV-format). The exported data can later be send by e-mail. Note this operation may take several minutes!', function (e) {
+          handler : function () { 
+            title = OpenHAB.i18n_strings[ui_language].export_history_data_as_text;
+            msg = OpenHAB.i18n_strings[ui_language].this_will_export_the_history_data;
+            Ext.Msg.alert(title, msg, function (e) {
               Ext.getCmp('export_csv_data_btn').setDisabled(true);
               Ext.getCmp('export_csv_data_btn').setIconCls('time');              
               Ext.Ajax.request({
@@ -636,7 +695,9 @@ var settingsWindow = {
                       if (response.responseText.indexOf('FAILED') >= 0) {
                         Ext.getCmp('export_csv_data_btn').setIconCls('warming_dotted');
                         Ext.getCmp('export_csv_data_btn').setDisabled(false);
-                        Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                        title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                        msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                        Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
                       }
                     }
                   });
@@ -644,20 +705,24 @@ var settingsWindow = {
                 failure : function (response) {
                   Ext.getCmp('export_csv_data_btn').setIconCls('warming_dotted');
                   Ext.getCmp('export_csv_data_btn').setDisabled(false);
-                  Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                  title = OpenHAB.i18n_strings[ui_language].timeout;
+                  msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                  Ext.Msg.alert(title, msg);
                 }
               });
             });
           }
         }, {
           xtype : 'button',
-          text : 'Send history data (text) by e-mail',
+          text : OpenHAB.i18n_strings[ui_language].button_send_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           id : 'send_csv_data_btn',
           iconMask : true,
           handler : function () {
-            Ext.Msg.confirm('Confirm sending history data', 'Assuming you have exported history data as text, do you want to send the the history data in text/csv format by e-mail?  (Note this operation may take several minutes!)', function (e) {
+            title = OpenHAB.i18n_strings[ui_language].confirm_sending_history_data;
+            msg = OpenHAB.i18n_strings[ui_language].assuming_you_have_exported_history;
+            Ext.Msg.confirm(title, msg, function (e) {
               if (e == 'yes') {
                 Ext.getCmp('send_csv_data_btn').setDisabled(true);
                 Ext.getCmp('send_csv_data_btn').setIconCls('time');                
@@ -677,7 +742,9 @@ var settingsWindow = {
                         if (response.responseText.indexOf('FAILED') >= 0) {
                           Ext.getCmp('send_csv_data_btn').setIconCls('warming_dotted');
                           Ext.getCmp('send_csv_data_btn').setDisabled(false);
-                          Ext.Msg.alert('The operation failed', 'Error message from server: ' + response.responseText.replace("FAILED:", ""));
+                          title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                          msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                          Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
                         }
                       }
                     });
@@ -685,7 +752,9 @@ var settingsWindow = {
                   failure : function (response) {
                     Ext.getCmp('send_csv_data_btn').setIconCls('warming_dotted');
                     Ext.getCmp('send_csv_data_btn').setDisabled(false);
-                    Ext.Msg.alert('Timeout', 'The operation timed out waiting for a response from the server, it did not complete in time.');
+                    title = OpenHAB.i18n_strings[ui_language].timeout;
+                    msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                    Ext.Msg.alert(title, msg);
                   }
                 });
               }
@@ -736,7 +805,7 @@ var settingsWindow = {
           }
         },*/ {
           xtype : 'button',
-          text : 'About proServ Logview',
+          text : OpenHAB.i18n_strings[ui_language].button_about_proserv_logview,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
           scope : this,
           //cls : 'oph_about_btn',
@@ -899,7 +968,9 @@ function loadUIData(sitemap_name) {
       }
 
       clickOnLeaf = true; // #Proserv open "All Values" on startup - start
-      broadCrumb.push(["0000", "All values"]); // #Proserv
+      //broadCrumb.push(["0000", "All values"]); // #Proserv
+      broadCrumb.push(["0000", g_AllValues]); // #Proserv ugly fix...
+  
       goToPage("0000"); // #Proserv
       setCurrentLeftNavPage("0000"); // #Proserv open "All Values" on startup - end
 
@@ -1143,6 +1214,9 @@ function addButtonToLeftNav(id, data, nav_parent) {
     page_id = "none";
   }
 
+  if(page_id == "0000" && data.widgetId == "proserv_0_0")
+    g_AllValues = data.label;
+    
   pushWidget({
     icon : data.icon,
     text : data.label.replace(/[\[\]']+/g, ''),
@@ -1455,6 +1529,32 @@ function setProfile() {
     oph_usepicker = false;
   }
 
+}
+
+function getLanguage() {
+  Ext.Ajax.request({
+    url : '/CMD?ProservLanguage=xx', // force an update of current language
+    method : "GET",
+    disableCaching : true,
+    success : function (response) {
+      Ext.Ajax.request({
+        url : '/rest/items/ProservLanguage/state',
+        timeout : 5000,
+        success : function (response) {
+          ui_language = response.responseText;
+          localStorage.setItem('openHAB_language', ui_language);          
+        },
+        failure : function (response) {
+          alert('Error connecting to server!');
+        }        
+      });
+    },
+    failure : function (response) {
+      title = OpenHAB.i18n_strings[ui_language].timeout;
+      msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+      Ext.Msg.alert(title, msg);
+    }
+  }); 
 }
 
 Ext.define('Oph.field.ButtonsSelect', {
@@ -2262,6 +2362,7 @@ var oph_app = Ext.application({
       setTheme();
       getOpenhabVersion();
       setProfile();
+      getLanguage();
       if (OpenHAB.usePictogramIcons == true) {
         icon_class += " oph_pictogram";
         icon_style = "-webkit-mask-image:url";
