@@ -290,7 +290,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		//http://localhost:8080/CMD?ProservSendCsvFiles=START
 		else if(itemName.equals("ProservSendCsvFiles") && command.toString().equals("START")){
 			File f = new File(pathZippedCsvFiles.toString());
-			if(f.exists() && !f.isDirectory()){
+			if(mailTo.isEmpty()){
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:The email address is missing, please configure the email address!"));
+			}
+			else if(f.exists() && !f.isDirectory()){
 				if(Mail.sendMail(mailTo, mailSubject, mailContent, pathZippedCsvFiles.toUri().toString())){
 					eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
 				} else {

@@ -682,7 +682,7 @@ var settingsWindow = {
               Ext.Ajax.request({
                 url : '/CMD?ProservExportCsvFiles=START',
                 method : "GET",
-                timeout : 240000,                
+                timeout : 600000,                
                 disableCaching : false,
                 success : function (response) {
                   Ext.Ajax.request({
