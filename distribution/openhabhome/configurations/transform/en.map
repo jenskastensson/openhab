@@ -9,5 +9,5 @@ ALL-VALUES=All values
 PROSERV-CHARTS=Proserv charts
 MAIL-SUBJECT=Logfile
 MAIL-CONTENT=Hello, the logfile you requested is attached.
-
-
+TEMPERATURE=Temperature
+OUTSIDE=outside

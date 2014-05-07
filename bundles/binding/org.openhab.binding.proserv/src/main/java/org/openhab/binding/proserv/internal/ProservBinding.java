@@ -600,6 +600,43 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}		
 	}
 	
+	// The postUpdateSingleWeather function takes 
+	// a single value as input and post update on the event bus.
+	// It is called from the the Monitor thread when the proServ notifies for a value change. 
+	public void postUpdateSingleValueWeather(byte[] dataValue) {
+		int Id = proservData.getWeatherStationMapId();						
+		int startDatapoint = 995;
+		switch ( (int)(proservData.getWeatherStationCode() & 0xFF) ) {
+		case 0x71:
+			float f = proservData.parse2ByteFloatValue(dataValue, 0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
+					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
+			break;
+		default:
+			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
+		}		
+	}
+	
+	// The postUpdateWeather function takes 
+	// and a buffer with 3 data values as input and post update on the event bus.
+	// It is called from the the polling thread. 
+	// The postUpdateWeather also fill the proservData weatherDataPoint values which are later used 
+	// for lookup in the monitor thread. That is the async value update will only work after one successful data poll.
+	public void postUpdateWeather(byte[] dataValue) {
+		int Id = proservData.getWeatherStationMapId();						
+		int startDatapoint = 995;
+		switch ( (int)(proservData.getWeatherStationCode() & 0xFF) ) {
+		case 0x71:
+			proservData.setWeatherStationDataPoint(startDatapoint);
+			float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
+					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
+			break;
+		default:
+			logger.debug("proServ binding, unhandled weatherCode {}", Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
+		}		
+	}
+	
 
 	@Override
 	public synchronized void execute() {
@@ -669,6 +706,17 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						}
 					}
 				}
+				
+				// weatherStation
+				if (proservData.getWeatherStationLogThis()) {
+					int startDatapoint = 991 + 4;
+					int numberOfDatapoints = 1;					
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue);
+					}
+				}
+				
 			}
 			logger.debug("proServ binding refresh cycle completed");				
 		} catch (NullPointerException e) {
