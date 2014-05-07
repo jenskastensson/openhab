@@ -52,6 +52,11 @@ public class ProservData {
 	private int[][] heatingMapId = new int[18][2];
 	private int[][] heatingDataPoint = new int[18][2];
 
+	private byte weatherStationCode = 0x71;
+	private boolean weatherStationLogThis = true;
+	private int weatherStationMapId;	
+	private int weatherStationDataPoint;	
+
 	private Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
 	public boolean refresh = false;
@@ -129,6 +134,26 @@ public class ProservData {
 		heatingDataPoint[x][i] = dataPoint;
 	}
 
+	public boolean getWeatherStationLogThis()
+	{
+		return weatherStationLogThis;
+	}	
+	public byte getWeatherStationCode()
+	{
+		return weatherStationCode;
+	}
+	public int getWeatherStationMapId(){
+		return weatherStationMapId;
+	}
+	public int getWeatherStationDataPoint()
+	{
+		return weatherStationDataPoint;
+	}
+	public void setWeatherStationDataPoint(int dataPoint)
+	{
+		weatherStationDataPoint = dataPoint;
+	}
+	
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException
 	{
 	    int lengthDescription = 24;
@@ -229,8 +254,12 @@ public class ProservData {
 				logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
 						heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);
             } 
-
 	    }
+	    
+		// weatherStation
+		// int weatherStationOffset = 16065;	
+	    // for now use hardcoded values, see declaration. There's no description field for weather station....
+	    
 	}
 
 
@@ -327,6 +356,9 @@ public class ProservData {
             	heatingMapId[x][1]=mapId++;
             }
 	    }
+	    if(weatherStationLogThis){
+	    	weatherStationMapId = mapId++;
+	    }
 	}
 
 	private static void changeProperty(String filename, String key, String value) throws IOException {
@@ -376,6 +408,8 @@ public class ProservData {
 			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
 			mapProservLang.put("ALL-VALUES", properties.getProperty("ALL-VALUES"));
 			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
+			mapProservLang.put("OUTDOOR-TEMPERATURE", properties.getProperty("OUTDOOR-TEMPERATURE"));
+			mapProservLang.put("OUTDOOR-TEMPERATURE-SHORT", properties.getProperty("OUTDOOR-TEMPERATURE-SHORT"));
 
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
@@ -415,6 +449,10 @@ public class ProservData {
 						properties.setProperty(key1, heatingDescriptions[x]);
 					}
 				}
+			}
+			if (weatherStationLogThis) {
+				String key0 = "STRING-" + Integer.toString(weatherStationMapId);
+				properties.setProperty(key0, mapProservLang.get("OUTDOOR-TEMPERATURE"));
 			}
 			properties.store(writer, "");
 
@@ -485,6 +523,14 @@ public class ProservData {
 								"} " + mapProservLang.get("PRESET") + " " + getFormatString(heatingCodes[x], "°C") + "\" <none> (gProserv, gitemProServLog" 
 								+ indexActual + indexPreset +  ")";
 						writer.println(item1);
+						if (weatherStationLogThis) {
+							String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+							String item2 = "Number itemProServLog" + indexOutdoorTemp + 
+									"   \"{MAP(proserv.map):STRING-" + indexOutdoorTemp + 
+									"} " + mapProservLang.get("OUTDOOR-TEMPERATURE-SHORT") + " " + getFormatString(weatherStationCode, "°C") + "\" <none> (gProserv, gitemProServLog" 
+									+ indexActual + indexPreset +  ")";
+							writer.println(item2);
+						}
 					}
 				}
 			}			
@@ -530,7 +576,8 @@ public class ProservData {
 		case 0x41:
 		case 0x42:
 		case 0x43:
-		case 0x44:{
+		case 0x44:
+		case 0x71:{
 			formatString = "[%.2f" + unit +"]";
 		} break;			
 		}
@@ -612,7 +659,10 @@ public class ProservData {
 						writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
 						writer.println("         Text item=itemProServLog" + indexActual);
 						writer.println("         Text item=itemProServLog" + indexPreset);
-						//writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
+						if (weatherStationLogThis) {
+							String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+							writer.println("         Text item=itemProServLog" + indexOutdoorTemp);
+						}						
 						if(!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()){
 							writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
 						} else {
@@ -682,6 +732,12 @@ public class ProservData {
 					}
 				}
 			}			
+
+			if (weatherStationLogThis) {
+				String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+				String thisItem = "itemProServLog" + indexOutdoorTemp + ",";
+				writer.println("	" + thisItem);
+			}
 			
 			writer.println("	dummy: strategy = everyChange, everyMinute, restoreOnStartup\n}");
 			writer.close();
@@ -726,6 +782,11 @@ public class ProservData {
 					}
 				}
 			}			
+			
+			if (weatherStationLogThis) {
+				String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+				writer.println("	itemProServLog" + indexOutdoorTemp + ",");				
+			}
 			
 			writer.println("	dummy: strategy = everyDay\n}");
 			writer.close();

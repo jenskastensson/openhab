@@ -395,6 +395,14 @@ public class ProservConnector {
 													}
 												}											
 											}
+											
+											if(!bFound){
+												if (proservData.getWeatherStationDataPoint() == dataPointID) {
+													proservBinding.postUpdateSingleValueWeather(dataPointValue);
+													bFound = true;
+													logger.debug("----Monitor weather DP:{}", dataPointID);															
+												}
+											}
 										}
 									}
 									// a short delay to check if there's more data available (if not it may be lost in connection.close)
