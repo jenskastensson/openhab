@@ -737,6 +737,7 @@ public class ProservData {
 				String indexOutdoorTemp = Integer.toString(weatherStationMapId);
 				String thisItem = "itemProServLog" + indexOutdoorTemp + ",";
 				writer.println("	" + thisItem);
+				allItemNames += thisItem;
 			}
 			
 			writer.println("	dummy: strategy = everyChange, everyMinute, restoreOnStartup\n}");

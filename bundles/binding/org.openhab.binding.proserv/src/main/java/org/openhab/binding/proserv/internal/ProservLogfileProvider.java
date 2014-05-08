@@ -43,8 +43,6 @@ import org.openhab.core.persistence.FilterCriteria.Ordering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 public class ProservLogfileProvider {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProservLogfileProvider.class);
@@ -312,7 +310,8 @@ public class ProservLogfileProvider {
 	    env.put("create", String.valueOf(!zipLocation.toFile().exists()));
 	    
 	    try (FileSystem fs = FileSystems.newFileSystem(zipUri, env)) {
-	        URI root = fs.getPath("/").toUri();    
+	        @SuppressWarnings("unused")
+			URI root = fs.getPath("/").toUri();    
 	    } 
  
 	    try (FileSystem zipfs = FileSystems.newFileSystem(zipLocation, null)) {
