@@ -382,15 +382,17 @@ public class ProservData {
 	    Files.move(tmpFile.toPath(),file.toPath(),StandardCopyOption.REPLACE_EXISTING );
 	}
 	
-	public void writeConfigData(String key, String value){
+	public static boolean writeConfigData(String key, String value){
 		String filename = "openhab.cfg";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + filename ;
 			changeProperty(path, key, value);
+			return true;
 		} catch (Throwable e) {
 			String message = "writeConfigData value: " + value + " key: " + key + " file: " + filename + " throws exception" + e.toString();
 			logger.error(message, e);
 		} 
+		return false;
 	}
 	
 	public void loadProservLang() {

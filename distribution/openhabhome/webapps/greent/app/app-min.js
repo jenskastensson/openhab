@@ -242,6 +242,8 @@ var ui_language = getLocalStoreItem('openHAB_language', 'en');
 var transitions = getLocalStoreItem('openHAB_transitions', '1');
 var force_transport = getLocalStoreItem('openHAB_transport', 'auto');
 var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'chart'); //#proserv
+var g_email;
+var g_ip;
 
 Ext.override(Ext.data.Connection,{timeout: 60000});
 Ext.Ajax.timeout = 60000;
@@ -759,6 +761,118 @@ var settingsWindow = {
                 });
               }
             });
+          }
+        },{
+          xtype : 'button',
+          text : OpenHAB.i18n_strings[ui_language].button_configure_email,
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
+          scope : this,
+          id : 'configure_email_btn',
+          iconMask : true,
+          handler : function () {
+            title = OpenHAB.i18n_strings[ui_language].confirm_email_title;
+            msg = OpenHAB.i18n_strings[ui_language].confirm_email_msg;
+            Ext.Msg.prompt(
+                title, 
+                msg, 
+                function (buttonId, newEmail) {
+                  if(buttonId == 'ok'){
+                    Ext.getCmp('configure_email_btn').setDisabled(true);
+                    Ext.getCmp('configure_email_btn').setIconCls('time');                
+                    Ext.Ajax.request({
+                      url : '/CMD?ProservEmail=' + newEmail,
+                      method : "GET",
+                      timeout : 5000,
+                      disableCaching : false,
+                      success : function (response) {
+                        Ext.Ajax.request({
+                          url : '/rest/items/ProservEmail/state',
+                          timeout : 5000,
+                          success : function (response) {
+                            if (response.responseText.indexOf('FAILED') >= 0) {
+                              Ext.getCmp('configure_email_btn').setIconCls('warming_dotted');
+                              Ext.getCmp('configure_email_btn').setDisabled(false);
+                              title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                              msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                              Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
+                            } else {
+                              g_email = response.responseText;
+                              Ext.getCmp('configure_email_btn').setIconCls('check2');
+                            }                            
+                          }
+                        });
+                      },
+                      failure : function (response) {
+                        Ext.getCmp('configure_email_btn').setIconCls('warming_dotted');
+                        Ext.getCmp('configure_email_btn').setDisabled(false);
+                        title = OpenHAB.i18n_strings[ui_language].timeout;
+                        msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                        Ext.Msg.alert(title, msg);
+                      }
+                    });
+                  }
+                },
+                null,
+                false,
+                g_email,
+                null
+            );     
+          }
+        },{
+          xtype : 'button',
+          text : OpenHAB.i18n_strings[ui_language].button_configure_ip,
+          style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
+          scope : this,
+          id : 'configure_ip_btn',
+          iconMask : true,
+          handler : function () {
+            title = OpenHAB.i18n_strings[ui_language].confirm_proserv_ip_title;
+            msg = OpenHAB.i18n_strings[ui_language].confirm_proserv_ip_msg;
+            Ext.Msg.prompt(
+                title, 
+                msg, 
+                function (buttonId, newIP) {
+                  if(buttonId == 'ok'){
+                    Ext.getCmp('configure_ip_btn').setDisabled(true);
+                    Ext.getCmp('configure_ip_btn').setIconCls('time');                
+                    Ext.Ajax.request({
+                      url : '/CMD?ProservIP=' + newIP,
+                      method : "GET",
+                      timeout : 5000,
+                      disableCaching : false,
+                      success : function (response) {
+                        Ext.Ajax.request({
+                          url : '/rest/items/ProservIP/state',
+                          timeout : 5000,
+                          success : function (response) {
+                            if (response.responseText.indexOf('FAILED') >= 0) {
+                              Ext.getCmp('configure_ip_btn').setIconCls('warming_dotted');
+                              Ext.getCmp('configure_ip_btn').setDisabled(false);
+                              title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                              msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                              Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
+                            } else {
+                              g_ip = response.responseText;
+                              Ext.getCmp('configure_ip_btn').setIconCls('check2');
+                            }                            
+                          }
+                        });
+                      },
+                      failure : function (response) {
+                        Ext.getCmp('configure_ip_btn').setIconCls('warming_dotted');
+                        Ext.getCmp('configure_ip_btn').setDisabled(false);
+                        title = OpenHAB.i18n_strings[ui_language].timeout;
+                        msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                        Ext.Msg.alert(title, msg);
+                      }
+                    });
+                  }
+                },
+                null,
+                false,
+                g_ip,
+                null
+            ); 
           }
         },/* {
           xtype : 'button',
@@ -1543,6 +1657,55 @@ function getLanguage() {
         success : function (response) {
           ui_language = response.responseText;
           localStorage.setItem('openHAB_language', ui_language);          
+        },
+        failure : function (response) {
+          alert('Error connecting to server!');
+        }        
+      });
+    },
+    failure : function (response) {
+      title = OpenHAB.i18n_strings[ui_language].timeout;
+      msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+      Ext.Msg.alert(title, msg);
+    }
+  }); 
+}
+
+function getEmail() {
+  Ext.Ajax.request({
+    url : '/CMD?ProservEmail=?', 
+    method : "GET",
+    disableCaching : true,
+    success : function (response) {
+      Ext.Ajax.request({
+        url : '/rest/items/ProservEmail/state',
+        timeout : 5000,
+        success : function (response) {
+          g_email = response.responseText;       
+        },
+        failure : function (response) {
+          alert('Error connecting to server!');
+        }        
+      });
+    },
+    failure : function (response) {
+      title = OpenHAB.i18n_strings[ui_language].timeout;
+      msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+      Ext.Msg.alert(title, msg);
+    }
+  }); 
+}
+function getIP() {
+  Ext.Ajax.request({
+    url : '/CMD?ProservIP=?', 
+    method : "GET",
+    disableCaching : true,
+    success : function (response) {
+      Ext.Ajax.request({
+        url : '/rest/items/ProservIP/state',
+        timeout : 5000,
+        success : function (response) {
+          g_ip = response.responseText;       
         },
         failure : function (response) {
           alert('Error connecting to server!');
@@ -2363,6 +2526,8 @@ var oph_app = Ext.application({
       getOpenhabVersion();
       setProfile();
       getLanguage();
+      getEmail();
+      getIP();
       if (OpenHAB.usePictogramIcons == true) {
         icon_class += " oph_pictogram";
         icon_style = "-webkit-mask-image:url";

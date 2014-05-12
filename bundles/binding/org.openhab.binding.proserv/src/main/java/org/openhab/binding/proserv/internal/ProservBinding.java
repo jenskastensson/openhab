@@ -305,11 +305,41 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 		//http://localhost:8080/CMD?ProservLanguage=de
 		else if(itemName.equals("ProservLanguage") ){
+			boolean retVal = true;
 			if(isSupportedLanguage(command.toString())){
 				ProservBinding.language = command.toString();
-				proservData.writeConfigData("proserv:language", ProservBinding.language);		
+				retVal = ProservData.writeConfigData("proserv:language", ProservBinding.language);	
 			}
-			eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
+			if(retVal==false)
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the language setting. Please try later!"));
+			else
+				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
+		}
+		//http://localhost:8080/CMD?ProservEmail=aa@bb.cc
+		else if(itemName.equals("ProservEmail") ){
+			if(command.toString().equals("?")){
+				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.mailTo));				
+			} else {
+				ProservBinding.mailTo = command.toString();
+				if(ProservData.writeConfigData("proserv:mailto", ProservBinding.mailTo)){
+					eventPublisher.postUpdate(itemName, new StringType(ProservBinding.mailTo));
+				} else {
+					eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
+				}
+			}
+		}
+		//http://localhost:8080/CMD?ProservIP=192.168.2.1
+		else if(itemName.equals("ProservIP") ){
+			if(command.toString().equals("?")){
+				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.ip));				
+			} else {
+				ProservBinding.ip = command.toString();
+				if(ProservData.writeConfigData("proserv:ip", ProservBinding.ip)){
+					eventPublisher.postUpdate(itemName, new StringType(ProservBinding.ip));
+				} else {
+					eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
+				}
+			}
 		}
 	}
 	

@@ -7,4 +7,6 @@ String ProservExportCsvFiles  "ProservExportCsvFiles"   { proserv="proserv_expor
 String ProservSendCsvFiles  "ProservSendCsvFiles"   { proserv="proserv_send_csv_files", autoupdate="false" }
 String ProservTest  "ProservTest"   { proserv="proserv_test", autoupdate="false" }
 String ProservLanguage  "ProservLanguage"  { proserv="proserv_language", autoupdate="false" }
+String ProservEmail  "ProservEmail"  { proserv="proserv_email", autoupdate="false" }
+String ProservIP  "ProservIP"  { proserv="proserv_ip", autoupdate="false" }
 

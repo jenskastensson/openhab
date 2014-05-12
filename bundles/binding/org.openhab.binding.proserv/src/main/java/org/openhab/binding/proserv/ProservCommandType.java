@@ -60,6 +60,18 @@ public enum ProservCommandType {
 			itemClass = StringItem.class;
 		}
 	},
+	TYPE_PROSERV_EMAIL {
+		{
+			command = "proserv_email";
+			itemClass = StringItem.class;
+		}
+	},
+	TYPE_PROSERV_IP {
+		{
+			command = "proserv_ip";
+			itemClass = StringItem.class;
+		}
+	},
 	TYPE_PROSERV_TEST {
 		{
 			command = "proserv_test";
