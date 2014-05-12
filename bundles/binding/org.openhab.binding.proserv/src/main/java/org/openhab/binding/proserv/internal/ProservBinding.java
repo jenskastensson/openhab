@@ -313,7 +313,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(retVal==false)
 				eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the language setting. Please try later!"));
 			else
-				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
+			eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
 		}
 		//http://localhost:8080/CMD?ProservEmail=aa@bb.cc
 		else if(itemName.equals("ProservEmail") ){
