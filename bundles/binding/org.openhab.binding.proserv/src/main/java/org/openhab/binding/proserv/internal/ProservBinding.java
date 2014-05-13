@@ -755,8 +755,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			logger.warn("proServ UnsupportedEncodingException");
 		} catch (UnknownHostException e) {
 			logger.warn("proServ the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
+			connector = null;
 		} catch (IOException e) {
 			logger.warn("proServ couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
+			connector = null;
 		} catch (Exception e) {
 			logger.warn("proServ Exception in execute error:{}", e);
 		} finally {
