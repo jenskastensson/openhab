@@ -238,7 +238,7 @@ function setTheme() {
   document.getElementsByTagName("head")[0].appendChild(theme_css);
 }
 
-var ui_language = getLocalStoreItem('openHAB_language', 'en');
+var ui_language = loadUILanguage();
 var transitions = getLocalStoreItem('openHAB_transitions', '1');
 var force_transport = getLocalStoreItem('openHAB_transport', 'auto');
 var chart_servlet = getLocalStoreItem('openHAB_chart_servlet', 'chart'); //#proserv
@@ -248,6 +248,14 @@ var g_ip;
 Ext.override(Ext.data.Connection,{timeout: 60000});
 Ext.Ajax.timeout = 60000;
 Ext.override(Ext.data.proxy.Ajax, { timeout: 60000 }); 
+
+function loadUILanguage() {
+  language = getLocalStoreItem('openHAB_language', 'en');
+  if(language=='en' || language=='de' || language=='fr')
+    return language;
+  return 'en';
+}
+
 
 var sitemapStoreLoadTries = 3;
 var sitemapsStoreSelection = new Ext.data.Store({
