@@ -72,6 +72,18 @@ public enum ProservCommandType {
 			itemClass = StringItem.class;
 		}
 	},
+	TYPE_PROSERV_CRONJOB {
+		{
+			command = "proserv_cronjobs";
+			itemClass = StringItem.class;
+		}
+	},
+	TYPE_PROSERV_TIMER {
+		{
+			command = "proserv_timer";
+			itemClass = SwitchItem.class;
+		}
+	},
 	TYPE_PROSERV_TEST {
 		{
 			command = "proserv_test";

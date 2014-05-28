@@ -9,4 +9,8 @@ String ProservTest  "ProservTest"   { proserv="proserv_test", autoupdate="false"
 String ProservLanguage  "ProservLanguage"  { proserv="proserv_language", autoupdate="false" }
 String ProservEmail  "ProservEmail"  { proserv="proserv_email", autoupdate="false" }
 String ProservIP  "ProservIP"  { proserv="proserv_ip", autoupdate="false" }
+String ProservCronJobs  "ProservCronJobs"  { proserv="proserv_cronjobs", autoupdate="false" }
+
+
+
 
