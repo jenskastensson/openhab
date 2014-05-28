@@ -18,6 +18,7 @@ import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.State;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,6 +36,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openhab.binding.proserv.ProservBindingProvider;
 import org.openhab.binding.proserv.ProservBindingProvider;
+import org.openhab.binding.proserv.internal.ProservCronJobs;
+import org.openhab.binding.proserv.internal.ProservCronJobs.CronJob;
 import org.openhab.core.binding.AbstractActiveBinding;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
@@ -79,6 +82,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 	
 	private static ProservData proservData = null;
+	private static ProservCronJobs proservCronJobs = new ProservCronJobs();
 
 	public void deactivate() {
 		connector.stopMonitor();
@@ -193,6 +197,17 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 
+	@Override
+	protected void internalReceiveUpdate(String itemName, State newState) {
+		logger.debug("proServ received UPDATE for itemName:{}, newState:{}", itemName, newState.toString());
+
+		// updated values from rules
+		if (itemName.equals("proServTimer0")) {
+			String state = newState.toString();
+		}
+
+	}
+	
 	@Override
 	public synchronized void internalReceiveCommand(String itemName, Command command) {
 		logger.debug("proServ received command for itemName:{}, command:{}", itemName, command.toString());
@@ -339,6 +354,16 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				} else {
 					eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
 				}
+			}
+		}
+		//http://localhost:8080/CMD?ProservCronJobs=DPxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
+		else if(itemName.equals("ProservCronJobs") ){
+			if(proservCronJobs.add(command.toString())){
+				proservData.updateSchedulerHtmlFile(proservCronJobs);
+				proservData.updateProservRulesFile(proservCronJobs);
+				eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
+			} else {
+				eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
 			}
 		}
 	}
@@ -692,16 +717,34 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				if (proservAllConfigValues != null) {
 					proservData.parseRawConfigData(proservAllConfigValues);
+					// get all #t-datapoints from proserv, then merge persisted cronjob def. from previous session
+					for (int x = 0; x < 18; x++) {
+						for (int y = 0; y < 16; y++) {
+							if(proservData.getFunctionIsTimer(x,y)) {
+								proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), false, 0, null, null));
+							}
+						}
+					}
+					proservCronJobs.mergeOldJobs();
+					proservCronJobs.saveJobs();
+
 					proservData.updateProservMapFile();
-					proservData.updateProservItemFile();
+					proservData.updateProservItemFile(proservCronJobs);
 					proservData.updateProservSitemapFile();
 					proservData.updateRrd4jPersistFile();
 					proservData.updateDb4oPersistFile();
 					connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);
+
+					
+					// generate html file and rules file based on the proservData and cronjobs
+					proservData.updateSchedulerHtmlFile(proservCronJobs);
+					proservData.updateProservRulesFile(proservCronJobs);
+					
 				} else {
 					logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
 					proservData.refresh = true; // force a reload of configdata
 				}
+				
 			}
 
 			if (proservData != null) {

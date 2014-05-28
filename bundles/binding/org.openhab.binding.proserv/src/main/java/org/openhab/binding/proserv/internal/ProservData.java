@@ -9,7 +9,11 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +27,8 @@ import tuwien.auto.calimero.dptxlator.DPTXlator4ByteUnsigned;
 import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlator4ByteFloat;
 import tuwien.auto.calimero.exception.KNXFormatException;
+
+import org.openhab.binding.proserv.internal.ProservCronJobs.CronJob;
 import org.openhab.config.core.ConfigDispatcher;
 
 public class ProservData {
@@ -43,7 +49,8 @@ public class ProservData {
 	private int[][][] functionDataPoint = new int[18][16][2];
 	private boolean[][] functionStateIsInverted = new boolean[18][16];
 	private boolean[][] functionIsEmailTrigger = new boolean[18][16];
-		
+	private boolean[][] functionIsTimer = new boolean[18][16];
+			
     private byte[] heatingCodes = new byte[18];
     private String[] heatingDescriptions = new String[18];
     private byte[] heatingProfiles = new byte[18];
@@ -105,6 +112,9 @@ public class ProservData {
 	}
 	public boolean getFunctionIsEmailTrigger(int x, int y) {
 		return functionIsEmailTrigger[x][y];
+	}
+	public boolean getFunctionIsTimer(int x, int y) {
+		return functionIsTimer[x][y];
 	}
 	
 	public void setFunctionDataPoint(int dataPoint, int x, int y, int i)
@@ -195,6 +205,14 @@ public class ProservData {
 		            		functionIsEmailTrigger[x][y] = true;
 		            	}
 		            }		            
+		            if(functionDescriptions[x][y].contains("#t"))
+		            {
+		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
+		            	{
+		            		functionIsTimer[x][y] = true;
+		            	}
+		            }		            
+          
 		            if(functionDescriptions[x][y].contains("#l"))
 		            {
 		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x91 && ((int)functionCodes[x][y] & 0xFF)<=0x97 )
@@ -466,7 +484,7 @@ public class ProservData {
 		}
 	}
 
-	public void updateProservItemFile() {
+	public void updateProservItemFile(ProservCronJobs proservCronJobs) {
 
 		String filename = "proserv.items";
 		try {
@@ -535,7 +553,15 @@ public class ProservData {
 						}
 					}
 				}
-			}			
+			}
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				//Switch proServTimer0  "proServTimer0" { proserv="proserv_timer" }
+				if(entry.getValue().isActive){
+					String s = "Switch " + entry.getValue().dataPointID + " \"" + entry.getValue().dataPointID + "\" { proserv=\"proserv_timer\" }";
+					writer.println(s);
+				}
+			}
+			
 			writer.close();
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
@@ -753,7 +779,7 @@ public class ProservData {
 		
 	}
 	public void updateDb4oPersistFile() {
-
+		
 		String filename = "db4o.persist";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "persistence" + File.separator + filename;
@@ -796,12 +822,133 @@ public class ProservData {
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
 			logger.error(message, e);
-		} finally {
-			
-		}
-		
+		} finally {}
 	}
 
+	public void updateProservRulesFile(ProservCronJobs proservCronJobs) {
 
+		String filename = "proserv.rules";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + "rules" + File.separator + filename;
+
+			PrintWriter writer = new PrintWriter(path, "US-ASCII");
+			writer.println("import org.openhab.core.library.types.*\nimport org.openhab.core.persistence.*\nimport org.openhab.model.script.actions.*\n\n");
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				//rule "DataPoint0-ON" when Time cron "0 1 10 ? * 1-7" then postUpdate(proServTimer0, ON) end
+				if(entry.getValue().isActive){
+					String actionON = "ON";
+					String sON = "rule \"" + entry.getValue().dataPointID + "ON\" when Time cron \"" + 
+							entry.getValue().cron1 + "\" then postUpdate(proServTimer" + entry.getValue().dataPointID + "\", " + actionON +") end";
+					writer.println(sON);
+					String actionOFF = "OFF";
+					String sOFF = "rule \"" + entry.getValue().dataPointID + "OFF\" when Time cron \"" + 
+							entry.getValue().cron2 + "\" then postUpdate(proServTimer" + entry.getValue().dataPointID + "\", " + actionOFF +") end";
+					writer.println(sOFF);
+				}
+			}
+			writer.close();
+			
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {}	
+		
+	}
+	
+	public void updateSchedulerHtmlFile(ProservCronJobs proservCronJobs) {
+
+		String start = "<!DOCTYPE HTML>"
+				+ "<html>"
+				+ "<head>"
+				+ "<meta charset=\"utf-8\">"
+				+ "<title>proServ scheduler</title>"
+				+ "<script type=\"text/javascript\" src=\"jquery-1.6.4.min.js\"></script>"
+				+ "<link rel=\"stylesheet\" type=\"text/css\" href=\"jqCron.css\" />"
+				+ "<script type=\"text/javascript\" src=\"jqCron.js\"></script>"
+				+ "<script type=\"text/javascript\" src=\"jquery.blockUI.js\"></script>"
+				+ "<style>"
+				+ "* { margin: 0; padding: 0; }"
+				+ "body { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #ddd;line-height: 24px; }"
+				+ "ul { margin-left: 20px; }"
+				+ "ol { margin: 15px 0px 0px 20px; }"
+				+ "ol li { margin-top: 10px; }"
+				+ "h1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }"
+				+ "h2 { /*border-bottom: 1px solid #999;*/ margin: 30px 0 10px 0; font-size: 1.3em; color: #555; }"
+				+ "h3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }"
+				+ "p { line-height: 1.3;  margin-top: 20px; }"
+				+ "pre { line-height: 1.3; background-color: #369; color: #fff; padding: 10px; margin-top: 20px;}"
+				+ "a { color: #369; font-weight: bold; text-decoration: none; }"
+				+ ".schedule { margin: 10px; border: 1px dashed #ccc; padding: 10px;}"
+				+ ".schedule-text { font-family: monospace; }"
+				+ ".button-text { font-size: 1.3em; margin: 10px 10px 10px 10px; padding: 6px; font-weight: bold; text-decoration: none; }"
+				+ "#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }"
+				+ "#footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }"
+				+ "</style> <script type=\"text/javascript\"> $(document).ready(function() {";
+		String filename = "scheduler.html";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps"  + File.separator + "proserv" + File.separator +  filename;
+
+			PrintWriter writer = new PrintWriter(path, "US-ASCII");
+			writer.println(start);
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				String dp = entry.getValue().dataPointID;
+			    //$("#schedule1-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},}); 
+				String s = "$(\"#schedule" + dp + "-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});";
+				writer.println(s);
+				String cron = entry.getValue().cron1;
+				s = "$('#schedule" + dp + "a').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: false,multiple_dow: true,multiple_time_hours: " + 
+				"false,multiple_time_minutes: false,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
+				+ ProservData.language + "',bind_to: $('#schedule" + dp + "a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
+				writer.println(s);
+				cron = entry.getValue().cron2;
+				s = "$('#schedule" + dp + "b').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: false,multiple_dow: true,multiple_time_hours: " + 
+				"false,multiple_time_minutes: false,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
+				+ ProservData.language + "',bind_to: $('#schedule" + dp + "b-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
+				writer.println(s);
+				s = "$(\"#" + dp + "-enabled\").change(function() {if($(this).is(\":checked\")) {$(\"#schedule" + dp + "-frame\").unblock(); } else {$(\"#schedule" + dp +
+						"-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},}); }});"; 
+				writer.println(s);
+				if(entry.getValue().isActive){
+					writer.println("$(\"#" + dp + "-enabled\").click();");
+				}
+			}
+			{
+				String s = "$('#save-all').click(function(){var current_value=";
+				for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+					//dataPointxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
+					String dp = entry.getValue().dataPointID;
+ 					String active = "\"+($('#" + dp + "-enabled').is(':checked')?'true':'false')+\"";
+					s += "\"" + dp + ":" + active + ":0:\"" + "+$('#schedule" + dp + "a-val').text() + \":\" +  $('#schedule" + dp + "b-val').text() + "+"\n"+" \";\"+";
+				}
+				s += "\"\";";
+				writer.println(s);
+				s = "alert(current_value);$.ajax({type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(){alert(\"success\");},error:function(){alert(\"An error occured when submitting your request. Try again?\");}});});";
+				writer.println(s);
+			}
+			writer.println("});");
+			writer.println("</script></head><body><div id=\"content\"><h1>proServ scheduler</h1>");
+			writer.println("<button class='cron-period button-text' id='save-all'>Save all changes</button>");			
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				if(entry.getValue().isActive){
+				
+				}
+				String dp = entry.getValue().dataPointID;
+				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  zonename / " + dp +"</h2>"
+						+"<div class='schedule' id='schedule" + dp +"-frame'>"
+						+"<table><tr><td><a><div style=\"width: 100px\" >ON :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
+						+"<table><tr><td><a><div style=\"width: 100px\" >OFF :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"
+						+"<p>Generated cron entries: <span class='schedule-text' id='schedule" + dp +"a-val'>  </span><span class='schedule-text' id='schedule" + dp +"b-val'></span></p></div>";
+				writer.println(s);
+			}
+			
+			writer.println("</div></body></html>");			
+			writer.close();
+			
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {}	
+				
+	}
 
 }
