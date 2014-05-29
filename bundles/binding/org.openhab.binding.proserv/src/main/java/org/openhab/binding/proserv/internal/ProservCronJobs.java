@@ -32,13 +32,17 @@ public class ProservCronJobs implements Serializable {
 	public class CronJob implements Serializable {
 		private static final long serialVersionUID = -4226132487848107182L;
 		public String dataPointID;
+		public String zoneName;
+		public String dataPointName;
 		public boolean isActive;
 		public int scheduleType;
 		public String cron1;
 		public String cron2;
 
-		public CronJob(String dataPointID, boolean isActive, int scheduleType, String cron1, String cron2) {
+		public CronJob(String dataPointID, String zoneName, String dataPointName, boolean isActive, int scheduleType, String cron1, String cron2) {
 			this.dataPointID = dataPointID;
+			this.zoneName = zoneName;
+			this.dataPointName = dataPointName;
 			this.isActive = isActive;
 			this.scheduleType = scheduleType;
 			if(cron1!=null) this.cron1 = cron1; else this.cron1 = "0 0 8 ? * 2-6";
@@ -57,8 +61,9 @@ public class ProservCronJobs implements Serializable {
 			out.writeObject(cronJobs);
 			out.close();
 			fileOut.close();
-		} catch (IOException i) {
-			i.printStackTrace();// TODO
+		} catch (IOException e) {
+			String message = "saveJobs: throws exception" + e.toString();
+			logger.error(message, e);
 		}
 	}
 
@@ -75,16 +80,21 @@ public class ProservCronJobs implements Serializable {
 			for (Map.Entry<String, CronJob> entry : oldCronJobs.entrySet()) {
 				String key = entry.getKey();
 				if (cronJobs.containsKey(key)) {
-					cronJobs.put(key, entry.getValue());
+					// use names from proserv if they were changed, other data from file
+					CronJob j = entry.getValue();
+					j.dataPointName = cronJobs.get(key).dataPointName;
+					j.zoneName = cronJobs.get(key).zoneName;
+					cronJobs.put(key, j);
 				}
 			}
 
-		} catch (IOException i) {
-			i.printStackTrace(); // TODO
+		} catch (IOException e) {
+			String message = "mergeOldJobs: throws IOException" + e.toString();
+			logger.error(message, e);
 			return;
-		} catch (ClassNotFoundException c) {
-			System.out.println("cronJobs class not found");// TODO
-			c.printStackTrace();// TODO
+		} catch (ClassNotFoundException e) {
+			String message = "mergeOldJobs: throws ClassNotFoundException" + e.toString();
+			logger.error(message, e);
 			return;
 		}
 	}
@@ -97,8 +107,14 @@ public class ProservCronJobs implements Serializable {
 			for (String s : jobs) {
 				String[] j = s.split(":");
 				boolean active = j[1].equals("true") ? true : false;
-				CronJob cronJob = new CronJob(j[0], active, Integer.parseInt(j[2]), j[3], j[4]);
-				tmpJobs.put(cronJob.dataPointID, cronJob);
+				j[3] = j[3].replace("0 * * * * *", "0 * * * * ?");
+				j[4] = j[4].replace("0 * * * * *", "0 * * * * ?");
+				if (cronJobs.containsKey(j[0])) {
+					String dataPointName = cronJobs.get(j[0]).dataPointName;
+					String zoneName = cronJobs.get(j[0]).zoneName;
+					CronJob cronJob = new CronJob(j[0], zoneName, dataPointName, active, Integer.parseInt(j[2]), j[3], j[4]);
+					tmpJobs.put(cronJob.dataPointID, cronJob);
+				}
 			}
 		} catch (Throwable e) {
 			String message = "parse jobsOption: " + jobsOption + "   throws exception" + e.toString();

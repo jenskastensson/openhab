@@ -39,6 +39,7 @@ public class ProservData {
 	private static String chartItemRefreshMonth = null;
 	private static String chartItemRefreshYear = null;	
 	private static String language = null;
+    private String[] zoneNames = new String[18];
     private byte[][] functionCodes = new byte[18][16];
     private String[][] functionDescriptions = new String[18][16];
     private String[][] functionUnits = new String[18][16];
@@ -87,7 +88,10 @@ public class ProservData {
 	
 	public String getmapProservLang(String x) {
 		return mapProservLang.get(x);
-	}	
+	}
+	public String getZoneName(int x){
+		return zoneNames[x];
+	}
 	public byte getFunctionCodes(int x, int y) {
 		return functionCodes[x][y];
 	}	
@@ -169,8 +173,26 @@ public class ProservData {
 	    int lengthDescription = 24;
 	    int lengthUnit = 5;
 
+	    // zone 1-18
+		int startFunctionOffset = 0;
+		for(int x=0;x<18;x++)
+	    {
+        	try {
+	        	int offset = startFunctionOffset + 25*x;
+	            int actualLength = 0;
+	            for (actualLength = 0; actualLength < lengthDescription && proServAllValues[offset+1+actualLength] != 0; actualLength++) { }
+				if(actualLength>0)
+					zoneNames[x] = (new String(proServAllValues, offset+1, actualLength, "ISO-8859-1"));
+				else
+					zoneNames[x] = new String();			
+        	} catch (NullPointerException e) {
+	 			logger.warn("proserv NullPointerException zonenames");
+	 		} finally {
+        	}
+	    }
+		
 	    // function 1-1 .. function 18-16
-		int startFunctionOffset = 512;
+		startFunctionOffset = 512;
 		for(int x=0;x<18;x++)
 	    {
 	        for(int y=0;y<16;y++)
@@ -205,6 +227,10 @@ public class ProservData {
 		            		functionIsEmailTrigger[x][y] = true;
 		            	}
 		            }		            
+//if(functionDescriptions[x][y].contains("#l"))
+//{
+//functionIsTimer[x][y] = true;
+//}		            
 		            if(functionDescriptions[x][y].contains("#t"))
 		            {
 		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
@@ -239,7 +265,7 @@ public class ProservData {
 								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]); 
 		            }     
 	        	} catch (NullPointerException e) {
-		 			logger.warn("proserv NullPointerException");
+		 			logger.warn("proserv NullPointerException functions");
 		 		} finally {
 
 	        	}
@@ -251,27 +277,32 @@ public class ProservData {
 	    int startHeatingOffset = 9728;
 	    for(int x=0;x<18;x++)
 	    {
-        	int offset = startHeatingOffset+32*x;
-            heatingCodes[x] = proServAllValues[offset];
-            
-            int actualLength = 0;
-            for (actualLength = 0; actualLength < lengthDescription && proServAllValues[offset+1+actualLength] != 0; actualLength++) { }
-			if(actualLength>0)
-				heatingDescriptions[x] = (new String(proServAllValues, offset+1, actualLength, "ISO-8859-1"));
-			else
-				heatingDescriptions[x] = new String();
-            
-            heatingProfiles[x] = proServAllValues[offset+30];
-            heatingDefs[x] = proServAllValues[offset+31];
-            
-            if(heatingDescriptions[x].contains("#l"))
-            {
-            	heatingLogThis[x]=true;
-            	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#l"));
-            	int startDatapoint = 865 + x * 5;
-				logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
-						heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);
-            } 
+	    	try{
+	        	int offset = startHeatingOffset+32*x;
+	            heatingCodes[x] = proServAllValues[offset];
+	            
+	            int actualLength = 0;
+	            for (actualLength = 0; actualLength < lengthDescription && proServAllValues[offset+1+actualLength] != 0; actualLength++) { }
+				if(actualLength>0)
+					heatingDescriptions[x] = (new String(proServAllValues, offset+1, actualLength, "ISO-8859-1"));
+				else
+					heatingDescriptions[x] = new String();
+	            
+	            heatingProfiles[x] = proServAllValues[offset+30];
+	            heatingDefs[x] = proServAllValues[offset+31];
+	            
+	            if(heatingDescriptions[x].contains("#l"))
+	            {
+	            	heatingLogThis[x]=true;
+	            	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#l"));
+	            	int startDatapoint = 865 + x * 5;
+					logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
+							heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);
+	            } 
+        	} catch (NullPointerException e) {
+	 			logger.warn("proserv NullPointerException zonenames");
+	 		} finally {
+        	}
 	    }
 	    
 		// weatherStation
@@ -556,10 +587,10 @@ public class ProservData {
 			}
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
 				//Switch proServTimer0  "proServTimer0" { proserv="proserv_timer" }
-				if(entry.getValue().isActive){
+				//if(entry.getValue().isActive){
 					String s = "Switch " + entry.getValue().dataPointID + " \"" + entry.getValue().dataPointID + "\" { proserv=\"proserv_timer\" }";
 					writer.println(s);
-				}
+				//}
 			}
 			
 			writer.close();
@@ -834,15 +865,15 @@ public class ProservData {
 			PrintWriter writer = new PrintWriter(path, "US-ASCII");
 			writer.println("import org.openhab.core.library.types.*\nimport org.openhab.core.persistence.*\nimport org.openhab.model.script.actions.*\n\n");
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
-				//rule "DataPoint0-ON" when Time cron "0 1 10 ? * 1-7" then postUpdate(proServTimer0, ON) end
+				//rule "DataPoint0-ON" when Time cron "0 1 10 ? * 1-7" then postUpdate(dataPointIDxx, ON) end
 				if(entry.getValue().isActive){
 					String actionON = "ON";
 					String sON = "rule \"" + entry.getValue().dataPointID + "ON\" when Time cron \"" + 
-							entry.getValue().cron1 + "\" then postUpdate(proServTimer" + entry.getValue().dataPointID + "\", " + actionON +") end";
+							entry.getValue().cron1 + "\" then postUpdate(" + entry.getValue().dataPointID + ", " + actionON +") end";
 					writer.println(sON);
 					String actionOFF = "OFF";
 					String sOFF = "rule \"" + entry.getValue().dataPointID + "OFF\" when Time cron \"" + 
-							entry.getValue().cron2 + "\" then postUpdate(proServTimer" + entry.getValue().dataPointID + "\", " + actionOFF +") end";
+							entry.getValue().cron2 + "\" then postUpdate(" + entry.getValue().dataPointID + ", " + actionOFF +") end";
 					writer.println(sOFF);
 				}
 			}
@@ -896,13 +927,13 @@ public class ProservData {
 				String s = "$(\"#schedule" + dp + "-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});";
 				writer.println(s);
 				String cron = entry.getValue().cron1;
-				s = "$('#schedule" + dp + "a').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: false,multiple_dow: true,multiple_time_hours: " + 
-				"false,multiple_time_minutes: false,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
+				s = "$('#schedule" + dp + "a').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: true,multiple_dow: true,multiple_time_hours: " + 
+				"true,multiple_time_minutes: true,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
 				+ ProservData.language + "',bind_to: $('#schedule" + dp + "a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
 				writer.println(s);
 				cron = entry.getValue().cron2;
-				s = "$('#schedule" + dp + "b').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: false,multiple_dow: true,multiple_time_hours: " + 
-				"false,multiple_time_minutes: false,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
+				s = "$('#schedule" + dp + "b').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: true,multiple_dow: true,multiple_time_hours: " + 
+				"true,multiple_time_minutes: true,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
 				+ ProservData.language + "',bind_to: $('#schedule" + dp + "b-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
 				writer.println(s);
 				s = "$(\"#" + dp + "-enabled\").change(function() {if($(this).is(\":checked\")) {$(\"#schedule" + dp + "-frame\").unblock(); } else {$(\"#schedule" + dp +
@@ -929,11 +960,10 @@ public class ProservData {
 			writer.println("</script></head><body><div id=\"content\"><h1>proServ scheduler</h1>");
 			writer.println("<button class='cron-period button-text' id='save-all'>Save all changes</button>");			
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
-				if(entry.getValue().isActive){
-				
-				}
 				String dp = entry.getValue().dataPointID;
-				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  zonename / " + dp +"</h2>"
+				String zone = entry.getValue().zoneName;
+				String name = entry.getValue().dataPointName;
+				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  " + zone +" /// " + name +"</h2>"
 						+"<div class='schedule' id='schedule" + dp +"-frame'>"
 						+"<table><tr><td><a><div style=\"width: 100px\" >ON :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
 						+"<table><tr><td><a><div style=\"width: 100px\" >OFF :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"

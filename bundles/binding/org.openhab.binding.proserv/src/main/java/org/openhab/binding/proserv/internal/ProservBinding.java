@@ -202,7 +202,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		logger.debug("proServ received UPDATE for itemName:{}, newState:{}", itemName, newState.toString());
 
 		// updated values from rules
-		if (itemName.equals("proServTimer0")) {
+		if (itemName.contains("dataPointID")) {
 			String state = newState.toString();
 		}
 
@@ -721,7 +721,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					for (int x = 0; x < 18; x++) {
 						for (int y = 0; y < 16; y++) {
 							if(proservData.getFunctionIsTimer(x,y)) {
-								proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), false, 0, null, null));
+								String zoneName = proservData.getZoneName(x); 
+								String dataPointName = proservData.getFunctionDescription(x,y);
+								proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), zoneName, dataPointName, false, 0, null, null));
 							}
 						}
 					}
