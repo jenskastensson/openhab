@@ -153,6 +153,84 @@ public class ProservConnector {
 	}
 
 	
+	public boolean setDataPointValue(short dataPoint, byte state) {
+		try {
+
+			while (datain.available() > 0)
+				datain.readByte();
+
+			// QUICK FIX: send a "start byte" to avoid first real byte to be
+			// transmitted alone, to be investigated!
+			dataout.writeByte(0x00);
+			dataout.flush();
+
+			// Connection header
+			byte structureLength = (byte) 0x04;
+			byte reserved = (byte) 0x00;
+			// KNXnet/IP header
+			byte headerSize = (byte) 0x06;
+			byte version = (byte) 0x20;
+			short objectServerRequest = (short) 0xf080;
+			short frameSize = (short) (headerSize + structureLength + 11); // 11 = length of object server message
+
+			// KNXnet/IP header
+			dataout.writeByte(headerSize);
+			dataout.writeByte(version);
+			dataout.writeShort(objectServerRequest);
+			dataout.writeShort(frameSize);
+			// Connection header
+			dataout.writeByte(structureLength);
+			dataout.writeByte(reserved);
+			dataout.writeByte(reserved);
+			dataout.writeByte(reserved);
+
+			// Object Server message
+			byte mainService = (byte) 0xF0;
+			byte subService = (byte) 0x06;
+			byte filter = (byte) 0x00;
+			dataout.writeByte(mainService);
+			dataout.writeByte(subService);
+			dataout.writeShort(dataPoint);
+			dataout.writeShort(1);
+			dataout.writeShort(dataPoint);
+			dataout.writeByte(3); // command 0011 Set new value and send on bus
+			dataout.writeByte(1); // length
+			dataout.writeByte(state); 
+			//logger.debug("------SetDatapointValue.Req {}  {}  {}  {} ", mainService, subService, dataPoint, state);
+
+			dataout.flush();
+
+			// read past the KNXnet/IP header and Connection header
+			datain.skipBytes(10);
+
+			byte mainServiceResp = datain.readByte();
+			byte subServiceResp = datain.readByte();
+			short startDataPointResp = datain.readShort();
+			short numberOfDatapointsResp = datain.readShort();
+			Byte error = datain.readByte();
+			//logger.debug("------SetDatapointValue.Res {}  {}  {}  {}  {}  ", mainServiceResp, subServiceResp, startDataPointResp, numberOfDatapointsResp, error);
+
+			if (mainServiceResp != mainService) {
+				logger.debug("wrong mainServiceResp");				
+				return false;
+			}
+			if (subServiceResp != (byte) 0x86) {
+				logger.debug("wrong subServiceResp");
+				return false;
+			}
+			if (startDataPointResp != dataPoint || numberOfDatapointsResp != 0) {
+				logger.error("SetDatapointValue.Req failed error=" + error.toString());
+				return false;
+			}
+
+		} catch (IOException e) {
+			logger.debug("IOException in setDataPointValue: " + e.toString());
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public byte[] getDataPointValue(short startDataPoint, short numberOfDatapoints) {
 
 		byte[] dataPointValue = new byte[255];

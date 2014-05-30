@@ -196,6 +196,22 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 		}
 	}
+	
+	private boolean isInverted(int dataPointID){
+		for (int x = 0; x < 18; x++) {
+			for (int y = 0; y < 16; y++) {
+				for (int z = 0; z < 2; z++) {
+					if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
+						if(proservData.getFunctionStateIsInverted(x, y)) {
+							return true;
+						}				
+						return false;
+					}																														
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	protected void internalReceiveUpdate(String itemName, State newState) {
@@ -203,9 +219,35 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 		// updated values from rules
 		if (itemName.contains("dataPointID")) {
-			String state = newState.toString();
+			int i = "dataPointID".length();
+			String dpID = itemName.substring(itemName.indexOf("dataPointID") + "dataPointID".length());
+			short dataPoint = Short.parseShort(dpID);
+			byte state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
+			if(isInverted(dataPoint))
+				state = newState.toString() == "ON" ? (byte) 0 : (byte) 1;
+			ProservConnector con = new ProservConnector(ip, port);
+			try {
+				con.connect();
+				con.setDataPointValue(dataPoint, state);
+			} catch (NullPointerException e) {
+				logger.warn("internalReceiveUpdate NullPointerException");
+			} catch (UnsupportedEncodingException e) {
+				logger.warn("internalReceiveUpdate UnsupportedEncodingException");
+			} catch (UnknownHostException e) {
+				logger.warn("internalReceiveUpdate the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
+				con = null;
+			} catch (IOException e) {
+				logger.warn("internalReceiveUpdate couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
+				con = null;
+			} catch (Exception e) {
+				logger.warn("internalReceiveUpdate Exception error:{}", e);
+			} finally {
+				logger.debug("internalReceiveUpdate reached finally");
+				if (con != null) {
+					con.disconnect();
+				}
+			}
 		}
-
 	}
 	
 	@Override
