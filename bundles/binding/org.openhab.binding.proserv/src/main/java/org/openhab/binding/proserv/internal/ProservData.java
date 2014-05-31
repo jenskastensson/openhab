@@ -461,6 +461,13 @@ public class ProservData {
 			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
 			mapProservLang.put("TEMPERATURE", properties.getProperty("TEMPERATURE"));
 			mapProservLang.put("OUTSIDE", properties.getProperty("OUTSIDE"));
+			mapProservLang.put("SAVEALLCHANGES", properties.getProperty("SAVEALLCHANGES"));
+			mapProservLang.put("PROSERVSCHEDULER", properties.getProperty("PROSERVSCHEDULER"));
+			mapProservLang.put("ON", properties.getProperty("ON"));
+			mapProservLang.put("OFF", properties.getProperty("OFF"));
+			mapProservLang.put("SAVECONFRIM", properties.getProperty("SAVECONFRIM"));
+			mapProservLang.put("SAVEFAILED", properties.getProperty("SAVEFAILED"));
+
 
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
@@ -889,32 +896,32 @@ public class ProservData {
 	public void updateSchedulerHtmlFile(ProservCronJobs proservCronJobs) {
 
 		String start = "<!DOCTYPE HTML>"
-				+ "<html>"
-				+ "<head>"
-				+ "<meta charset=\"utf-8\">"
-				+ "<title>proServ scheduler</title>"
-				+ "<script type=\"text/javascript\" src=\"jquery-1.6.4.min.js\"></script>"
-				+ "<link rel=\"stylesheet\" type=\"text/css\" href=\"jqCron.css\" />"
-				+ "<script type=\"text/javascript\" src=\"jqCron.js\"></script>"
-				+ "<script type=\"text/javascript\" src=\"jquery.blockUI.js\"></script>"
-				+ "<style>"
-				+ "* { margin: 0; padding: 0; }"
-				+ "body { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #ddd;line-height: 24px; }"
-				+ "ul { margin-left: 20px; }"
-				+ "ol { margin: 15px 0px 0px 20px; }"
-				+ "ol li { margin-top: 10px; }"
-				+ "h1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }"
-				+ "h2 { /*border-bottom: 1px solid #999;*/ margin: 30px 0 10px 0; font-size: 1.3em; color: #555; }"
-				+ "h3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }"
-				+ "p { line-height: 1.3;  margin-top: 20px; }"
-				+ "pre { line-height: 1.3; background-color: #369; color: #fff; padding: 10px; margin-top: 20px;}"
-				+ "a { color: #369; font-weight: bold; text-decoration: none; }"
-				+ ".schedule { margin: 10px; border: 1px dashed #ccc; padding: 10px;}"
-				+ ".schedule-text { font-family: monospace; }"
-				+ ".button-text { font-size: 1.3em; margin: 10px 10px 10px 10px; padding: 6px; font-weight: bold; text-decoration: none; }"
-				+ "#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }"
-				+ "#footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }"
-				+ "</style> <script type=\"text/javascript\"> $(document).ready(function() {";
+				+ "\n<html>"
+				+ "\n<head>"
+				+ "\n<meta charset=\"utf-8\">"
+				+ "\n<title>" + mapProservLang.get("PROSERVSCHEDULER") + "</title>"
+				+ "\n<script type=\"text/javascript\" src=\"jquery-1.6.4.min.js\"></script>"
+				+ "\n<link rel=\"stylesheet\" type=\"text/css\" href=\"jqCron.css\" />"
+				+ "\n<script type=\"text/javascript\" src=\"jqCron.js\"></script>"
+				+ "\n<script type=\"text/javascript\" src=\"jquery.blockUI.js\"></script>"
+				+ "\n<style>"
+				+ "\n* { margin: 0; padding: 0; }"
+				+ "\nbody { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #ddd;line-height: 24px; }"
+				+ "\nul { margin-left: 20px; }"
+				+ "\nol { margin: 15px 0px 0px 20px; }"
+				+ "\nol li { margin-top: 10px; }"
+				+ "\nh1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }"
+				+ "\nh2 { /*border-bottom: 1px solid #999;*/ margin: 30px 0 10px 0; font-size: 1.3em; color: #555; }"
+				+ "\nh3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }"
+				+ "\np { line-height: 1.3;  margin-top: 20px; }"
+				+ "\npre { line-height: 1.3; background-color: #369; color: #fff; padding: 10px; margin-top: 20px;}"
+				+ "\na { color: #369; font-weight: bold; text-decoration: none; }"
+				+ "\n.schedule { margin: 10px; border: 1px dashed #ccc; padding: 10px;}"
+				+ "\n.schedule-text { visibility:hidden; font-family: monospace; }"
+				+ "\n.button-text { font-size: 1.3em; margin: 10px 10px 10px 10px; padding: 6px; font-weight: bold; text-decoration: none; }"
+				+ "\n#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }"
+				+ "\n#footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }"
+				+ "\n</style> <script type=\"text/javascript\"> $(document).ready(function() {";
 		String filename = "scheduler.html";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps"  + File.separator + "proserv" + File.separator +  filename;
@@ -924,20 +931,20 @@ public class ProservData {
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
 				String dp = entry.getValue().dataPointID;
 			    //$("#schedule1-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},}); 
-				String s = "$(\"#schedule" + dp + "-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});";
+				String s = "\n$(\"#schedule" + dp + "-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});";
 				writer.println(s);
 				String cron = entry.getValue().cron1;
-				s = "$('#schedule" + dp + "a').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: true,multiple_dow: true,multiple_time_hours: " + 
-				"true,multiple_time_minutes: true,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
-				+ ProservData.language + "',bind_to: $('#schedule" + dp + "a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
+				s = "\n$('#schedule" + dp + "a').jqCron({enabled_minute: true,\nmultiple_dom: true,\nmultiple_month: true,\nmultiple_mins: true,\nmultiple_dow: true,\nmultiple_time_hours: " + 
+				"true,\nmultiple_time_minutes: true,\nnumeric_zero_pad: true,\ndefault_period:'week',\ndefault_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,\nlang: '" 
+				+ ProservData.language + "',\nbind_to: $('#schedule" + dp + "a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
 				writer.println(s);
 				cron = entry.getValue().cron2;
-				s = "$('#schedule" + dp + "b').jqCron({enabled_minute: true,multiple_dom: true,multiple_month: true,multiple_mins: true,multiple_dow: true,multiple_time_hours: " + 
-				"true,multiple_time_minutes: true,numeric_zero_pad: true,default_period:'week',default_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,lang: '" 
+				s = "\n$('#schedule" + dp + "b').jqCron({enabled_minute: true,\nmultiple_dom: true,\nmultiple_month: true,\nmultiple_mins: true,\nmultiple_dow: true,\nmultiple_time_hours: " + 
+				"true,\nmultiple_time_minutes: true,\nnumeric_zero_pad: true,\ndefault_period:'week',\ndefault_value: '" + cron + "'.substr(1).replace(/\\?/g,\"*\"),no_reset_button: true,\nlang: '" 
 				+ ProservData.language + "',bind_to: $('#schedule" + dp + "b-val'),bind_method: { set: function($element, value) { $element.html(value); }}});";
 				writer.println(s);
-				s = "$(\"#" + dp + "-enabled\").change(function() {if($(this).is(\":checked\")) {$(\"#schedule" + dp + "-frame\").unblock(); } else {$(\"#schedule" + dp +
-						"-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},}); }});"; 
+				s = "\n$(\"#" + dp + "-enabled\").change(function() {\nif($(this).is(\":checked\")) {$(\"#schedule" + dp + "-frame\").unblock(); }\nelse {$(\"#schedule" + dp +
+						"-frame\").block({ message: null,\n overlayCSS: {backgroundColor: '#000',\n opacity: 0.25,\n cursor: null},\n}); }});"; 
 				writer.println(s);
 				if(entry.getValue().isActive){
 					writer.println("$(\"#" + dp + "-enabled\").click();");
@@ -953,25 +960,27 @@ public class ProservData {
 				}
 				s += "\"\";";
 				writer.println(s);
-				s = "alert(current_value);$.ajax({type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(){alert(\"success\");},error:function(){alert(\"An error occured when submitting your request. Try again?\");}});});";
+				s = "/*alert(current_value);*/$.ajax({type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(){alert(\"" + mapProservLang.get("SAVECONFRIM") + "\");},error:function(){alert(\"" + mapProservLang.get("SAVEFAILED") + "\");}});});";
 				writer.println(s);
 			}
 			writer.println("});");
-			writer.println("</script></head><body><div id=\"content\"><h1>proServ scheduler</h1>");
-			writer.println("<button class='cron-period button-text' id='save-all'>Save all changes</button>");			
+			writer.println("</script></head><body><div id=\"content\"><h1>" + mapProservLang.get("PROSERVSCHEDULER") + "</h1>");
+			writer.println("<button class='cron-period button-text' id='save-all'>" + mapProservLang.get("SAVEALLCHANGES") + "</button>");
+			String hiddenCronJobStrings = new String(); 
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
 				String dp = entry.getValue().dataPointID;
 				String zone = entry.getValue().zoneName;
 				String name = entry.getValue().dataPointName;
-				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  " + zone +" /// " + name +"</h2>"
+				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  " + zone +" /// " + name +"</h2>\n"
 						+"<div class='schedule' id='schedule" + dp +"-frame'>"
-						+"<table><tr><td><a><div style=\"width: 100px\" >ON :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
-						+"<table><tr><td><a><div style=\"width: 100px\" >OFF :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"
-						+"<p>Generated cron entries: <span class='schedule-text' id='schedule" + dp +"a-val'>  </span><span class='schedule-text' id='schedule" + dp +"b-val'></span></p></div>";
+						+"\n<table><tr><td><a><div style=\"width: 100px\" >" + mapProservLang.get("ON") + " :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
+						+"\n<table><tr><td><a><div style=\"width: 100px\" >" + mapProservLang.get("OFF") + " :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"
+						+"</div>";
 				writer.println(s);
+				hiddenCronJobStrings += "<p class='schedule-text'>Generated cron entries: <span class='schedule-text' id='schedule" + dp +"a-val'>  </span><span class='schedule-text' id='schedule" + dp +"b-val'></span></p>\n";
 			}
 			
-			writer.println("</div></body></html>");			
+			writer.println("</div>\n" + hiddenCronJobStrings + "</body></html>");			
 			writer.close();
 			
 		} catch (IOException e) {

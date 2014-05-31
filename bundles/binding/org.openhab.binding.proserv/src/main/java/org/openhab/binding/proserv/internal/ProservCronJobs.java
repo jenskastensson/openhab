@@ -46,7 +46,7 @@ public class ProservCronJobs implements Serializable {
 			this.isActive = isActive;
 			this.scheduleType = scheduleType;
 			if(cron1!=null) this.cron1 = cron1; else this.cron1 = "0 0 8 ? * 2-6";
-			if(cron2!=null) this.cron2 = cron2; else this.cron2 = "0 0 21 ? * 1,7";
+			if(cron2!=null) this.cron2 = cron2; else this.cron2 = "0 0 21 ? * 2-6";
 		}
 	}
 
