@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 import org.openhab.config.core.ConfigDispatcher;
@@ -49,9 +51,41 @@ public class ProservCronJobs implements Serializable {
 			if(cron2!=null) this.cron2 = cron2; else this.cron2 = "0 0 21 ? * 2-6";
 		}
 	}
+	class JobsComparator implements Comparator<String> {
 
+	    Map<String, CronJob> base;
+	    public JobsComparator(Map<String, CronJob> base) {
+	        this.base = base;
+	    }
+
+	    // Note: this comparator imposes orderings that are inconsistent with equals.    
+	    public int compare(String a, String b) {
+	        int z = base.get(a).zoneName.compareTo(base.get(b).zoneName);
+		    if (z == 0) {
+		    	// same zone
+		    	int dp = base.get(a).dataPointName.compareTo(base.get(b).dataPointName);
+				if(dp < 0) 
+					return -1;
+		    	else if (dp > 0) 
+		    		return 1;
+		    	else 
+		    		return 0;
+	        } 
+		    else if (z < 0) 
+	        	return -1;
+	        else //if (z > 0) 
+	        	return 1;
+	    }
+	}
+	
 	public Map<String, CronJob> cronJobs = new HashMap<String, CronJob>();
+	JobsComparator bvc =  new JobsComparator(cronJobs);
+    TreeMap<String,CronJob> Sorted = new TreeMap<String,CronJob>(bvc);	
 
+	public TreeMap<String,CronJob> getSorted(){
+		Sorted.putAll(cronJobs);
+		return Sorted; 
+	}
 
 	public void saveJobs() {
 		try {
@@ -98,7 +132,7 @@ public class ProservCronJobs implements Serializable {
 			return;
 		}
 	}
-
+	
 	public boolean add(String jobsOption) {
 		// DPxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
 		Map<String, CronJob> tmpJobs = new HashMap<String, CronJob>();

@@ -928,7 +928,7 @@ public class ProservData {
 
 			PrintWriter writer = new PrintWriter(path, "US-ASCII");
 			writer.println(start);
-			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 				String dp = entry.getValue().dataPointID;
 			    //$("#schedule1-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},}); 
 				String s = "\n$(\"#schedule" + dp + "-frame\").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});";
@@ -952,7 +952,7 @@ public class ProservData {
 			}
 			{
 				String s = "$('#save-all').click(function(){var current_value=";
-				for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 					//dataPointxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
 					String dp = entry.getValue().dataPointID;
  					String active = "\"+($('#" + dp + "-enabled').is(':checked')?'true':'false')+\"";
@@ -967,7 +967,7 @@ public class ProservData {
 			writer.println("</script></head><body><div id=\"content\"><h1>" + mapProservLang.get("PROSERVSCHEDULER") + "</h1>");
 			writer.println("<button class='cron-period button-text' id='save-all'>" + mapProservLang.get("SAVEALLCHANGES") + "</button>");
 			String hiddenCronJobStrings = new String(); 
-			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 				String dp = entry.getValue().dataPointID;
 				String zone = entry.getValue().zoneName;
 				String name = entry.getValue().dataPointName;
