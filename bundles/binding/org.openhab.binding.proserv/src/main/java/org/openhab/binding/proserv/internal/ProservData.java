@@ -59,6 +59,7 @@ public class ProservData {
 	private boolean[] heatingLogThis = new boolean[18];
 	private int[][] heatingMapId = new int[18][2];
 	private int[][] heatingDataPoint = new int[18][2];
+	private boolean[] heatingIsTimer = new boolean[18];
 
 	private byte weatherStationCode = 0x71;
 	private boolean weatherStationLogThis = true;
@@ -137,6 +138,9 @@ public class ProservData {
 	}
 	public String getHeatingDescription(int x) {
 		return heatingDescriptions[x];
+	}
+	public boolean getHeatingIsTimer(int x) {
+		return heatingIsTimer[x];
 	}
 	
 	public int getHeatingDataPoint( int x, int i)
@@ -233,10 +237,16 @@ public class ProservData {
 //}		            
 		            if(functionDescriptions[x][y].contains("#t"))
 		            {
-		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
-		            	{
-		            		functionIsTimer[x][y] = true;
-		            	}
+						switch ((int) functionCodes[x][y] & 0xFF) {
+						case 0x1:
+						case 0x2:
+						case 0x4:
+						case 0x5:
+						case 0x21:
+						case 0x31: {
+							functionIsTimer[x][y] = true;
+						} break;
+						}
 		            }		            
           
 		            if(functionDescriptions[x][y].contains("#l"))
@@ -259,11 +269,15 @@ public class ProservData {
 								functionStateIsInverted[x][y] = true;
 		            	}
 		            	
+		            }     
+		            
+		            if(functionDescriptions[x][y].contains("#l") || functionDescriptions[x][y].contains("#m") || 
+		            		functionDescriptions[x][y].contains("#t") ){
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#"));	
 						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}",x, y, offset, 
 								functionDescriptions[x][y], Integer.toHexString((int)functionCodes[x][y] & 0xFF), 
-								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]); 
-		            }     
+								functionLogThis[x][y][0], functionLogThis[x][y][1], functionStateIsInverted[x][y]);
+		            }
 	        	} catch (NullPointerException e) {
 		 			logger.warn("proserv NullPointerException functions");
 		 		} finally {
@@ -291,10 +305,17 @@ public class ProservData {
 	            heatingProfiles[x] = proServAllValues[offset+30];
 	            heatingDefs[x] = proServAllValues[offset+31];
 	            
-	            if(heatingDescriptions[x].contains("#l"))
+	            if(heatingDescriptions[x].contains("#t")){
+					heatingIsTimer[x] = true;	            	
+	            }
+//if(heatingDescriptions[x].contains("#l")){
+//heatingIsTimer[x] = true;	            	
+//}
+	            	
+	            if(heatingDescriptions[x].contains("#l") || heatingDescriptions[x].contains("#t") )
 	            {
 	            	heatingLogThis[x]=true;
-	            	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#l"));
+	            	heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#"));
 	            	int startDatapoint = 865 + x * 5;
 					logger.debug("-----x:{}  offset:{} {}   code:0x{}  log actual:{}  startDatapoint{}:",x, offset, 
 							heatingDescriptions[x], Integer.toHexString((int)heatingCodes[x] & 0xFF), heatingLogThis[x], startDatapoint);
@@ -465,6 +486,10 @@ public class ProservData {
 			mapProservLang.put("PROSERVSCHEDULER", properties.getProperty("PROSERVSCHEDULER"));
 			mapProservLang.put("ON", properties.getProperty("ON"));
 			mapProservLang.put("OFF", properties.getProperty("OFF"));
+			mapProservLang.put("COMFORT", properties.getProperty("COMFORT"));
+			mapProservLang.put("NIGHT", properties.getProperty("NIGHT"));
+			mapProservLang.put("HEATING", properties.getProperty("HEATING"));
+			mapProservLang.put("COOLING", properties.getProperty("COOLING"));
 			mapProservLang.put("SAVECONFRIM", properties.getProperty("SAVECONFRIM"));
 			mapProservLang.put("SAVEFAILED", properties.getProperty("SAVEFAILED"));
 
@@ -874,7 +899,7 @@ public class ProservData {
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
 				//rule "DataPoint0-ON" when Time cron "0 1 10 ? * 1-7" then postUpdate(dataPointIDxx, ON) end
 				if(entry.getValue().isActive){
-					String actionON = "ON";
+					String actionON = "ON"; //NOTE don't change this word, it is used for parsing in eventhandler
 					String sON = "rule \"" + entry.getValue().dataPointID + "ON\" when Time cron \"" + 
 							entry.getValue().cron1 + "\" then postUpdate(" + entry.getValue().dataPointID + ", " + actionON +") end";
 					writer.println(sON);
@@ -955,8 +980,9 @@ public class ProservData {
 				for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 					//dataPointxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
 					String dp = entry.getValue().dataPointID;
+					String  dpType = Integer.toString(entry.getValue().scheduleType);
  					String active = "\"+($('#" + dp + "-enabled').is(':checked')?'true':'false')+\"";
-					s += "\"" + dp + ":" + active + ":0:\"" + "+$('#schedule" + dp + "a-val').text() + \":\" +  $('#schedule" + dp + "b-val').text() + "+"\n"+" \";\"+";
+					s += "\"" + dp + ":" + active + ":" + dpType + ":\"" + "+$('#schedule" + dp + "a-val').text() + \":\" +  $('#schedule" + dp + "b-val').text() + "+"\n"+" \";\"+";
 				}
 				s += "\"\";";
 				writer.println(s);
@@ -971,10 +997,24 @@ public class ProservData {
 				String dp = entry.getValue().dataPointID;
 				String zone = entry.getValue().zoneName;
 				String name = entry.getValue().dataPointName;
+				String sActionOn; 
+				String sActionOff; 
+				if(entry.getValue().scheduleType == 1){
+					sActionOn = mapProservLang.get("COMFORT");
+					sActionOff = mapProservLang.get("NIGHT");
+				}
+				else if(entry.getValue().scheduleType == 2){
+					sActionOn = mapProservLang.get("HEATING");
+					sActionOff = mapProservLang.get("COOLING");
+				}
+				else {// if(entry.getValue().scheduleType == 0){
+					sActionOn = mapProservLang.get("ON");
+					sActionOff = mapProservLang.get("OFF");
+				}
 				String s = "<h2 id='intro'> <input type=\"checkbox\" name=\"" + dp +"-enabled\" id=\"" + dp +"-enabled\" />  " + zone +" /// " + name +"</h2>\n"
 						+"<div class='schedule' id='schedule" + dp +"-frame'>"
-						+"\n<table><tr><td><a><div style=\"width: 100px\" >" + mapProservLang.get("ON") + " :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
-						+"\n<table><tr><td><a><div style=\"width: 100px\" >" + mapProservLang.get("OFF") + " :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"
+						+"\n<table><tr><td><a><div style=\"width: 100px\" >" +sActionOn + " :</div></a></td><td><div id='schedule" + dp +"a'></div></td></tr></table>"
+						+"\n<table><tr><td><a><div style=\"width: 100px\" >" + sActionOff + " :</div></a></td><td><div id='schedule" + dp +"b'></div></td></tr></table>"
 						+"</div>";
 				writer.println(s);
 				hiddenCronJobStrings += "<p class='schedule-text'>Generated cron entries: <span class='schedule-text' id='schedule" + dp +"a-val'>  </span><span class='schedule-text' id='schedule" + dp +"b-val'></span></p>\n";

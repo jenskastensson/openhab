@@ -219,7 +219,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 		// updated values from rules
 		if (itemName.contains("dataPointID")) {
-			int i = "dataPointID".length();
 			String dpID = itemName.substring(itemName.indexOf("dataPointID") + "dataPointID".length());
 			short dataPoint = Short.parseShort(dpID);
 			byte state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
@@ -710,7 +709,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 			break;
 		default:
-			logger.debug("proServ binding, unhandled heatingCode {}", Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
+			logger.debug("proServ binding, unhandled heatingCode {}", 
+					Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
 		}		
 	}
 	
@@ -730,7 +730,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
 			break;
 		default:
-			logger.debug("proServ binding, unhandled weatherCode {}", Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
+			logger.debug("proServ binding, unhandled weatherCode {}", 
+					Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
 		}		
 	}
 	
@@ -759,31 +760,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				if (proservAllConfigValues != null) {
 					proservData.parseRawConfigData(proservAllConfigValues);
-					// get all #t-datapoints from proserv, then merge persisted cronjob def. from previous session
-					for (int x = 0; x < 18; x++) {
-						for (int y = 0; y < 16; y++) {
-							if(proservData.getFunctionIsTimer(x,y)) {
-								String zoneName = proservData.getZoneName(x); 
-								String dataPointName = proservData.getFunctionDescription(x,y);
-								proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), zoneName, dataPointName, false, 0, null, null));
-							}
-						}
-					}
-					proservCronJobs.mergeOldJobs();
-					proservCronJobs.saveJobs();
-
-					proservData.updateProservMapFile();
-					proservData.updateProservItemFile(proservCronJobs);
-					proservData.updateProservSitemapFile();
-					proservData.updateRrd4jPersistFile();
-					proservData.updateDb4oPersistFile();
-					connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);
-
-					
-					// generate html file and rules file based on the proservData and cronjobs
-					proservData.updateSchedulerHtmlFile(proservCronJobs);
-					proservData.updateProservRulesFile(proservCronJobs);
-					
+					handleCronJobs();
+					createFiles();
+					connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);										
 				} else {
 					logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
 					proservData.refresh = true; // force a reload of configdata
@@ -854,6 +833,50 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				connector.disconnect();
 			}
 		}
+	}
+
+	private void createFiles() {
+		proservData.updateProservMapFile();
+		proservData.updateProservItemFile(proservCronJobs);
+		proservData.updateProservSitemapFile();
+		proservData.updateRrd4jPersistFile();
+		proservData.updateDb4oPersistFile();		
+		// generate html file and rules file based on the proservData and cronjobs
+		proservData.updateSchedulerHtmlFile(proservCronJobs);
+		proservData.updateProservRulesFile(proservCronJobs);		
+	}
+
+	private void handleCronJobs() {
+		// find all #t-datapoints defined in proserv, then merge those with old existing (persisted) cronjob definitions 
+		for (int x = 0; x < 18; x++) {
+			for (int y = 0; y < 16; y++) {
+				if(proservData.getFunctionIsTimer(x,y)) {
+					String zoneName = proservData.getZoneName(x); 
+					String dataPointName = proservData.getFunctionDescription(x,y);
+					proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), 
+							zoneName, dataPointName, false, 0, null, null));
+				}
+			}
+		}
+		for (int x = 0; x < 18; x++) {
+			if(proservData.getHeatingIsTimer(x)) {
+				String zoneName = proservData.getZoneName(x); 
+				String dataPointName = proservData.getHeatingDescription(x);
+				int scheduleType = 0;
+				switch ( (int)(proservData.getHeatingCodes(x) & 0xFF) ) {
+				case 0x42: 
+					scheduleType = 1;
+					break;
+				case 0x44:
+					scheduleType = 2;
+					break;
+				}
+				proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString(865+(5*x)), 
+						zoneName, dataPointName, false, scheduleType, null, null));
+			}
+		}
+		proservCronJobs.mergeOldJobs();
+		proservCronJobs.saveJobs();		
 	}
 
 	private void shortDelayBetweenBusEvents() {

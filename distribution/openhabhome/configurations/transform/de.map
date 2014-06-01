@@ -13,7 +13,12 @@ TEMPERATURE=DE:Temperature
 OUTSIDE=DE:outside
 SAVEALLCHANGES=DE:Save all changes
 PROSERVSCHEDULER=DE:proServ scheduler
-ON=DE:ON
-OFF=DE:OFF
 SAVECONFRIM=DE:The values have been saved!
 SAVEFAILED=DE:An error occured when submitting your request. Please try again!
+ON=DE:ON
+OFF=DE:OFF
+COMFORT=DE:Comfort
+NIGHT=DE:Night
+HEATING=DE:Heating
+COOLING=DE:Cooling
+
