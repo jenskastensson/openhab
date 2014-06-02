@@ -3,5 +3,3 @@ import org.openhab.core.persistence.*
 import org.openhab.model.script.actions.*
 
 
-rule "dataPointID202ON" when Time cron "0 0 0,8,14 27 2 ?" then postUpdate(dataPointID202, ON) end
-rule "dataPointID202OFF" when Time cron "0 10 12,14 1,5,9,13,17,21,25,29 * ?" then postUpdate(dataPointID202, OFF) end
