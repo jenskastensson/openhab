@@ -335,6 +335,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 		//http://localhost:8080/CMD?ProservExportCsvFiles=START
 		else if(itemName.equals("ProservExportCsvFiles") && command.toString().equals("START")){
+			if(proservData==null ){
+				eventPublisher.postUpdate(itemName, new StringType("FAILED: unable to communicate with proserv, please check the communcation link (e.g the IP address)!"));
+				return;
+			}			
 			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
 			try {
 				proservLogfileProvider.doSnapshot(proservData.getAllItemNames());
@@ -399,6 +403,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 		//http://localhost:8080/CMD?ProservCronJobs=DPxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
 		else if(itemName.equals("ProservCronJobs") ){
+			if(proservData==null ){
+				eventPublisher.postUpdate(itemName, new StringType("FAILED: unable to communicate with proserv, please check the communcation link (e.g the IP address)!"));
+				return;
+			}			
 			if(proservCronJobs.add(command.toString())){
 				proservData.updateSchedulerHtmlFile(proservCronJobs);
 				proservData.updateProservRulesFile(proservCronJobs);
