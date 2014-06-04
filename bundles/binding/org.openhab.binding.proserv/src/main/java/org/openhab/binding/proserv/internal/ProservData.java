@@ -923,7 +923,7 @@ public class ProservData {
 		String start = "<!DOCTYPE HTML>"
 				+ "\n<html>"
 				+ "\n<head>"
-				+ "\n<meta charset=\"utf-8\">"
+				+ "\n<meta charset=\"ISO-8859-1\">"
 				+ "\n<title>" + mapProservLang.get("PROSERVSCHEDULER") + "</title>"
 				+ "\n<script type=\"text/javascript\" src=\"jquery-1.6.4.min.js\"></script>"
 				+ "\n<link rel=\"stylesheet\" type=\"text/css\" href=\"jqCron.css\" />"
@@ -951,7 +951,7 @@ public class ProservData {
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps"  + File.separator + "proserv" + File.separator +  filename;
 
-			PrintWriter writer = new PrintWriter(path, "US-ASCII");
+			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
 			writer.println(start);
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 				String dp = entry.getValue().dataPointID;
