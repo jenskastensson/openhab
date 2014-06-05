@@ -750,32 +750,36 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		logger.debug("proServ binding refresh cycle starts!");
 	
 		try {
-			if(connector==null)
-			{
+			if(connector == null && !ip.isEmpty()) {
 				connector = new ProservConnector(ip, port);	
-				
 			}			
-			connector.connect();
 			
-			if (proservData == null || proservData.refresh == true) {
-				proservData = null;
-				proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, 
-						chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear, language );
-				byte[] proservAllConfigValues = getConfigValues();
-				if (proservAllConfigValues == null) {
-					logger.debug("proServ getConfigValues failed try again");
-					proservAllConfigValues = getConfigValues(); // try again..
-				}
-				if (proservAllConfigValues != null) {
-					proservData.parseRawConfigData(proservAllConfigValues);
-					handleCronJobs();
-					createFiles();
-					connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);										
-				} else {
-					logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
-					proservData.refresh = true; // force a reload of configdata
-				}
+			if(connector != null) {
+				connector.connect();
 				
+				if (proservData == null || proservData.refresh == true) {
+					proservData = null;
+					proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, 
+							chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear, language );
+					byte[] proservAllConfigValues = getConfigValues();
+					if (proservAllConfigValues == null) {
+						logger.debug("proServ getConfigValues failed try again");
+						proservAllConfigValues = getConfigValues(); // try again..
+					}
+					if (proservAllConfigValues != null) {
+						proservData.parseRawConfigData(proservAllConfigValues);
+						handleCronJobs();
+						createFiles();
+						connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);										
+					} else {
+						logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
+						proservData.refresh = true; // force a reload of configdata
+					}
+					
+				}
+			}
+			else {
+				logger.debug("proServ binding refresh skipped connector is NULL");				
 			}
 
 			if (proservData != null) {
@@ -820,9 +824,11 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						postUpdateWeather(dataValue);
 					}
 				}
-				
+				logger.debug("proServ binding refresh cycle completed");								
 			}
-			logger.debug("proServ binding refresh cycle completed");				
+			else {
+				logger.debug("proServ binding refresh skipped proservdata is NULL");				
+			}
 		} catch (NullPointerException e) {
 			logger.warn("proServ NullPointerException");
 		} catch (UnsupportedEncodingException e) {

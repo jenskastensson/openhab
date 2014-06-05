@@ -10,7 +10,5 @@ String ProservLanguage  "ProservLanguage"  { proserv="proserv_language", autoupd
 String ProservEmail  "ProservEmail"  { proserv="proserv_email", autoupdate="false" }
 String ProservIP  "ProservIP"  { proserv="proserv_ip", autoupdate="false" }
 String ProservCronJobs  "ProservCronJobs"  { proserv="proserv_cronjobs", autoupdate="false" }
-
-
-
+Group gProservBoot
 
