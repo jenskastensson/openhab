@@ -36,16 +36,18 @@ public class ProservCronJobs implements Serializable {
 		public String dataPointID;
 		public String zoneName;
 		public String dataPointName;
-		public boolean isActive;
+		public boolean isActive1;
+		public boolean isActive2;
 		public int scheduleType;
 		public String cron1;
 		public String cron2;
 
-		public CronJob(String dataPointID, String zoneName, String dataPointName, boolean isActive, int scheduleType, String cron1, String cron2) {
+		public CronJob(String dataPointID, int scheduleType, String zoneName, String dataPointName, boolean isActive1, String cron1, boolean isActive2, String cron2) {
 			this.dataPointID = dataPointID;
 			this.zoneName = zoneName;
 			this.dataPointName = dataPointName;
-			this.isActive = isActive;
+			this.isActive1 = isActive1;
+			this.isActive2 = isActive2;
 			this.scheduleType = scheduleType;
 			if(cron1!=null) this.cron1 = cron1; else this.cron1 = "0 0 8 ? * 2-6";
 			if(cron2!=null) this.cron2 = cron2; else this.cron2 = "0 0 21 ? * 2-6";
@@ -134,19 +136,20 @@ public class ProservCronJobs implements Serializable {
 	}
 	
 	public boolean add(String jobsOption) {
-		// DPxx:true:0:0 0 8 ? * 2-6:0 0 21 ? * 1,7;DPyy:true:1:0 0 8 ? * 2-6:0 0 21 ? * 1,7;
+		// dpIDxx:0:true:0 0 8 ? * 2-6:true:0 0 21 ? * 1,7;dpIDyy:true:1:0 0 8 ? * 2-6:false:0 0 21 ? * 1,7;
 		Map<String, CronJob> tmpJobs = new HashMap<String, CronJob>();
 		try {
 			String[] jobs = jobsOption.split(";");
 			for (String s : jobs) {
 				String[] j = s.split(":");
-				boolean active = j[1].equals("true") ? true : false;
+				boolean active1 = j[2].equals("true") ? true : false;
+				boolean active2 = j[4].equals("true") ? true : false;
 				j[3] = j[3].replace("0 * * * * *", "0 * * * * ?");
-				j[4] = j[4].replace("0 * * * * *", "0 * * * * ?");
+				j[5] = j[5].replace("0 * * * * *", "0 * * * * ?");
 				if (cronJobs.containsKey(j[0])) {
 					String dataPointName = cronJobs.get(j[0]).dataPointName;
 					String zoneName = cronJobs.get(j[0]).zoneName;
-					CronJob cronJob = new CronJob(j[0], zoneName, dataPointName, active, Integer.parseInt(j[2]), j[3], j[4]);
+					CronJob cronJob = new CronJob(j[0], Integer.parseInt(j[1]), zoneName, dataPointName, active1, j[3], active2, j[5]);
 					tmpJobs.put(cronJob.dataPointID, cronJob);
 				}
 			}

@@ -218,8 +218,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		logger.debug("proServ received UPDATE for itemName:{}, newState:{}", itemName, newState.toString());
 
 		// updated values from rules
-		if (itemName.contains("dataPointID")) {
-			String dpID = itemName.substring(itemName.indexOf("dataPointID") + "dataPointID".length());
+		if (itemName.contains("dpID")) {
+			String dpID = itemName.substring(itemName.indexOf("dpID") + "dpID".length());
 			short dataPoint = Short.parseShort(dpID);
 			byte state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
 			if(isInverted(dataPoint))
@@ -867,8 +867,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if(proservData.getFunctionIsTimer(x,y)) {
 					String zoneName = proservData.getZoneName(x); 
 					String dataPointName = proservData.getFunctionDescription(x,y);
-					proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString((48*x)+(y*3)+1), 
-							zoneName, dataPointName, false, 0, null, null));
+					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), 0, 
+							zoneName, dataPointName, false, null, false, null));
 				}
 			}
 		}
@@ -885,8 +885,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					scheduleType = 2;
 					break;
 				}
-				proservCronJobs.add(proservCronJobs.new CronJob("dataPointID"+Integer.toString(865+(5*x)), 
-						zoneName, dataPointName, false, scheduleType, null, null));
+				proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString(865+(5*x)), scheduleType,
+						zoneName, dataPointName, false, null, false, null));
 			}
 		}
 		proservCronJobs.mergeOldJobs();
