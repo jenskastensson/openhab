@@ -1001,8 +1001,10 @@ public class ProservData {
 				}
 				s += "\"\";";
 				writer.println(s);
-				s = "alert(current_value);$.ajax({type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(){alert(\""
+				s = "/*alert(current_value);*/$.ajax({type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(){alert(\""
 						+ mapProservLang.get("SAVECONFRIM") + "\");},error:function(){alert(\"" + mapProservLang.get("SAVEFAILED") + "\");}});});";
+//				s = "alert(current_value);Ajax.request({timeout : 5000,async:   false, type:\"GET\",url:\"/CMD?ProservCronJobs=\"+current_value,success:function(response){\nalert(response.toLowerCase());\n alert($('#theDiv').html(response));\nif (response.toLowerCase() == 'success'){alert(\""
+//						+ mapProservLang.get("SAVECONFRIM") + "\");}else {alert(\"" + mapProservLang.get("SAVEFAILED") + "\");}},error:function(){alert(\"" + mapProservLang.get("SAVEFAILED") + "\");}});});";
 				writer.println(s);
 			}
 			writer.println("});");
