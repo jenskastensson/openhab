@@ -4,7 +4,7 @@
 set ECLIPSEHOME=server
 
 :: set ports for HTTP(S) server
-set HTTP_PORT=8080
+set HTTP_PORT=8081
 set HTTPS_PORT=8443
  
 :: get path to equinox jar inside ECLIPSEHOME folder
