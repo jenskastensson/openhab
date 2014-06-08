@@ -81,8 +81,9 @@ public class ProservCronJobs implements Serializable {
 	}
 	
 	public Map<String, CronJob> cronJobs = new HashMap<String, CronJob>();
-	JobsComparator bvc =  new JobsComparator(cronJobs);
-    TreeMap<String,CronJob> Sorted = new TreeMap<String,CronJob>(bvc);	
+	transient JobsComparator bvc =  new JobsComparator(cronJobs);
+	transient TreeMap<String,CronJob> Sorted = new TreeMap<String,CronJob>(bvc);	
+ 	
 
 	public TreeMap<String,CronJob> getSorted(){
 		Sorted.putAll(cronJobs);

@@ -235,9 +235,9 @@ public class ProservData {
 							functionIsEmailTrigger[x][y] = true;
 						}
 					}
-// if(functionDescriptions[x][y].contains("#l"))
-// {
-// functionIsTimer[x][y] = true;
+ //if(functionDescriptions[x][y].contains("#l"))
+ //{
+ //functionIsTimer[x][y] = true;
 // }
 					if (functionDescriptions[x][y].contains("#t")) {
 						switch ((int) functionCodes[x][y] & 0xFF) {
@@ -310,9 +310,9 @@ public class ProservData {
 				if (heatingDescriptions[x].contains("#t")) {
 					heatingIsTimer[x] = true;
 				}
-				// if(heatingDescriptions[x].contains("#l")){
-				// heatingIsTimer[x] = true;
-				// }
+//if(heatingDescriptions[x].contains("#l")){
+//heatingIsTimer[x] = true;
+//}
 
 				if (heatingDescriptions[x].contains("#l") || heatingDescriptions[x].contains("#t")) {
 					heatingLogThis[x] = true;
@@ -479,8 +479,6 @@ public class ProservData {
 			mapProservLang.put("OFF", properties.getProperty("OFF"));
 			mapProservLang.put("COMFORT", properties.getProperty("COMFORT"));
 			mapProservLang.put("NIGHT", properties.getProperty("NIGHT"));
-			mapProservLang.put("HEATING", properties.getProperty("HEATING"));
-			mapProservLang.put("COOLING", properties.getProperty("COOLING"));
 			mapProservLang.put("SAVECONFRIM", properties.getProperty("SAVECONFRIM"));
 			mapProservLang.put("SAVEFAILED", properties.getProperty("SAVEFAILED"));
 
@@ -1021,8 +1019,8 @@ public class ProservData {
 					sActionOn = mapProservLang.get("COMFORT");
 					sActionOff = mapProservLang.get("NIGHT");
 				} else if (entry.getValue().scheduleType == 2) {
-					sActionOn = mapProservLang.get("HEATING");
-					sActionOff = mapProservLang.get("COOLING");
+					sActionOn = mapProservLang.get("COMFORT");
+					sActionOff = mapProservLang.get("NIGHT");
 				} else {// if(entry.getValue().scheduleType == 0){
 					sActionOn = mapProservLang.get("ON");
 					sActionOff = mapProservLang.get("OFF");

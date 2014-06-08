@@ -221,13 +221,36 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		if (itemName.contains("dpID")) {
 			String dpID = itemName.substring(itemName.indexOf("dpID") + "dpID".length());
 			short dataPoint = Short.parseShort(dpID);
-			byte state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
-			if(isInverted(dataPoint))
-				state = newState.toString() == "ON" ? (byte) 0 : (byte) 1;
+			short offset = 0;
+			byte state = 0;
+			if(proservCronJobs.cronJobs.containsKey(itemName)==true){
+				int scheduleType = proservCronJobs.cronJobs.get(itemName).scheduleType;
+				if( scheduleType == 0 ){
+					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
+					if(isInverted(dataPoint))
+						state = newState.toString() == "ON" ? (byte) 0 : (byte) 1;					
+				}
+				else if( scheduleType == 1){
+					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
+					offset = 4;
+				}
+				else if( scheduleType == 2 ){
+					state = newState.toString() == "ON" ? (byte) 1 : (byte) 3; //0x44 ON=COMFORT=1, OFF=NIGHT=3
+					offset = 3;
+				}				
+				else {
+					logger.error("ERROR: internalReceiveUpdate unsupported scheduleType!!!!!");
+					return;
+				}
+			}
+			else {
+				logger.error("ERROR: internalReceiveUpdate could not find datapoint !!!!!");
+				return;
+			}
 			ProservConnector con = new ProservConnector(ip, port);
 			try {
 				con.connect();
-				con.setDataPointValue(dataPoint, state);
+				con.setDataPointValue((short)(dataPoint+offset), state);
 			} catch (NullPointerException e) {
 				logger.warn("internalReceiveUpdate NullPointerException");
 			} catch (UnsupportedEncodingException e) {
@@ -881,6 +904,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				case 0x42: 
 					scheduleType = 1;
 					break;
+				case 0x43:
 				case 0x44:
 					scheduleType = 2;
 					break;
