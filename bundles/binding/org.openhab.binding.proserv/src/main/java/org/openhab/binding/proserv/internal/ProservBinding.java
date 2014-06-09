@@ -223,8 +223,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			short dataPoint = Short.parseShort(dpID);
 			short offset = 0;
 			byte state = 0;
+			int scheduleType = 0;
 			if(proservCronJobs.cronJobs.containsKey(itemName)==true){
-				int scheduleType = proservCronJobs.cronJobs.get(itemName).scheduleType;
+				scheduleType = proservCronJobs.cronJobs.get(itemName).scheduleType;
 				if( scheduleType == 0 ){
 					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
 					if(isInverted(dataPoint))
@@ -250,7 +251,17 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			ProservConnector con = new ProservConnector(ip, port);
 			try {
 				con.connect();
-				con.setDataPointValue((short)(dataPoint+offset), state);
+				boolean skipSetDataPoint = false;
+				if( scheduleType == 2){ // check if dp+3 is 2 (absent) or 4 (freeze protection), if so do not send
+					byte[] dataValue = con.getDataPointValue((short)(dataPoint+offset), (short) 1);
+					if (dataValue != null) {
+						if(dataValue[0]==2 || dataValue[0]==4)
+							skipSetDataPoint = true;
+					}
+				}
+				if(!skipSetDataPoint){
+					con.setDataPointValue((short)(dataPoint+offset), state);
+				}
 			} catch (NullPointerException e) {
 				logger.warn("internalReceiveUpdate NullPointerException");
 			} catch (UnsupportedEncodingException e) {

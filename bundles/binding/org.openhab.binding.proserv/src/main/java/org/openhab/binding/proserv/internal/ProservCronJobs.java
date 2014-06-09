@@ -117,10 +117,11 @@ public class ProservCronJobs implements Serializable {
 			for (Map.Entry<String, CronJob> entry : oldCronJobs.entrySet()) {
 				String key = entry.getKey();
 				if (cronJobs.containsKey(key)) {
-					// use names from proserv if they were changed, other data from file
+					// use names & scheduletype from proserv if they were changed, other data from file
 					CronJob j = entry.getValue();
 					j.dataPointName = cronJobs.get(key).dataPointName;
 					j.zoneName = cronJobs.get(key).zoneName;
+					j.scheduleType = cronJobs.get(key).scheduleType;
 					cronJobs.put(key, j);
 				}
 			}
