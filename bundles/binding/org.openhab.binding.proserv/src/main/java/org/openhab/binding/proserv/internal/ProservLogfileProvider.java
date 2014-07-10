@@ -56,6 +56,7 @@ public class ProservLogfileProvider {
 	protected static final Map<String, Long> PERIODS = new HashMap<String, Long>();
 
 	static {
+		PERIODS.put("8h", 28800000L);
 //		PERIODS.put("12h", 43200000L);
 //		PERIODS.put("Day", 86400000L);
 //		PERIODS.put("Week", 604800000L);
@@ -215,7 +216,7 @@ public class ProservLogfileProvider {
 		filter.setEndDate(timeEnd);
 		filter.setPageSize(Integer.MAX_VALUE);
 		filter.setOrdering(Ordering.ASCENDING);
-		
+
 		// Get the data from the persistence store
 		result = service.query(filter);
 		Iterator<HistoricItem> it = result.iterator();
