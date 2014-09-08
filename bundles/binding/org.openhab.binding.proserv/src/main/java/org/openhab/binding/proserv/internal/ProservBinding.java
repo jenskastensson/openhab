@@ -455,11 +455,34 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	     return String.format("%1$-" + n + "s", s);  
 	}
 	
-	private void sendAlertMail() {
-		if(!mailTo.isEmpty())
-			Mail.sendMail(mailTo, "Alert", "This is an alert mail triggered by proserv #m");
-		else
+	private void sendAlertMail(String s) {
+	
+		if(!mailTo.isEmpty()){
+			// Load language strings
+			Reader reader = null;
+			String mailSubject = "xAlert";
+			String mailContent = "xThis is an alert mail triggered by :";			
+			String filename = ProservBinding.language + ".map";
+			try {
+				String path = ConfigDispatcher.getConfigFolder() + File.separator + "transform" + File.separator + filename ;
+				Properties properties = new Properties();
+				reader = new FileReader(path);
+				properties.load(reader);
+							
+				mailSubject = properties.getProperty("MAIL-SUBJECT-ALERT");
+				mailContent = properties.getProperty("MAIL-CONTENT-ALERT") + " " + s;
+
+			} catch (Throwable e) {
+				String message = "opening file '" + filename + "' throws exception";
+				logger.error(message, e);
+			} finally {
+				IOUtils.closeQuietly(reader);
+			}		
+			Mail.sendMail(mailTo, mailSubject, mailContent);
+		}
+		else {
 			logger.warn("proserv:mailto adress is not configured");
+		}
 	}
 	
 	public void updateSendEmail(int x, int y, byte[] dataValue) {
@@ -473,7 +496,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
 			{
 				previousEmailTrigger = b;
-				sendAlertMail();
+				sendAlertMail(proservData.getFunctionDescription(x, y));
 		    }
 			previousEmailTrigger = b;
 		} break;
@@ -520,10 +543,13 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
 					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 		} break;
+		case 0x32:		
 		case 0x91:{
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
+
+		case 0x33:
 		case 0x92:{
 			int i = proservData.parse1ByteUnsignedValue(dataValue[0]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
@@ -533,10 +559,12 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
 					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 		} break;
+		case 0x35:
 		case 0x95:{
 			long uint32 = proservData.parse4ByteUnsignedValue(dataValue,0);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(uint32));
 		} break;
+		case 0x36:
 		case 0x96:{
 			long int32 = proservData.parse4ByteSignedValue(dataValue,0);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(int32));
@@ -597,6 +625,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), 
 					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 		} break;
+		case 0x32:		
 		case 0x91:{
 			if(proservData.getFunctionLogThis(x,y,0)) {
 				int i = proservData.parse1BytePercentValue(dataValue[0]);
@@ -609,6 +638,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate("itemProServLog" + Integer.toString(IdPreset), new DecimalType(preset));
 			}
 		} break;
+		case 0x33:
 		case 0x92:{
 			if(proservData.getFunctionLogThis(x,y,0)) {
 				int i = proservData.parse1ByteUnsignedValue(dataValue[0]);
@@ -635,6 +665,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
 			}
 		} break;
+		case 0x35:
 		case 0x95:{
 			if(proservData.getFunctionLogThis(x,y,0)) {
 				long uint32 = proservData.parse4ByteUnsignedValue(dataValue,0);
@@ -648,6 +679,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						new DecimalType(uint32Preset));
 			}
 		} break;
+		case 0x36:
 		case 0x96:{
 			if(proservData.getFunctionLogThis(x,y,0)) {
 				long int32 = proservData.parse4ByteSignedValue(dataValue,0);

@@ -222,7 +222,7 @@ public class ProservData {
 					if (actualLength > 0) {
 						functionUnits[x][y] = (new String(proServAllValues, offset + 25, actualLength, "ISO-8859-1"));
 					} else {
-						if ((functionDefs[x][y] & 0xFF) == 0x31 || (functionDefs[x][y] & 0xFF) == 0x91)
+						if ((functionDefs[x][y] & 0xFF) == 0x32 || (functionDefs[x][y] & 0xFF) == 0x91)
 							functionUnits[x][y] = "%";
 						else
 							functionUnits[x][y] = new String();
@@ -267,7 +267,7 @@ public class ProservData {
 
 		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
 		            	{	//State - 1 bit value	            	
-							if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high activ; 0=low activ
+							if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high active; 0=low active
 								functionStateIsInverted[x][y] = true;
 						}
 
