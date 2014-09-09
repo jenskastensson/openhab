@@ -56,12 +56,12 @@ public class ProservLogfileProvider {
 	protected static final Map<String, Long> PERIODS = new HashMap<String, Long>();
 
 	static {
-		PERIODS.put("8h", 28800000L);
+//		PERIODS.put("8h", 28800000L);
 //		PERIODS.put("12h", 43200000L);
 //		PERIODS.put("Day", 86400000L);
 //		PERIODS.put("Week", 604800000L);
-		PERIODS.put("4Weeks", 4*604800000L);
-//		PERIODS.put("Month", 2592000000L);
+//		PERIODS.put("4Weeks", 4*604800000L);
+		PERIODS.put("Month", 2592000000L);
 		PERIODS.put("Year", 31536000000L);
 	}
 	
