@@ -591,11 +591,42 @@ var settingsWindow = {
           id : 'save_history_data_btn',
           iconMask : true,
           handler : function () { 
-            title = OpenHAB.i18n_strings[ui_language].save_history_data_backup;
+            title = OpenHAB.i18n_strings[ui_language].button_save_history_data;
             msg = OpenHAB.i18n_strings[ui_language].this_will_save_a_snapshot;
             Ext.Msg.alert(title, msg, function (e) {
               Ext.getCmp('save_history_data_btn').setDisabled(true);
-              Ext.getCmp('save_history_data_btn').setIconCls('time');              
+              Ext.getCmp('save_history_data_btn').setIconCls('time');
+              Ext.Ajax.request({
+                url : '/CMD?ProservExportCsvFiles=START',
+                method : "GET",
+                timeout : 600000,                
+                disableCaching : false,
+                success : function (response) {
+                  Ext.Ajax.request({
+                    url : '/rest/items/ProservExportCsvFiles/state',
+                    timeout : 5000,
+                    success : function (response) {
+                      if (response.responseText == 'SUCCESS') {
+                        ;//Ext.getCmp('save_history_data_btn').setIconCls('check2');
+                      }
+                      if (response.responseText.indexOf('FAILED') >= 0) {
+                        Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
+                        Ext.getCmp('save_history_data_btn').setDisabled(false);
+                        title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                        msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                        Ext.Msg.alert(title, msg + response.responseText.replace("FAILED:", ""));
+                      }
+                    }
+                  });
+                },
+                failure : function (response) {
+                  Ext.getCmp('save_history_data_btn').setIconCls('warming_dotted');
+                  Ext.getCmp('save_history_data_btn').setDisabled(false);
+                  title = OpenHAB.i18n_strings[ui_language].timeout;
+                  msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+                  Ext.Msg.alert(title, msg);
+                }
+              });              
               Ext.Ajax.request({
                 url : '/CMD?ProservBackupRrd=START',
                 method : "GET",
@@ -628,7 +659,7 @@ var settingsWindow = {
               });
             });
           }
-        }, {
+        }, /*{
           xtype : 'button',
           text : OpenHAB.i18n_strings[ui_language].button_send_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
@@ -676,7 +707,7 @@ var settingsWindow = {
               }
             });
           }
-        }, {
+        },*/ /*{
           xtype : 'button',
           text : OpenHAB.i18n_strings[ui_language].button_export_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
@@ -722,7 +753,7 @@ var settingsWindow = {
               });
             });
           }
-        }, {
+        },*/ {
           xtype : 'button',
           text : OpenHAB.i18n_strings[ui_language].button_send_history_data,
           style : 'background-color:black;clear:both;margin-left:5%;margin-right:5%;margin-top:1%;height:1.8em',
@@ -932,7 +963,8 @@ var settingsWindow = {
           scope : this,
           //cls : 'oph_about_btn',
           handler : function () {
-            settingsPanel.setActiveItem(1);
+            window.open('../proserv');
+            //settingsPanel.setActiveItem(1);
           }
         },
 
