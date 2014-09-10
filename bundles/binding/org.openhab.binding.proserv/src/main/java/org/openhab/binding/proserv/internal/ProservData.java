@@ -96,6 +96,10 @@ public class ProservData {
 		return functionCodes[x][y];
 	}
 
+	public byte getFunctionDefs(int x, int y) {
+		return functionDefs[x][y];
+	}
+	
 	public boolean getFunctionLogThis(int x, int y, int i) {
 		return functionLogThis[x][y][i];
 	}
@@ -465,6 +469,7 @@ public class ProservData {
 			reader = new FileReader(path);
 			properties.load(reader);
 
+			mapProservLang.put("ACTIVATE", properties.getProperty("ACTIVATE"));
 			mapProservLang.put("ACTUAL", properties.getProperty("ACTUAL"));
 			mapProservLang.put("PRESET", properties.getProperty("PRESET"));
 			mapProservLang.put("SCROLL-FOR-MORE-CHARTS", properties.getProperty("SCROLL-FOR-MORE-CHARTS"));
@@ -896,7 +901,7 @@ public class ProservData {
 							+ entry.getValue().dataPointID + ", " + actionON + ") end";
 					writer.println(sON);
 				}
-				if (entry.getValue().isActive2) {					
+				if (entry.getValue().isActive2 && !entry.getValue().cron2.equals("")) {					
 					String actionOFF = "OFF";
 					String sOFF = "rule \"" + entry.getValue().dataPointID + "OFF\" when Time cron \"" + entry.getValue().cron2
 							+ "\" then postUpdate(" + entry.getValue().dataPointID + ", " + actionOFF + ") end";
@@ -1014,28 +1019,33 @@ public class ProservData {
 				String zone = entry.getValue().zoneName;
 				String name = entry.getValue().dataPointName;
 				String sActionOn;
-				String sActionOff;
+				String sActionOff = "";
 				if (entry.getValue().scheduleType == 1) {
 					sActionOn = mapProservLang.get("COMFORT");
 					sActionOff = mapProservLang.get("NIGHT");
 				} else if (entry.getValue().scheduleType == 2) {
 					sActionOn = mapProservLang.get("COMFORT");
 					sActionOff = mapProservLang.get("NIGHT");
+				} else if (entry.getValue().scheduleType == 3) {
+					sActionOn = mapProservLang.get("ACTIVATE");
 				} else {// if(entry.getValue().scheduleType == 0){
 					sActionOn = mapProservLang.get("ON");
 					sActionOff = mapProservLang.get("OFF");
 				}
-				String s = "<h2 id='intro'>" + zone + " /// " + name + "</h2>\n" + "<div class='schedule'>"
+				String s1, s2 = "", s3; 
+				s1 = "<h2 id='intro'>" + zone + " /// " + name + "</h2>\n" + "<div class='schedule'>"
 						+ "\n<table style='width: 100%'><tr><td style='width: 15%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
 						+ "ON-enabled\" id=\"" + dp + "ON-enabled\" />" + sActionOn + " :</div></a></td><td><div class='schedule-inner' id='schedule" + dp
 						+ "ON-frame'><div id='schedule" + dp
-						+ "a'></div></td></tr></table>"
-						+ "\n<table style='width: 100%'><tr><td style='width: 15%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
-						+ "OFF-enabled\" id=\"" + dp + "OFF-enabled\" />" + sActionOff + " :</div></a></td><td><div class='schedule-inner' id='schedule" + dp
-						+ "OFF-frame'><div id='schedule" + dp
-						+ "b'></div></td></tr></table>"
-						+ "</div>";
-				writer.println(s);
+						+ "a'></div></td></tr></table>";
+				if(!entry.getValue().cron2.equals("")){
+					s2 = "\n<table style='width: 100%'><tr><td style='width: 15%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
+							+ "OFF-enabled\" id=\"" + dp + "OFF-enabled\" />" + sActionOff + " :</div></a></td><td><div class='schedule-inner' id='schedule" + dp
+							+ "OFF-frame'><div id='schedule" + dp
+							+ "b'></div></td></tr></table>";
+				}
+				s3 = "</div>";
+				writer.println(s1 + s2 + s3);
 				hiddenCronJobStrings += "<p class='schedule-text'>Generated cron entries: <span class='schedule-text' id='schedule" + dp
 						+ "a-val'>  </span><span class='schedule-text' id='schedule" + dp + "b-val'></span></p>\n";
 			}

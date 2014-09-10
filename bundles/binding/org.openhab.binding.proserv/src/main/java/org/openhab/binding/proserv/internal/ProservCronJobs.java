@@ -146,12 +146,16 @@ public class ProservCronJobs implements Serializable {
 				String[] j = s.split(":");
 				boolean active1 = j[2].equals("true") ? true : false;
 				boolean active2 = j[4].equals("true") ? true : false;
+				int scheduleType = Integer.parseInt(j[1]);
 				j[3] = j[3].replace("0 * * * * *", "0 * * * * ?");
-				j[5] = j[5].replace("0 * * * * *", "0 * * * * ?");
+				String cron2 = "";
+				if(scheduleType<3){
+					cron2 = j[5].replace("0 * * * * *", "0 * * * * ?");
+				}
 				if (cronJobs.containsKey(j[0])) {
 					String dataPointName = cronJobs.get(j[0]).dataPointName;
 					String zoneName = cronJobs.get(j[0]).zoneName;
-					CronJob cronJob = new CronJob(j[0], Integer.parseInt(j[1]), zoneName, dataPointName, active1, j[3], active2, j[5]);
+					CronJob cronJob = new CronJob(j[0], scheduleType, zoneName, dataPointName, active1, j[3], active2, cron2);
 					tmpJobs.put(cronJob.dataPointID, cronJob);
 				}
 			}

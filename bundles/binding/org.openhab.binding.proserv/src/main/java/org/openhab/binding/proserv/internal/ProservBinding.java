@@ -212,7 +212,20 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 		return false;
 	}
-
+	
+	private byte getDef(int dataPointID){
+		for (int x = 0; x < 18; x++) {
+			for (int y = 0; y < 16; y++) {
+				for (int z = 0; z < 2; z++) {
+					if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
+						return proservData.getFunctionDefs(x, y);
+					}																														
+				}
+			}
+		}
+		return 0;
+	}
+	
 	@Override
 	protected void internalReceiveUpdate(String itemName, State newState) {
 		logger.debug("proServ received UPDATE for itemName:{}, newState:{}", itemName, newState.toString());
@@ -239,6 +252,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					state = newState.toString() == "ON" ? (byte) 1 : (byte) 3; //0x44 ON=COMFORT=1, OFF=NIGHT=3
 					offset = 3;
 				}				
+				else if( scheduleType == 3){
+					state = getDef(dataPoint);
+				}
 				else {
 					logger.error("ERROR: internalReceiveUpdate unsupported scheduleType!!!!!");
 					return;
@@ -933,8 +949,18 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if(proservData.getFunctionIsTimer(x,y)) {
 					String zoneName = proservData.getZoneName(x); 
 					String dataPointName = proservData.getFunctionDescription(x,y);
-					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), 0, 
-							zoneName, dataPointName, false, null, false, null));
+					int scheduleType = 0;
+					String cron2 = null;
+					if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x23) {	
+						scheduleType = 3;
+						cron2 = "";
+					}
+//if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x31) {	
+//	scheduleType = 3;
+//	cron2 = "";
+//}
+					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), scheduleType, 
+							zoneName, dataPointName, false, null, false, cron2));
 				}
 			}
 		}
