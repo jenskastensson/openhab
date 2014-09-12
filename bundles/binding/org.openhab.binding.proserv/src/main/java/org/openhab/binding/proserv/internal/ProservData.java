@@ -62,8 +62,8 @@ public class ProservData {
 	private boolean[] heatingIsTimer = new boolean[18];
 
 	private byte weatherStationCode = 0x71;
-	private boolean weatherStationLogThis = true;
-	private int weatherStationMapId;
+	byte weatherStationDefs = 0;
+	private int[] weatherStationMapId = new int[6];
 	private int weatherStationDataPoint;
 
 	private Map<String, String> mapProservLang = new HashMap<String, String>();
@@ -165,24 +165,45 @@ public class ProservData {
 	}
 
 	public boolean getWeatherStationLogThis() {
-		return weatherStationLogThis;
+		if(getWeatherStationBrigtnessEastIsEnabled() || getWeatherStationBrigtnessSouthIsEnabled() || 
+			getWeatherStationBrigtnessWestIsEnabled() || getWeatherStationOutdoorTempIsEnabled() || 
+			getWeatherStationRainIsEnabled() || getWeatherStationWindSpeedIsEnabled() )
+			return true;
+		return false;
+	}
+	
+	public boolean getWeatherStationBrigtnessEastIsEnabled() {
+		return (weatherStationDefs & 0x80) == 0x80;
+	}
+	
+	public boolean getWeatherStationBrigtnessSouthIsEnabled() {
+		return (weatherStationDefs & 0x40) == 0x40;
+	}
+	
+	public boolean getWeatherStationBrigtnessWestIsEnabled() {
+		return (weatherStationDefs & 0x20) == 0x20;
+	}
+	
+	public boolean getWeatherStationWindSpeedIsEnabled() {
+		return (weatherStationDefs & 0x10) == 0x10;
+	}
+
+	public boolean getWeatherStationOutdoorTempIsEnabled() {
+		return (weatherStationDefs & 0x8) == 0x8;
+	}
+
+	public boolean getWeatherStationRainIsEnabled() {
+		return (weatherStationDefs & 0x4) == 0x4;
 	}
 
 	public byte getWeatherStationCode() {
 		return weatherStationCode;
 	}
 
-	public int getWeatherStationMapId() {
-		return weatherStationMapId;
+	public int getWeatherStationMapId(int index) {
+		return weatherStationMapId[index];
 	}
 
-	public int getWeatherStationDataPoint() {
-		return weatherStationDataPoint;
-	}
-
-	public void setWeatherStationDataPoint(int dataPoint) {
-		weatherStationDataPoint = dataPoint;
-	}
 
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException {
 		int lengthDescription = 24;
@@ -250,6 +271,7 @@ public class ProservData {
 						case 0x4:
 						case 0x5:
 						case 0x21:
+						case 0x23:
 						case 0x31: {
 							functionIsTimer[x][y] = true;
 						}
@@ -332,9 +354,8 @@ public class ProservData {
 		}
 
 		// weatherStation
-		// int weatherStationOffset = 16065;
-		// for now use hardcoded values, see declaration. There's no description
-		// field for weather station....
+		int weatherStationOffset = 16065;
+		weatherStationDefs = proServAllValues[weatherStationOffset];
 
 	}
 
@@ -421,8 +442,14 @@ public class ProservData {
 				heatingMapId[x][1] = mapId++;
 			}
 		}
-		if (weatherStationLogThis) {
-			weatherStationMapId = mapId++;
+
+		if (getWeatherStationLogThis()) {
+			weatherStationMapId[0] = mapId++;
+			weatherStationMapId[1] = mapId++;
+			weatherStationMapId[2] = mapId++;
+			weatherStationMapId[3] = mapId++;
+			weatherStationMapId[4] = mapId++;
+			weatherStationMapId[5] = mapId++;
 		}
 	}
 
@@ -476,7 +503,13 @@ public class ProservData {
 			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
 			mapProservLang.put("ALL-VALUES", properties.getProperty("ALL-VALUES"));
 			mapProservLang.put("PROSERV-CHARTS", properties.getProperty("PROSERV-CHARTS"));
+			mapProservLang.put("BRIGHTNESS-EAST", properties.getProperty("BRIGHTNESS-EAST"));
+			mapProservLang.put("BRIGHTNESS-SOUTH", properties.getProperty("BRIGHTNESS-SOUTH"));
+			mapProservLang.put("BRIGHTNESS-NORTH", properties.getProperty("BRIGHTNESS-NORTH"));
+			mapProservLang.put("BRIGHTNESS-WEST", properties.getProperty("BRIGHTNESS-WEST"));
+			mapProservLang.put("WINDSPEED", properties.getProperty("WINDSPEED"));
 			mapProservLang.put("TEMPERATURE", properties.getProperty("TEMPERATURE"));
+			mapProservLang.put("RAIN", properties.getProperty("RAIN"));
 			mapProservLang.put("OUTSIDE", properties.getProperty("OUTSIDE"));
 			mapProservLang.put("SAVEALLCHANGES", properties.getProperty("SAVEALLCHANGES"));
 			mapProservLang.put("PROSERVSCHEDULER", properties.getProperty("PROSERVSCHEDULER"));
@@ -526,9 +559,20 @@ public class ProservData {
 					}
 				}
 			}
-			if (weatherStationLogThis) {
-				String key0 = "STRING-" + Integer.toString(weatherStationMapId);
-				properties.setProperty(key0, mapProservLang.get("TEMPERATURE"));
+			{
+				String key;
+				key = "STRING-" + Integer.toString(weatherStationMapId[0]);
+				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-EAST"));
+				key = "STRING-" + Integer.toString(weatherStationMapId[1]);
+				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-SOUTH"));
+				key = "STRING-" + Integer.toString(weatherStationMapId[2]);
+				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-WEST"));
+				key = "STRING-" + Integer.toString(weatherStationMapId[3]);
+				properties.setProperty(key, mapProservLang.get("WINDSPEED"));
+				key = "STRING-" + Integer.toString(weatherStationMapId[4]);
+				properties.setProperty(key, mapProservLang.get("TEMPERATURE"));
+				key = "STRING-" + Integer.toString(weatherStationMapId[5]);
+				properties.setProperty(key, mapProservLang.get("RAIN"));
 			}
 			properties.store(writer, "");
 
@@ -596,22 +640,67 @@ public class ProservData {
 								+ mapProservLang.get("PRESET") + " " + getFormatString(heatingCodes[x], "°C")
 								+ "\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
 						writer.println(item1);
-						if (weatherStationLogThis) {
-							String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+						if (getWeatherStationOutdoorTempIsEnabled()) {
+							String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
 							String item2 = "Number itemProServLog" + indexOutdoorTemp + "   \"{MAP(proserv.map):STRING-" + indexOutdoorTemp + "} "
 									+ mapProservLang.get("OUTSIDE") + " " + getFormatString(weatherStationCode, "°C")
-									+ "\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
+									+ "\" <none> (gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item2);
 						}
 					}
 				}
 			}
+			
+			// weatherStation
+			//writer.println("Group gProservWeather");			
+			//writer.println("Group gProservWeatherBrightness");			
+			if (getWeatherStationBrigtnessEastIsEnabled()) {
+				String index = Integer.toString(getWeatherStationMapId(0));						
+				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
+						+ "\" <none> (gProserv)";	
+				writer.println(item);
+			}
+			if (getWeatherStationBrigtnessSouthIsEnabled()) {
+				String index = Integer.toString(getWeatherStationMapId(1));						
+				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
+						+ "\" <none> (gProserv)";	
+				writer.println(item);			
+			}
+			if (getWeatherStationBrigtnessWestIsEnabled()) {
+				String index = Integer.toString(getWeatherStationMapId(2));						
+				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
+						+ "\" <none> (gProserv)";	
+				writer.println(item);
+			}
+			if (getWeatherStationWindSpeedIsEnabled()) {
+				String index = Integer.toString(getWeatherStationMapId(3));						
+				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + getFormatString(weatherStationCode, "m/s")
+						+ "\" <none> (gProserv)";				
+				writer.println(item);
+			}
+			 if (getWeatherStationOutdoorTempIsEnabled()){
+				String index = Integer.toString(getWeatherStationMapId(4));	
+				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + getFormatString(weatherStationCode, "°C")
+						+ "\" <none> (gProserv)";				
+				writer.println(item);
+			}
+			 if (getWeatherStationRainIsEnabled())  {
+				String index = Integer.toString(getWeatherStationMapId(5));						
+				String item = "Switch itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
+						+ mapProservLang.get("ACTUAL") + " " + getFormatString(0x31, "")
+						+ "\" <none> (gProserv)";	
+				writer.println(item);
+			}
+				
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
 				//Switch proServTimer0  "proServTimer0" { proserv="proserv_timer" }
-				// if(entry.getValue().isActive){
 				String s = "Switch " + entry.getValue().dataPointID + " \"" + entry.getValue().dataPointID + "\" { proserv=\"proserv_timer\" }";
 				writer.println(s);
-				// }
 			}
 
 			writer.close();
@@ -666,6 +755,25 @@ public class ProservData {
 		return formatString;
 	}
 
+	private void sitemapFileHelper(PrintWriter writer, String index) {
+		writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + index);
+		if (!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()) {
+			writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
+		} else { writer.println("         Frame {"); 					}
+		if (chartItemRefreshHour != null)
+			writer.println("			Chart item=itemProServLog" + index + " period=h refresh=" + chartItemRefreshHour);
+		if (chartItemRefreshDay != null)
+			writer.println("			Chart item=itemProServLog" + index + " period=D refresh=" + chartItemRefreshDay);
+		if (chartItemRefreshWeek != null)
+			writer.println("			Chart item=itemProServLog" + index + " period=W refresh=" + chartItemRefreshWeek);
+		if (chartItemRefreshMonth != null)
+			writer.println("			Chart item=itemProServLog" + index + " period=M refresh=" + chartItemRefreshMonth);
+		if (chartItemRefreshYear != null)
+			writer.println("			Chart item=itemProServLog" + index + " period=Y refresh=" + chartItemRefreshYear);
+		writer.println("        }\n      }\n   }");
+	}
+
 	public void updateProservSitemapFile() {
 
 		String filename = "proserv.sitemap";
@@ -686,12 +794,9 @@ public class ProservData {
 							writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
 							writer.println("         Text item=itemProServLog" + indexActual);
 							writer.println("         Text item=itemProServLog" + indexPreset);
-							// writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
 							if (!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()) {
 								writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
-							} else {
-								writer.println("         Frame {");
-							}
+							} else { writer.println("         Frame {"); }
 							if (chartItemRefreshHour != null)
 								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh="
 										+ chartItemRefreshHour);
@@ -714,12 +819,9 @@ public class ProservData {
 									String index = Integer.toString(functionMapId[x][y][z]);
 									writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
 									writer.println("         Text item=itemProServLog" + index);
-									// writer.println("         Frame label=\"Scroll down for different periods (Hours,Day,Week,Month)\"{");
 									if (!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()) {
 										writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
-									} else {
-										writer.println("         Frame {");
-									}
+									} else { writer.println("         Frame {"); }
 									if (chartItemRefreshHour != null)
 										writer.println("			Chart item=itemProServLog" + index + " period=h refresh=" + chartItemRefreshHour);
 									if (chartItemRefreshDay != null)
@@ -746,15 +848,13 @@ public class ProservData {
 						writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
 						writer.println("         Text item=itemProServLog" + indexActual);
 						writer.println("         Text item=itemProServLog" + indexPreset);
-						if (weatherStationLogThis) {
-							String indexOutdoorTemp = Integer.toString(weatherStationMapId);
+						if (getWeatherStationOutdoorTempIsEnabled()) {
+							String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
 							writer.println("         Text item=itemProServLog" + indexOutdoorTemp);
 						}
 						if (!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()) {
 							writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
-						} else {
-							writer.println("         Frame {");
-						}
+						} else { writer.println("         Frame {"); }
 						if (chartItemRefreshHour != null)
 							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=" + chartItemRefreshHour);
 						if (chartItemRefreshDay != null)
@@ -769,6 +869,26 @@ public class ProservData {
 					}
 				}
 			}
+			
+			if (getWeatherStationBrigtnessEastIsEnabled()) {
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(0)));
+			}
+			if (getWeatherStationBrigtnessSouthIsEnabled()) {
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(1)));
+			}
+			if (getWeatherStationBrigtnessWestIsEnabled()) {
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(2)));
+			}
+			if (getWeatherStationWindSpeedIsEnabled()) {
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(3)));
+			}
+			 if (getWeatherStationOutdoorTempIsEnabled()){
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(4)));
+			}
+			 if (getWeatherStationRainIsEnabled())  {
+				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(5)));
+			}	
+			
 			writer.println("}");
 			writer.close();
 		} catch (IOException e) {
@@ -820,9 +940,10 @@ public class ProservData {
 				}
 			}
 
-			if (weatherStationLogThis) {
-				String indexOutdoorTemp = Integer.toString(weatherStationMapId);
-				String thisItem = "itemProServLog" + indexOutdoorTemp + ",";
+			// always create rrd files for all weather data
+			for(int i=0; i<=5; i++){
+				String index = Integer.toString(weatherStationMapId[i]);
+				String thisItem = "itemProServLog" + index + ",";
 				writer.println("	" + thisItem);
 				allItemNames += thisItem;
 			}
@@ -871,11 +992,12 @@ public class ProservData {
 				}
 			}
 
-			if (weatherStationLogThis) {
-				String indexOutdoorTemp = Integer.toString(weatherStationMapId);
-				writer.println("	itemProServLog" + indexOutdoorTemp + ",");
+			for(int i=0; i<=5; i++){
+				String index = Integer.toString(weatherStationMapId[i]);
+				String thisItem = "itemProServLog" + index + ",";
+				writer.println("	" + thisItem);
 			}
-
+			
 			writer.println("	dummy: strategy = everyDay\n}");
 			writer.close();
 		} catch (IOException e) {

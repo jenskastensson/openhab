@@ -786,43 +786,19 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}		
 	}
 	
-	// The postUpdateSingleWeather function takes 
-	// a single value as input and post update on the event bus.
-	// It is called from the the Monitor thread when the proServ notifies for a value change. 
-	public void postUpdateSingleValueWeather(byte[] dataValue) {
-		int Id = proservData.getWeatherStationMapId();						
-		int startDatapoint = 995;
-		switch ( (int)(proservData.getWeatherStationCode() & 0xFF) ) {
-		case 0x71:
-			float f = proservData.parse2ByteFloatValue(dataValue, 0);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
-					new DecimalType(new BigDecimal(f).setScale(2, RoundingMode.HALF_EVEN)));
-			break;
-		default:
-			logger.debug("proServ binding, unhandled heatingCode {}", 
-					Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
-		}		
-	}
-	
-	// The postUpdateWeather function takes 
-	// and a buffer with 3 data values as input and post update on the event bus.
-	// It is called from the the polling thread. 
-	// The postUpdateWeather also fill the proservData weatherDataPoint values which are later used 
-	// for lookup in the monitor thread. That is the async value update will only work after one successful data poll.
-	public void postUpdateWeather(byte[] dataValue) {
-		int Id = proservData.getWeatherStationMapId();						
-		int startDatapoint = 995;
-		switch ( (int)(proservData.getWeatherStationCode() & 0xFF) ) {
-		case 0x71:
-			proservData.setWeatherStationDataPoint(startDatapoint);
+
+	// The postUpdateWeather function is called from the the polling and the Monitor thread. 
+	public void postUpdateWeather(byte[] dataValue, int i) {
+		int Id = proservData.getWeatherStationMapId(i);						
+		if( i>=0 && i<=4 ){
 			float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
 					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
-			break;
-		default:
-			logger.debug("proServ binding, unhandled weatherCode {}", 
-					Integer.toHexString(((int)proservData.getWeatherStationCode() & 0xFF)));
-		}		
+		}
+		else if( i==5 ){
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  b ? OnOffType.ON : OnOffType.OFF);			
+		}
 	}
 	
 
@@ -898,12 +874,46 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				
 				// weatherStation
-				if (proservData.getWeatherStationLogThis()) {
-					int startDatapoint = 991 + 4;
-					int numberOfDatapoints = 1;					
-					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) numberOfDatapoints);
+				if (proservData.getWeatherStationBrigtnessEastIsEnabled()) {
+					int startDatapoint = 991;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
 					if (dataValue != null) {
-						postUpdateWeather(dataValue);
+						postUpdateWeather(dataValue,0);
+					}
+				}
+				if (proservData.getWeatherStationBrigtnessSouthIsEnabled()) {
+					int startDatapoint = 992;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue,1);
+					}
+				}
+				if (proservData.getWeatherStationBrigtnessWestIsEnabled()) {
+					int startDatapoint = 993;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue,2);
+					}
+				}
+				if (proservData.getWeatherStationWindSpeedIsEnabled()) {
+					int startDatapoint = 994;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue,3);
+					}
+				}
+				if (proservData.getWeatherStationOutdoorTempIsEnabled()) {
+					int startDatapoint = 995;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue,4);
+					}
+				}
+				if (proservData.getWeatherStationRainIsEnabled()) {
+					int startDatapoint = 996;
+					byte[] dataValue = connector.getDataPointValue((short) startDatapoint, (short) 1);
+					if (dataValue != null) {
+						postUpdateWeather(dataValue,5);
 					}
 				}
 				logger.debug("proServ binding refresh cycle completed");								
@@ -955,10 +965,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						scheduleType = 3;
 						cron2 = "";
 					}
-//if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x31) {	
-//	scheduleType = 3;
-//	cron2 = "";
-//}
 					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), scheduleType, 
 							zoneName, dataPointName, false, null, false, cron2));
 				}
@@ -998,7 +1004,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		byte[] proservAllConfigValues = null;
 		try {
 
-			short PROSERV_MEMORY_LENGTH = 19500;
+			short PROSERV_MEMORY_LENGTH = 16067;// stop reading after weather data
 			short NUMBER_OF_BYTES_IN_CHUNK = 500;
 			proservAllConfigValues = new byte[PROSERV_MEMORY_LENGTH];
 
@@ -1027,8 +1033,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				if (numberOfBytesToRead != NUMBER_OF_BYTES_IN_CHUNK)
 					break;
-				if (offset > 10300)
-					break; // quick fix for now
 			}
 			logger.debug("proServ succesfully loaded all config values");
 		}

@@ -475,8 +475,8 @@ public class ProservConnector {
 											}
 											
 											if(!bFound){
-												if (proservData.getWeatherStationDataPoint() == dataPointID) {
-													proservBinding.postUpdateSingleValueWeather(dataPointValue);
+												if ( dataPointID >= 991 && dataPointID <= 996 ) {
+													proservBinding.postUpdateWeather(dataPointValue, dataPointID-991);
 													bFound = true;
 													logger.debug("----Monitor weather DP:{}", dataPointID);															
 												}
