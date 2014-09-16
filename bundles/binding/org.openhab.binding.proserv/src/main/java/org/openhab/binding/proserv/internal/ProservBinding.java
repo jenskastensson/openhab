@@ -538,10 +538,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			int i = proservData.parse1BytePercentValue(dataValue[0]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
-		case 0x12:{
-			int i = proservData.parse1BytePercentValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
-		} break;
+		case 0x11:
+		case 0x12:
+		case 0x13:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			if(proservData.getFunctionStateIsInverted(x,y))
+				b = !b;
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
+		} break;		
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
@@ -619,10 +623,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			int i = proservData.parse1BytePercentValue(dataValue[1]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
-		case 0x12:{
-			proservData.setFunctionDataPoint(startDatapoint+2, x, y, 0);
-			int i = proservData.parse1BytePercentValue(dataValue[2]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
+		case 0x11:
+		case 0x12:
+		case 0x13:{
+			proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+			if(proservData.getFunctionStateIsInverted(x,y))
+				b = !b;			
+			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
 		} break;
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);

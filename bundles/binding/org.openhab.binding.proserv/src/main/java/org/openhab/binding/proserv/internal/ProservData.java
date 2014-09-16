@@ -255,15 +255,15 @@ public class ProservData {
 
 					functionProfiles[x][y] = proServAllValues[offset + 30];
 					functionDefs[x][y] = proServAllValues[offset + 31];
+					
+					// #m only with 0x31 
 					if (functionDescriptions[x][y].contains("#m")) {
 						if (((int) functionCodes[x][y] & 0xFF) == 0x31) {
 							functionIsEmailTrigger[x][y] = true;
 						}
 					}
- //if(functionDescriptions[x][y].contains("#l"))
- //{
- //functionIsTimer[x][y] = true;
-// }
+
+					// #t with 0x1, 0x2, 0x4, 0x5, 0x21, 0x23, 0x31 
 					if (functionDescriptions[x][y].contains("#t")) {
 						switch ((int) functionCodes[x][y] & 0xFF) {
 						case 0x1:
@@ -279,6 +279,7 @@ public class ProservData {
 						}
 					}
 
+					//#l no restrictions
 		            if(functionDescriptions[x][y].contains("#l"))
 		            {
 		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x91 && ((int)functionCodes[x][y] & 0xFF)<=0x97 )
@@ -291,11 +292,18 @@ public class ProservData {
 							functionLogThis[x][y][0] = true;
 						}
 
-		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 )
+		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 ) 
 		            	{	//State - 1 bit value	            	
 							if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high active; 0=low active
 								functionStateIsInverted[x][y] = true;
 						}
+		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x11 && ((int)functionCodes[x][y] & 0xFF)<=0x13 )  
+		            	{	//State - 1 bit value	            	
+							if( (functionDefs[x][y] & 0x1) == 1) // Invert direction:
+																 // 1 : yes
+																 // 0 : no (default)
+								functionStateIsInverted[x][y] = true;
+						}		            	
 
 					}
 
@@ -336,9 +344,6 @@ public class ProservData {
 				if (heatingDescriptions[x].contains("#t")) {
 					heatingIsTimer[x] = true;
 				}
-//if(heatingDescriptions[x].contains("#l")){
-//heatingIsTimer[x] = true;
-//}
 
 				if (heatingDescriptions[x].contains("#l") || heatingDescriptions[x].contains("#t")) {
 					heatingLogThis[x] = true;
@@ -717,6 +722,9 @@ public class ProservData {
 		dataTypeString = "Number";
 		switch (functionCode & 0xFF) {
 		case 0x1:
+		case 0x11:
+		case 0x12:
+		case 0x13:
 		case 0x31: {
 			dataTypeString = "Switch";
 		}
@@ -734,6 +742,18 @@ public class ProservData {
 		String formatString = new String();
 		formatString = "[%d" + unit + "]";
 		switch (functionCode & 0xFF) {
+		case 0x11: 
+		case 0x12: 
+		case 0x13: {
+			String mapFileName = ProservData.language + ".map";
+			if(unit.trim().equals("0"))				
+				formatString = "[MAP("+mapFileName+"):UPDOWN%d]";
+			else if(unit.trim().equals("1"))				
+				formatString = "[MAP("+mapFileName+"):CLOSEOPEN%d]";
+			if(unit.trim().equals("2"))				
+				formatString = "[MAP("+mapFileName+"):INOUT%d]";	
+		}
+			break;
 		case 0x32:
 		case 0x91: {
 			formatString = "[%.1f" + unit + "]";
