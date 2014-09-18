@@ -274,8 +274,8 @@ public class ProservData {
 						case 0x23:
 						case 0x31: {
 							functionIsTimer[x][y] = true;
-						}
-							break;
+//functionLogThis[x][y][0] = true;							
+							} break;
 						}
 					}
 
@@ -725,6 +725,7 @@ public class ProservData {
 		case 0x11:
 		case 0x12:
 		case 0x13:
+		case 0x21:
 		case 0x31: {
 			dataTypeString = "Switch";
 		}

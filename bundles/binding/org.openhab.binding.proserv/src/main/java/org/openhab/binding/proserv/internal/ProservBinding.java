@@ -545,7 +545,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
-		} break;		
+		} break;
+		case 0x21:
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
@@ -632,6 +633,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				b = !b;			
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
 		} break;
+		case 0x21:
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
