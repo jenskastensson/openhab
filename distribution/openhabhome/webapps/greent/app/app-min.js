@@ -364,7 +364,7 @@ var settingsWindow = {
   floating : true,
   centered : true,
   //width:300,
-  height : 480, //#Proserv
+  height : 420, //#Proserv
   layout : 'card',
   items : [{
       scrollable : 'vertical',
