@@ -239,7 +239,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			int scheduleType = 0;
 			if(proservCronJobs.cronJobs.containsKey(itemName)==true){
 				scheduleType = proservCronJobs.cronJobs.get(itemName).scheduleType;
-				if( scheduleType == 0 ){
+				if( scheduleType == 0 || scheduleType == 4 || scheduleType == 5 || scheduleType == 6 ){
 					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
 					if(isInverted(dataPoint))
 						state = newState.toString() == "ON" ? (byte) 0 : (byte) 1;					
@@ -799,15 +799,17 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 	// The postUpdateWeather function is called from the the polling and the Monitor thread. 
 	public void postUpdateWeather(byte[] dataValue, int i) {
-		int Id = proservData.getWeatherStationMapId(i);						
-		if( i>=0 && i<=4 ){
-			float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
-					new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
-		}
-		else if( i==5 ){
-			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  b ? OnOffType.ON : OnOffType.OFF);			
+		int Id = proservData.getWeatherStationMapId(i);
+		if( Id!=0 ){
+			if( i>=0 && i<=4 ){
+				float f0 = proservData.parse2ByteFloatValue(dataValue, 0);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),
+						new DecimalType(new BigDecimal(f0).setScale(2, RoundingMode.HALF_EVEN)));
+			}
+			else if( i==5 ){
+				boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+				eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id),  b ? OnOffType.ON : OnOffType.OFF);			
+			}
 		}
 	}
 	
@@ -975,6 +977,15 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						scheduleType = 3;
 						cron2 = "";
 					}
+					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x11) {	
+						scheduleType = 4;
+					}					
+					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x12) {	
+						scheduleType = 5;
+					}					
+					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x13) {	
+						scheduleType = 6;
+					}					
 					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), scheduleType, 
 							zoneName, dataPointName, false, null, false, cron2));
 				}

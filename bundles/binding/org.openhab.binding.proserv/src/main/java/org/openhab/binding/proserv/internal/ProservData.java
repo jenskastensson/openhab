@@ -263,19 +263,24 @@ public class ProservData {
 						}
 					}
 
-					// #t with 0x1, 0x2, 0x4, 0x5, 0x21, 0x23, 0x31 
+					// #t with 0x1, 0x2, 0x4, 0x5, 0x11, 0x12, 0x13, 0x21, 0x23, 0x31 
 					if (functionDescriptions[x][y].contains("#t")) {
 						switch ((int) functionCodes[x][y] & 0xFF) {
 						case 0x1:
 						case 0x2:
 						case 0x4:
 						case 0x5:
+						case 0x11:
+						case 0x12:
+						case 0x13:
 						case 0x21:
 						case 0x23:
 						case 0x31: {
 							functionIsTimer[x][y] = true;
-//functionLogThis[x][y][0] = true;							
 							} break;
+						default:
+							logger.error("functionDescriptions[{}][{}]={} has #t but is not supported datatype ({})", x, y, 
+									functionDescriptions[x][y], Integer.toHexString((int) functionCodes[x][y] & 0xFF));
 						}
 					}
 
@@ -291,22 +296,22 @@ public class ProservData {
 						} else {
 							functionLogThis[x][y][0] = true;
 						}
-
-		            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 ) 
-		            	{	//State - 1 bit value	            	
-							if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high active; 0=low active
-								functionStateIsInverted[x][y] = true;
-						}
-		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x11 && ((int)functionCodes[x][y] & 0xFF)<=0x13 )  
-		            	{	//State - 1 bit value	            	
-							if( (functionDefs[x][y] & 0x1) == 1) // Invert direction:
-																 // 1 : yes
-																 // 0 : no (default)
-								functionStateIsInverted[x][y] = true;
-						}		            	
-
 					}
-
+		            
+	            	if( ((int)functionCodes[x][y] & 0xFF)==0x31 ) 
+	            	{	//State - 1 bit value	            	
+						if( (functionDefs[x][y] & 0x1) == 0) // x) 1=high active; 0=low active
+							functionStateIsInverted[x][y] = true;
+					}
+	            	
+	            	if( ((int)functionCodes[x][y] & 0xFF)>=0x11 && ((int)functionCodes[x][y] & 0xFF)<=0x13 )  
+	            	{	//State - 1 bit value	            	
+						if( (functionDefs[x][y] & 0x1) == 1) // Invert direction:
+															 // 1 : yes
+															 // 0 : no (default)
+							functionStateIsInverted[x][y] = true;
+					}		            	
+		            
 					if (functionDescriptions[x][y].contains("#l") || functionDescriptions[x][y].contains("#m")
 							|| functionDescriptions[x][y].contains("#t")) {
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#"));
@@ -449,12 +454,34 @@ public class ProservData {
 		}
 
 		if (getWeatherStationLogThis()) {
-			weatherStationMapId[0] = mapId++;
-			weatherStationMapId[1] = mapId++;
-			weatherStationMapId[2] = mapId++;
-			weatherStationMapId[3] = mapId++;
-			weatherStationMapId[4] = mapId++;
-			weatherStationMapId[5] = mapId++;
+			for (int x = 0; x < 6; x++) {
+				weatherStationMapId[x] = 0;
+			}
+			mapId++;
+			if (getWeatherStationBrigtnessEastIsEnabled()) {
+				weatherStationMapId[0] = mapId;
+			}
+			mapId++;
+			if (getWeatherStationBrigtnessSouthIsEnabled()) {
+				weatherStationMapId[1] = mapId;
+			}
+			mapId++;
+			if (getWeatherStationBrigtnessWestIsEnabled()) {
+				weatherStationMapId[2] = mapId;
+			}
+			mapId++;
+			if (getWeatherStationWindSpeedIsEnabled()) {
+				weatherStationMapId[3] = mapId;
+			}
+			mapId++;
+			if (getWeatherStationOutdoorTempIsEnabled()){
+				weatherStationMapId[4] = mapId;
+			}
+			mapId++;
+			if (getWeatherStationRainIsEnabled())  {
+				weatherStationMapId[5] = mapId;
+			}	
+
 		}
 	}
 
@@ -524,6 +551,12 @@ public class ProservData {
 			mapProservLang.put("NIGHT", properties.getProperty("NIGHT"));
 			mapProservLang.put("SAVECONFRIM", properties.getProperty("SAVECONFRIM"));
 			mapProservLang.put("SAVEFAILED", properties.getProperty("SAVEFAILED"));
+			mapProservLang.put("OPEN", properties.getProperty("OPEN"));
+			mapProservLang.put("CLOSE", properties.getProperty("CLOSE"));
+			mapProservLang.put("UP", properties.getProperty("UP"));
+			mapProservLang.put("DOWN", properties.getProperty("DOWN"));
+			mapProservLang.put("IN", properties.getProperty("IN"));
+			mapProservLang.put("OUT", properties.getProperty("OUT"));
 
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
@@ -565,19 +598,32 @@ public class ProservData {
 				}
 			}
 			{
+										
 				String key;
-				key = "STRING-" + Integer.toString(weatherStationMapId[0]);
-				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-EAST"));
-				key = "STRING-" + Integer.toString(weatherStationMapId[1]);
-				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-SOUTH"));
-				key = "STRING-" + Integer.toString(weatherStationMapId[2]);
-				properties.setProperty(key, mapProservLang.get("BRIGHTNESS-WEST"));
-				key = "STRING-" + Integer.toString(weatherStationMapId[3]);
-				properties.setProperty(key, mapProservLang.get("WINDSPEED"));
-				key = "STRING-" + Integer.toString(weatherStationMapId[4]);
-				properties.setProperty(key, mapProservLang.get("TEMPERATURE"));
-				key = "STRING-" + Integer.toString(weatherStationMapId[5]);
-				properties.setProperty(key, mapProservLang.get("RAIN"));
+				if (getWeatherStationBrigtnessEastIsEnabled()) {
+					key = "STRING-" + Integer.toString(weatherStationMapId[0]);
+					properties.setProperty(key, mapProservLang.get("BRIGHTNESS-EAST"));
+				}
+				if (getWeatherStationBrigtnessSouthIsEnabled()) {
+					key = "STRING-" + Integer.toString(weatherStationMapId[1]);
+					properties.setProperty(key, mapProservLang.get("BRIGHTNESS-SOUTH"));
+				}
+				if (getWeatherStationBrigtnessWestIsEnabled()) {
+					key = "STRING-" + Integer.toString(weatherStationMapId[2]);
+					properties.setProperty(key, mapProservLang.get("BRIGHTNESS-WEST"));
+				}
+				if (getWeatherStationWindSpeedIsEnabled()) {
+					key = "STRING-" + Integer.toString(weatherStationMapId[3]);
+					properties.setProperty(key, mapProservLang.get("WINDSPEED"));
+				}
+				if (getWeatherStationOutdoorTempIsEnabled()){
+					key = "STRING-" + Integer.toString(weatherStationMapId[4]);
+					properties.setProperty(key, mapProservLang.get("TEMPERATURE"));
+				}
+				if (getWeatherStationRainIsEnabled())  {
+					key = "STRING-" + Integer.toString(weatherStationMapId[5]);
+					properties.setProperty(key, mapProservLang.get("RAIN"));
+				}
 			}
 			properties.store(writer, "");
 
@@ -903,10 +949,10 @@ public class ProservData {
 			if (getWeatherStationWindSpeedIsEnabled()) {
 				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(3)));
 			}
-			 if (getWeatherStationOutdoorTempIsEnabled()){
+			if (getWeatherStationOutdoorTempIsEnabled()){
 				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(4)));
 			}
-			 if (getWeatherStationRainIsEnabled())  {
+			if (getWeatherStationRainIsEnabled())  {
 				sitemapFileHelper(writer, Integer.toString(getWeatherStationMapId(5)));
 			}	
 			
@@ -964,9 +1010,11 @@ public class ProservData {
 			// always create rrd files for all weather data
 			for(int i=0; i<=5; i++){
 				String index = Integer.toString(weatherStationMapId[i]);
-				String thisItem = "itemProServLog" + index + ",";
-				writer.println("	" + thisItem);
-				allItemNames += thisItem;
+				if(weatherStationMapId[i]!=0){
+					String thisItem = "itemProServLog" + index + ",";
+					writer.println("	" + thisItem);
+					allItemNames += thisItem;
+				}
 			}
 
 			writer.println("	dummy: strategy = everyChange, everyMinute, restoreOnStartup\n}");
@@ -1015,8 +1063,10 @@ public class ProservData {
 
 			for(int i=0; i<=5; i++){
 				String index = Integer.toString(weatherStationMapId[i]);
-				String thisItem = "itemProServLog" + index + ",";
-				writer.println("	" + thisItem);
+				if(weatherStationMapId[i]!=0){
+					String thisItem = "itemProServLog" + index + ",";
+					writer.println("	" + thisItem);
+				}
 			}
 			
 			writer.println("	dummy: strategy = everyDay\n}");
@@ -1171,6 +1221,15 @@ public class ProservData {
 					sActionOff = mapProservLang.get("NIGHT");
 				} else if (entry.getValue().scheduleType == 3) {
 					sActionOn = mapProservLang.get("ACTIVATE");
+				} else if (entry.getValue().scheduleType == 4) {
+					sActionOn = mapProservLang.get("DOWN");
+					sActionOff = mapProservLang.get("UP");
+				} else if (entry.getValue().scheduleType == 5) {
+					sActionOn = mapProservLang.get("OPEN");
+					sActionOff = mapProservLang.get("CLOSE");
+				} else if (entry.getValue().scheduleType == 6) {
+					sActionOn = mapProservLang.get("OUT");
+					sActionOff = mapProservLang.get("IN");
 				} else {// if(entry.getValue().scheduleType == 0){
 					sActionOn = mapProservLang.get("ON");
 					sActionOff = mapProservLang.get("OFF");

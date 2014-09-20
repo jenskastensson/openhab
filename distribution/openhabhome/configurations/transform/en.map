@@ -34,5 +34,10 @@ CLOSEOPEN0=Close
 CLOSEOPEN1=Open
 INOUT0=In
 INOUT1=Out
-
+UP=Up
+DOWN=Down
+CLOSE=Close
+OPEN=Open
+IN=In
+OUT=Out
 

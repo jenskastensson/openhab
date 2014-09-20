@@ -149,7 +149,7 @@ public class ProservCronJobs implements Serializable {
 				int scheduleType = Integer.parseInt(j[1]);
 				j[3] = j[3].replace("0 * * * * *", "0 * * * * ?");
 				String cron2 = "";
-				if(scheduleType<3){
+				if(scheduleType!=3){
 					cron2 = j[5].replace("0 * * * * *", "0 * * * * ?");
 				}
 				if (cronJobs.containsKey(j[0])) {
