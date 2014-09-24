@@ -63,8 +63,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 	private static ProservConnector connector = null;
 	
-	/** Default refresh interval (currently 1 minute) */
-	private long refreshInterval = 60000L;
+	/** Default refresh interval (currently 2 minute) */
+	private long refreshInterval = 125000L;
 
 	/* The IP address to connect to */
 	private static String ip;
@@ -203,6 +203,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				for (int z = 0; z < 2; z++) {
 					if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
 						if(proservData.getFunctionStateIsInverted(x, y)) {
+							logger.debug("isInverted: x:{}, y:{}, z:{}, dataPointID={}", x, y, x, dataPointID);						
 							return true;
 						}				
 						return false;
@@ -240,16 +241,18 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			if(proservCronJobs.cronJobs.containsKey(itemName)==true){
 				scheduleType = proservCronJobs.cronJobs.get(itemName).scheduleType;
 				if( scheduleType == 0 || scheduleType == 4 || scheduleType == 5 || scheduleType == 6 ){
-					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
+					state = newState.toString().equals("ON") ? (byte) 1 : (byte) 0;
+					logger.debug("internalReceiveUpdate state={}",state);						
 					if(isInverted(dataPoint))
-						state = newState.toString() == "ON" ? (byte) 0 : (byte) 1;					
+						state = newState.toString().equals("ON") ? (byte) 0 : (byte) 1;					
+						logger.debug("internalReceiveUpdate isInverted state={}",state);						
 				}
 				else if( scheduleType == 1){
-					state = newState.toString() == "ON" ? (byte) 1 : (byte) 0;
+					state = newState.toString().equals("ON") ? (byte) 1 : (byte) 0;
 					offset = 4;
 				}
 				else if( scheduleType == 2 ){
-					state = newState.toString() == "ON" ? (byte) 1 : (byte) 3; //0x44 ON=COMFORT=1, OFF=NIGHT=3
+					state = newState.toString().equals("ON") ? (byte) 1 : (byte) 3; //0x44 ON=COMFORT=1, OFF=NIGHT=3
 					offset = 3;
 				}				
 				else if( scheduleType == 3){
@@ -275,8 +278,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 							skipSetDataPoint = true;
 					}
 				}
+				logger.debug("internalReceiveUpdate state={}, dataPoint={}, offset={}, skipSetDataPoint={}, scheduleType={}",state, dataPoint, offset, skipSetDataPoint, scheduleType);					
 				if(!skipSetDataPoint){
-					con.setDataPointValue((short)(dataPoint+offset), state);
+					boolean ret = con.setDataPointValue((short)(dataPoint+offset), state);
+					logger.debug("internalReceiveUpdate con.setDataPointValue returned={}",ret);					
 				}
 			} catch (NullPointerException e) {
 				logger.warn("internalReceiveUpdate NullPointerException");
