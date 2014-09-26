@@ -243,9 +243,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if( scheduleType == 0 || scheduleType == 4 || scheduleType == 5 || scheduleType == 6 ){
 					state = newState.toString().equals("ON") ? (byte) 1 : (byte) 0;
 					logger.debug("internalReceiveUpdate state={}",state);						
-					if(isInverted(dataPoint))
+					if(isInverted(dataPoint)){
 						state = newState.toString().equals("ON") ? (byte) 0 : (byte) 1;					
-						logger.debug("internalReceiveUpdate isInverted state={}",state);						
+						logger.debug("internalReceiveUpdate isInverted state={}",state);
+					}
 				}
 				else if( scheduleType == 1){
 					state = newState.toString().equals("ON") ? (byte) 1 : (byte) 0;
@@ -280,15 +281,26 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				}
 				logger.debug("internalReceiveUpdate state={}, dataPoint={}, offset={}, skipSetDataPoint={}, scheduleType={}",state, dataPoint, offset, skipSetDataPoint, scheduleType);					
 				if(!skipSetDataPoint){
-					boolean ret = con.setDataPointValue((short)(dataPoint+offset), state);
-					logger.debug("internalReceiveUpdate con.setDataPointValue returned={}",ret);					
+					if(false == con.setDataPointValue((short)(dataPoint+offset), state)){
+						logger.error("internalReceiveUpdate con.setDataPointValue attempt 1 failed, re-try again immediately");
+						if(false == con.setDataPointValue((short)(dataPoint+offset), state)){
+							logger.error("internalReceiveUpdate con.setDataPointValue attempt 2 failed, sleep 100 ms and re-try again");
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException ie) {
+							}							
+							if(false == con.setDataPointValue((short)(dataPoint+offset), state)){
+								logger.error("++++++++++++++++++++++++++++++++internalReceiveUpdate con.setDataPointValue attempt 3 failed");
+							}
+						}
+					}
 				}
 			} catch (NullPointerException e) {
-				logger.warn("internalReceiveUpdate NullPointerException");
+				logger.error("internalReceiveUpdate NullPointerException");
 			} catch (UnsupportedEncodingException e) {
-				logger.warn("internalReceiveUpdate UnsupportedEncodingException");
+				logger.error("internalReceiveUpdate UnsupportedEncodingException");
 			} catch (UnknownHostException e) {
-				logger.warn("internalReceiveUpdate the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
+				logger.error("internalReceiveUpdate the given hostname '{}' : port'{}' of the proServ is unknown", ip, port);
 				con = null;
 			} catch (IOException e) {
 				logger.warn("internalReceiveUpdate couldn't establish network connection [host '{}' : port'{}'] error:'{}'", ip, port, e);
