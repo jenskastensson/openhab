@@ -98,7 +98,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	}
 
 	private boolean isSupportedLanguage(String language) {
-		if (language.equals("en") || language.equals("de")){
+		if (language.equals("en") || language.equals("de") || language.equals("fr")){
 			return true;
 		}
 		logger.error("Unsupported language: {}", language);
