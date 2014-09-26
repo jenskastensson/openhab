@@ -1,4 +1,4 @@
 #!/bin/sh
-PID=$(cat ~/.daemon.pid)
-rm -f ~/.daemon.pid
+PID=$(cat /var/services/homes/proservx/.daemon.pid)
+rm -f /var/services/homes/proservx/.daemon.pid
 kill $PID
