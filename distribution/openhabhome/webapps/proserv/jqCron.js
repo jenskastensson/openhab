@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the Arnapou jqCron package.
  *
  * (c) Arnaud Buathier <arnaud@arnapou.net>
