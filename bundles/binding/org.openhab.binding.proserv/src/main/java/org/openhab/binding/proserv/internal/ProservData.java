@@ -1236,12 +1236,12 @@ public class ProservData {
 				}
 				String s1, s2 = "", s3; 
 				s1 = "<h2 id='intro'>" + zone + " /// " + name + "</h2>\n" + "<div class='schedule'>"
-						+ "\n<table style='width: 100%'><tr><td style='width: 15%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
+						+ "\n<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
 						+ "ON-enabled\" id=\"" + dp + "ON-enabled\" />" + sActionOn + " :</div></a></td><td><div class='schedule-inner' id='schedule" + dp
 						+ "ON-frame'><div id='schedule" + dp
 						+ "a'></div></td></tr></table>";
 				if(!entry.getValue().cron2.equals("")){
-					s2 = "\n<table style='width: 100%'><tr><td style='width: 15%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
+					s2 = "\n<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name=\"" + dp
 							+ "OFF-enabled\" id=\"" + dp + "OFF-enabled\" />" + sActionOff + " :</div></a></td><td><div class='schedule-inner' id='schedule" + dp
 							+ "OFF-frame'><div id='schedule" + dp
 							+ "b'></div></td></tr></table>";
