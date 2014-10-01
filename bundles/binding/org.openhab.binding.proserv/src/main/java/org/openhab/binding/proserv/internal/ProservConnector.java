@@ -450,11 +450,13 @@ public class ProservConnector {
 													for (int z = 0; z < 2; z++) {
 														if (proservData.getFunctionDataPoint(x, y, z) == dataPointID) {
 															bFound = true;
-															proservBinding.postUpdateSingleValueFunction(x, y, z, dataPointValue);
+															if(proservData.getFunctionLogThis(x, y, z)){
+																proservBinding.postUpdateSingleValueFunction(x, y, z, dataPointValue);
+															}
 															if(proservData.getFunctionIsEmailTrigger(x,y)) {
 																proservBinding.updateSendEmail(x, y, dataPointValue);
 															}															
-															logger.debug("----Monitor function DP:{} x:{} y:{} z:{}", dataPointID, x, y, z);
+															logger.debug("----Monitor function DP:{} x:{} y:{} z:{}  value:{} ", dataPointID, x, y, z, dataPointValue);
 															break outerloop1;
 														}																														
 													}

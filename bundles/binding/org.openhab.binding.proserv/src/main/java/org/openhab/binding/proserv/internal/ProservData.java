@@ -263,13 +263,13 @@ public class ProservData {
 						}
 					}
 
-					// #t with 0x1, 0x2, 0x4, 0x5, 0x11, 0x12, 0x13, 0x21, 0x23, 0x31 
+					// #t with 0x01, 0x02, 0x04, 0x05, 0x11, 0x12, 0x13, 0x21, 0x23, 0x31 
 					if (functionDescriptions[x][y].contains("#t")) {
 						switch ((int) functionCodes[x][y] & 0xFF) {
-						case 0x1:
-						case 0x2:
-						case 0x4:
-						case 0x5:
+						case 0x01:
+						case 0x02:
+						case 0x04:
+						case 0x05:
 						case 0x11:
 						case 0x12:
 						case 0x13:
@@ -277,6 +277,8 @@ public class ProservData {
 						case 0x23:
 						case 0x31: {
 							functionIsTimer[x][y] = true;
+/// TEST DEBUG:
+//functionLogThis[x][y][0] = true;							
 							} break;
 						default:
 							logger.error("functionDescriptions[{}][{}]={} has #t but is not supported datatype ({})", x, y, 
@@ -767,7 +769,10 @@ public class ProservData {
 		String dataTypeString = new String();
 		dataTypeString = "Number";
 		switch (functionCode & 0xFF) {
-		case 0x1:
+		case 0x01:
+		case 0x02:
+		case 0x04:
+		case 0x05:
 		case 0x11:
 		case 0x12:
 		case 0x13:
@@ -796,7 +801,7 @@ public class ProservData {
 			if(unit.trim().equals("0"))				
 				formatString = "[MAP("+mapFileName+"):UPDOWN%d]";
 			else if(unit.trim().equals("1"))				
-				formatString = "[MAP("+mapFileName+"):CLOSEOPEN%d]";
+				formatString = "[MAP("+mapFileName+"):OPENCLOSE%d]";
 			if(unit.trim().equals("2"))				
 				formatString = "[MAP("+mapFileName+"):INOUT%d]";	
 		}
@@ -1225,8 +1230,8 @@ public class ProservData {
 					sActionOn = mapProservLang.get("DOWN");
 					sActionOff = mapProservLang.get("UP");
 				} else if (entry.getValue().scheduleType == 5) {
-					sActionOn = mapProservLang.get("OPEN");
-					sActionOff = mapProservLang.get("CLOSE");
+					sActionOn = mapProservLang.get("CLOSE");
+					sActionOff = mapProservLang.get("OPEN");
 				} else if (entry.getValue().scheduleType == 6) {
 					sActionOn = mapProservLang.get("OUT");
 					sActionOff = mapProservLang.get("IN");

@@ -547,13 +547,12 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		int Id = proservData.getFunctionMapId(x,y,z);
 		
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
-		case 0x01:{
+		case 0x01:
+		case 0x02:
+		case 0x04:
+		case 0x05:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
-		} break;
-		case 0x02:{
-			int i = proservData.parse1BytePercentValue(dataValue[0]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x11:
 		case 0x12:
@@ -631,20 +630,16 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		
 		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
-		case 0x01:{
-			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
-			boolean b = proservData.parse1ByteBooleanValue(dataValue[1]);
+		case 0x01:
+		case 0x02:
+		case 0x04:
+		case 0x05:{
+			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), b ? OnOffType.ON : OnOffType.OFF);
-		} break;
-		case 0x02:{
-			proservData.setFunctionDataPoint(startDatapoint+1, x, y, 0);
-			int i = proservData.parse1BytePercentValue(dataValue[1]);
-			eventPublisher.postUpdate("itemProServLog" + Integer.toString(Id), new DecimalType(i));
 		} break;
 		case 0x11:
 		case 0x12:
 		case 0x13:{
-			proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
 			if(proservData.getFunctionStateIsInverted(x,y))
 				b = !b;			
@@ -887,6 +882,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 								}
 							}
 						}
+						else if ( proservData.getFunctionIsTimer(x, y) ){
+							proservData.setFunctionDataPoint((48*x) + (y*3) + 1, x, y, 0);
+						}
+
 					}
 				}
 
@@ -994,14 +993,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						scheduleType = 3;
 						cron2 = "";
 					}
-					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x11) {	
-						scheduleType = 4;
-					}					
-					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x12) {	
-						scheduleType = 5;
-					}					
-					else if ( (int)(proservData.getFunctionCodes(x,y) & 0xFF) == 0x13) {	
-						scheduleType = 6;
+					else if ( ((int)(proservData.getFunctionCodes(x,y) & 0xFF) >= 0x11) &&	
+					          ((int)(proservData.getFunctionCodes(x,y) & 0xFF) <= 0x13) ) {
+						if(proservData.getFunctionUnits(x, y).equals("0"))
+							scheduleType = 4;
+						else if(proservData.getFunctionUnits(x, y).equals("1"))
+							scheduleType = 5;
+						else if(proservData.getFunctionUnits(x, y).equals("2"))
+							scheduleType = 6;
 					}					
 					proservCronJobs.add(proservCronJobs.new CronJob("dpID"+Integer.toString((48*x)+(y*3)+1), scheduleType, 
 							zoneName, dataPointName, false, null, false, cron2));
