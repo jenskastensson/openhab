@@ -643,7 +643,7 @@ public class ProservData {
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "items" + File.separator + filename;
 
-			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			writer.println("Group gProserv");
 			writer.println("");
 
@@ -787,8 +787,6 @@ public class ProservData {
 
 	private String getFormatString(int functionCode, String unit) {
 		unit = unit.replace("%", "%%");
-		unit = unit.replace("°", "Â°"); // ugly fix or it won't show up as a °
-		// unit = unit.replace("Unit", "");
 		if (!unit.isEmpty())
 			unit = " " + unit;
 		String formatString = new String();
@@ -852,7 +850,7 @@ public class ProservData {
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filename;
 
-			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			String labelAllValues = mapProservLang.get("ALL-VALUES");
 			String labelProservCharts = mapProservLang.get("PROSERV-CHARTS");
 			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n\n		Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"\n   }\n");			
@@ -1151,7 +1149,7 @@ public class ProservData {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps" + File.separator + "proserv"
 					+ File.separator + filename;
 
-			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			writer.println(start);
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 				String dp = entry.getValue().dataPointID;
