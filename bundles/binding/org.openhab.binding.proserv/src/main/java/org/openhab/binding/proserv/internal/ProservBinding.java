@@ -101,7 +101,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		if (language.equals("en") || language.equals("de") || language.equals("fr")){
 			return true;
 		}
-		logger.error("Unsupported language: {}", language);
+		if (!language.equals("xx")){
+			logger.error("Unsupported language: {}", language);
+		}
 		return false;
 	}
 	
