@@ -1,0 +1,13 @@
+del .\configurations\items\proserv.items
+del .\configurations\persistence\db4o.persist
+del .\configurations\persistence\rrd4j.persist
+del .\configurations\sitemaps\proserv.sitemap
+del .\configurations\transform\proserv.map
+del .\configurations\ProservCronJobs.ser
+del .\etc\db4o\*.*
+del .\etc\rrd4j\*.*
+del .\logs\*.*
+del .\logs\*.*
+del .\webapps\static\*.*
+rmdir .\webapps\static
+del .\webapps\proserv\scheduler.html
