@@ -1,0 +1,15 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+
+rule "PhasesTotal"
+when
+   Item  itemProServLog3 received update or
+   Item  itemProServLog4 received update or
+   Item  itemProServLog5 received update 
+then
+   var Number phaseTotal = itemProServLog3.state as DecimalType
+   phaseTotal = phaseTotal + itemProServLog4.state as DecimalType
+   phaseTotal = phaseTotal + itemProServLog5.state as DecimalType
+   postUpdate(itemNumber1,phaseTotal)
+end
