@@ -17,89 +17,16 @@
 
   <modules>
     <module>org.openhab.binding.proserv</module>
-    <module>org.openhab.binding.bluetooth</module>
     <module>org.openhab.binding.knx</module>
     <module>org.openhab.binding.knx.test</module>
-    <module>org.openhab.binding.serial</module>
-    <module>org.openhab.binding.onewire</module>
-    <module>org.openhab.binding.wol</module>
-    <module>org.openhab.binding.networkhealth</module>
     <module>org.openhab.binding.exec</module>
     <module>org.openhab.binding.exec.test</module>
     <module>org.openhab.binding.http</module>
     <module>org.openhab.binding.http.test</module>
-    <module>org.openhab.binding.hue</module>
-    <module>org.openhab.binding.fritzbox</module>
-    <module>org.openhab.binding.ntp</module>
-    <module>org.openhab.binding.mpd</module>
-    <module>org.openhab.binding.vdr</module>
-    <module>org.openhab.binding.asterisk</module>
-    <module>org.openhab.binding.snmp</module>
     <module>org.openhab.binding.sonos</module>
     <module>org.openhab.binding.configadmin</module>
-    <module>org.openhab.binding.novelanheatpump</module>
-    <module>org.openhab.binding.cups</module>
-    <module>org.openhab.binding.ihc</module>
-    <module>org.openhab.binding.tcp</module>
-    <module>org.openhab.binding.plugwise</module>
-    <module>org.openhab.binding.modbus</module>
-    <module>org.openhab.binding.plcbus</module>
-    <module>org.openhab.binding.dmx</module>
-    <module>org.openhab.binding.dmx.ola</module>
-    <module>org.openhab.binding.dmx.lib485</module>
-    <module>org.openhab.binding.dmx.artnet</module>
-    <module>org.openhab.binding.dmx.test</module>
-    <module>org.openhab.binding.rfxcom</module>
-    <module>org.openhab.binding.samsungtv</module>
-    <module>org.openhab.binding.pulseaudio</module>
-    <module>org.openhab.binding.homematic</module>
-    <module>org.openhab.binding.homematic.test</module>
-    <module>org.openhab.binding.koubachi</module>
-    <module>org.openhab.binding.onkyo</module>
-    <module>org.openhab.binding.openpaths</module>
-    <module>org.openhab.binding.urtsi</module>
-    <module>org.openhab.binding.opensprinkler</module>
-    <module>org.openhab.binding.epsonprojector</module>
-    <module>org.openhab.binding.comfoair</module>
-    <module>org.openhab.binding.owserver</module>
-    <module>org.openhab.binding.digitalstrom</module>
-    <module>org.openhab.binding.squeezebox</module>
-    <module>org.openhab.binding.mqtt</module>
-    <module>org.openhab.binding.mqtt.test</module>
-    <module>org.openhab.binding.mqttitude</module>
-    <module>org.openhab.binding.milight</module>
     <module>org.openhab.binding.systeminfo</module>
-    <module>org.openhab.binding.piface</module>
-    <module>org.openhab.binding.fritzaha</module>
-    <module>org.openhab.binding.tinkerforge</module>
-    <module>org.openhab.binding.nibeheatpump</module>
     <module>org.openhab.binding.zwave</module>
-    <module>org.openhab.binding.nikobus</module>
-    <module>org.openhab.binding.nikobus.test</module>
-    <module>org.openhab.binding.enocean</module>
-    <module>org.openhab.binding.enocean.test</module>
-    <module>org.openhab.binding.em</module>
-    <module>org.openhab.binding.s300th</module>
-    <module>org.openhab.binding.heatmiser</module>
-    <module>org.openhab.binding.swegonventilation</module>
-    <module>org.openhab.binding.maxcube</module>
-    <module>org.openhab.binding.maxcube.test</module>
-    <module>org.openhab.binding.tivo</module>
-    <module>org.openhab.binding.insteonhub</module>
-    <module>org.openhab.binding.pioneeravr</module>
-    <module>org.openhab.binding.em.test</module>
-    <module>org.openhab.binding.s300th.test</module>
-    <module>org.openhab.binding.fht</module>
-    <module>org.openhab.binding.fs20</module>
-    <module>org.openhab.binding.intertechno</module>
-    <module>org.openhab.binding.openenergymonitor</module>
-    <module>org.openhab.binding.netatmo</module>
-    <module>org.openhab.binding.netatmo.test</module>
-    <module>org.openhab.binding.hdanywhere</module>
-    <module>org.openhab.binding.freeswitch</module>
-	<module>org.openhab.binding.neohub</module>
-	<module>org.openhab.binding.gpio</module>
-	<module>org.openhab.binding.irtrans</module>
   </modules>
 
 </project>
