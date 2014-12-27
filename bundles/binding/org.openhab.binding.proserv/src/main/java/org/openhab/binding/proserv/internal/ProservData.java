@@ -1020,6 +1020,17 @@ public class ProservData {
 				}
 			}
 
+//			change to parse proserv-extra.items for items and add here and rrd4j
+//			for(int i=1; i<=10; i++){
+//				String thisItem = "itemNumber" + i + ",";
+//				writer.println("	" + thisItem);
+//			}
+//			
+//			for(int i=1; i<=10; i++){
+//				String thisItem = "itemSwitch" + i + ",";
+//				writer.println("	" + thisItem);
+//			}
+									
 			writer.println("	dummy: strategy = everyChange, everyMinute, restoreOnStartup\n}");
 			writer.close();
 		} catch (IOException e) {
@@ -1071,6 +1082,17 @@ public class ProservData {
 					writer.println("	" + thisItem);
 				}
 			}
+			
+//			change to parse proserv-extra.items for items and add here and rrd4j
+//			for(int i=1; i<=10; i++){
+//				String thisItem = "itemNumber" + i + ",";
+//				writer.println("	" + thisItem);
+//			}
+//			
+//			for(int i=1; i<=10; i++){
+//				String thisItem = "itemSwitch" + i + ",";
+//				writer.println("	" + thisItem);
+//			}
 			
 			writer.println("	dummy: strategy = everyDay\n}");
 			writer.close();
