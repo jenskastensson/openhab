@@ -35,14 +35,14 @@
                         <configuration>
                             <descriptors>
                                 <descriptor>src/assemble/runtime.xml</descriptor>
-                                <descriptor>src/assemble/designer-win.xml</descriptor>
+                                <!--descriptor>src/assemble/designer-win.xml</descriptor>
                                 <descriptor>src/assemble/designer-macosx64.xml</descriptor>
                                 <descriptor>src/assemble/designer-linux.xml</descriptor>
-                                <descriptor>src/assemble/designer-linux64.xml</descriptor>
+                                <descriptor>src/assemble/designer-linux64.xml</descriptor-->
                                 <descriptor>src/assemble/addons.xml</descriptor>
                                 <!--<descriptor>src/assemble/drools.xml</descriptor> -->
                                 <descriptor>src/assemble/greent.xml</descriptor>
-                                <descriptor>src/assemble/demo.xml</descriptor>
+                                <!--descriptor>src/assemble/demo.xml</descriptor-->
                             </descriptors>
                         </configuration>
                     </execution>
@@ -278,7 +278,7 @@
             <type>zip</type>
             <classifier>win32.win32.x86</classifier>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.products</groupId>
             <artifactId>org.openhab.designer.product</artifactId>
             <version>${project.version}</version>
@@ -305,7 +305,7 @@
             <version>${project.version}</version>
             <type>zip</type>
             <classifier>linux.gtk.x86_64</classifier>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.openhab.action</groupId>
@@ -350,19 +350,19 @@
             <type>jar</type>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.bluetooth</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.exec</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.fritzbox</artifactId>
             <version>${project.version}</version>
@@ -379,14 +379,14 @@
             <artifactId>org.openhab.binding.hue</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.knx</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.networkhealth</artifactId>
             <version>${project.version}</version>
@@ -445,14 +445,14 @@
             <artifactId>org.openhab.binding.snmp</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.configadmin</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.novelanheatpump</artifactId>
             <version>${project.version}</version>
@@ -469,7 +469,7 @@
             <artifactId>org.openhab.binding.ihc</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.tcp</artifactId>
@@ -482,7 +482,7 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.plugwise</artifactId>
             <version>${project.version}</version>
@@ -493,14 +493,14 @@
             <artifactId>org.openhab.binding.modbus</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.plcbus</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.dmx</artifactId>
             <version>${project.version}</version>
@@ -613,14 +613,14 @@
             <artifactId>org.openhab.binding.milight</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.systeminfo</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.piface</artifactId>
             <version>${project.version}</version>
@@ -643,14 +643,14 @@
             <artifactId>org.openhab.binding.nibeheatpump</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.zwave</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.nikobus</artifactId>
             <version>${project.version}</version>
@@ -727,14 +727,14 @@
             <artifactId>org.openhab.binding.netatmo</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.proserv</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.openhab.binding</groupId>
             <artifactId>org.openhab.binding.insteonhub</artifactId>
             <version>${project.version}</version>
@@ -763,7 +763,7 @@
             <artifactId>org.openhab.binding.irtrans</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.openhab.io</groupId>
@@ -785,16 +785,22 @@
         </dependency>
         <dependency>
             <groupId>org.openhab.io</groupId>
-            <artifactId>org.openhab.io.multimedia.tts.macintalk</artifactId>
+            <artifactId>org.openhab.io.habmin</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>    
         <dependency>
             <groupId>org.openhab.io</groupId>
+            <artifactId>org.openhab.io.multimedia.tts.macintalk</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>    
+        <!--dependency>
+            <groupId>org.openhab.io</groupId>
             <artifactId>org.openhab.io.multimedia.tts.marytts</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.openhab.io</groupId>
             <artifactId>org.openhab.io.multimedia.tts.freetts</artifactId>

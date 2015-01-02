@@ -6,7 +6,7 @@ del .\configurations\transform\proserv.map
 del .\configurations\ProservCronJobs.ser
 del .\etc\db4o\*.*
 del .\etc\rrd4j\*.*
-del .\etc\habmin\*.*
+del .\etc\habminj\*.*
 del .\logs\*.*
 del .\webapps\static\*.*
 rmdir .\webapps\static

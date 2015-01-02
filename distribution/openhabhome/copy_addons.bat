@@ -7,3 +7,6 @@ copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.binding.proserv-1.5.0-SNAP
 copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.persistence.db4o-1.5.0-SNAPSHOT.jar .\addons\*.*
 copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.persistence.logging-1.5.0-SNAPSHOT.jar .\addons\*.*
 copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.persistence.rrd4j-1.5.0-SNAPSHOT.jar .\addons\*.*
+
+copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.binding.zwave-1.5.0-SNAPSHOT.jar .\addons\*.*
+copy .\distribution-1.5.0-SNAPSHOT-addons\org.openhab.io.habmin-1.5.0-SNAPSHOT.jar .\addons\*.*
