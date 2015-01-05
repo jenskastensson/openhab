@@ -15,9 +15,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -1020,16 +1023,11 @@ public class ProservData {
 				}
 			}
 
-//			change to parse proserv-extra.items for items and add here and rrd4j
-//			for(int i=1; i<=10; i++){
-//				String thisItem = "itemNumber" + i + ",";
-//				writer.println("	" + thisItem);
-//			}
-//			
-//			for(int i=1; i<=10; i++){
-//				String thisItem = "itemSwitch" + i + ",";
-//				writer.println("	" + thisItem);
-//			}
+			String[] extraItems = getExtraItems();
+			for (String s: extraItems)
+		    {
+				writer.println("	" + s + ",");
+		    }			
 									
 			writer.println("	dummy: strategy = everyChange, everyMinute, restoreOnStartup\n}");
 			writer.close();
@@ -1082,18 +1080,13 @@ public class ProservData {
 					writer.println("	" + thisItem);
 				}
 			}
-			
-//			change to parse proserv-extra.items for items and add here and rrd4j
-//			for(int i=1; i<=10; i++){
-//				String thisItem = "itemNumber" + i + ",";
-//				writer.println("	" + thisItem);
-//			}
-//			
-//			for(int i=1; i<=10; i++){
-//				String thisItem = "itemSwitch" + i + ",";
-//				writer.println("	" + thisItem);
-//			}
-			
+						
+			String[] extraItems = getExtraItems();
+			for (String s: extraItems)
+		    {
+				writer.println("	" + s + ",");
+		    }			
+						
 			writer.println("	dummy: strategy = everyDay\n}");
 			writer.close();
 		} catch (IOException e) {
@@ -1101,6 +1094,33 @@ public class ProservData {
 			logger.error(message, e);
 		} finally {
 		}
+	}
+	
+	public String[] getExtraItems() throws IOException{
+		String fileName = ConfigDispatcher.getConfigFolder() + File.separator + "items" + File.separator + "proserv-extra.items";
+		Path path = Paths.get(fileName);
+	    Scanner scanner = new Scanner(path);
+	    List<String> extraItems = new ArrayList<String>();
+	    while(scanner.hasNext()){
+	        String[] tokens = scanner.nextLine().split("\\s+");
+	        if(tokens.length>=2){
+		        if(tokens[0].equalsIgnoreCase("Number") || tokens[0].equalsIgnoreCase("Switch")){
+		        	if(tokens[1].length()>0){
+		        		if(tokens[1].startsWith("itemProServLog")){
+		        		    logger.error("Invalid Extra items found '{}' (itemProServLog is reserved) ", tokens[1]);	    		        			
+		        		}
+		        		else{
+		        			extraItems.add(tokens[1]);
+		        		}
+		        	}
+		        }
+	        }
+	    }
+	    scanner.close();
+	    String[] s = new String[ extraItems.size() ];
+	    extraItems.toArray( s );	    
+	    logger.debug("Extra items found '{}'", s.toString());	    
+	    return s;
 	}
 
 	public void updateProservRulesFile(ProservCronJobs proservCronJobs) {

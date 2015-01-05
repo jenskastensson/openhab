@@ -8,8 +8,15 @@ when
    Item  itemProServLog4 received update or
    Item  itemProServLog5 received update 
 then
-   var Number phaseTotal = itemProServLog3.state as DecimalType
-   phaseTotal = phaseTotal + itemProServLog4.state as DecimalType
-   phaseTotal = phaseTotal + itemProServLog5.state as DecimalType
+   var Number phaseTotal = 0
+   if ( !(itemProServLog3.state instanceof UnDefType) ) {
+      phaseTotal = itemProServLog3.state as DecimalType
+   }
+   if ( !(itemProServLog4.state instanceof UnDefType) ) {
+      phaseTotal = phaseTotal + itemProServLog4.state as DecimalType
+   }
+   if ( !(itemProServLog5.state instanceof UnDefType) ) {
+      phaseTotal = phaseTotal + itemProServLog5.state as DecimalType
+   }
    postUpdate(itemNumber1,phaseTotal)
 end

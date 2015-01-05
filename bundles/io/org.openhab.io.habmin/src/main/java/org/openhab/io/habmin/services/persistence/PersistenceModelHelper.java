@@ -58,7 +58,8 @@ public class PersistenceModelHelper {
 		modelFile = new String(service + ".persist");
 		models = (PersistenceModel) repo.getModel(modelFile);
 		if (models == null) {
-			logger.error("Can't open model file '{}'", service);
+			if(!service.equalsIgnoreCase("logging"))
+				logger.error("Can't open model file '{}'", service);
 			return;
 		}
 
