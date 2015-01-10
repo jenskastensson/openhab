@@ -1,0 +1,5 @@
+Number	itemNumber1	"All phases"
+String	Temperature_Garden_Min_Formatted	"- Min. Temp [%s]"	<temperature>
+String	Temperature_Garden_Max_Formatted	"- Max. Temp [%s]"	<temperature>
+Number	TempMinOutside	"Min temp. outside"
+Number	TempMaxOutside	"Max temp. outside"

@@ -1472,8 +1472,8 @@ public class ProservData {
 				}
 			}
 
-			String[] extraItems = getExtraItems();
-			for (String s: extraItems)
+			String[] customItems = getCustomItems();
+			for (String s: customItems)
 		    {
 				writer.println("	" + s + ",");
 		    }			
@@ -1530,8 +1530,8 @@ public class ProservData {
 				}
 			}
 						
-			String[] extraItems = getExtraItems();
-			for (String s: extraItems)
+			String[] customItems = getCustomItems();
+			for (String s: customItems)
 		    {
 				writer.println("	" + s + ",");
 		    }			
@@ -1545,30 +1545,30 @@ public class ProservData {
 		}
 	}
 	
-	public String[] getExtraItems() throws IOException{
-		String fileName = ConfigDispatcher.getConfigFolder() + File.separator + "items" + File.separator + "proserv-extra.items";
+	public String[] getCustomItems() throws IOException{
+		String fileName = ConfigDispatcher.getConfigFolder() + File.separator + "items" + File.separator + "proserv-custom.items";
 		Path path = Paths.get(fileName);
 	    Scanner scanner = new Scanner(path);
-	    List<String> extraItems = new ArrayList<String>();
+	    List<String> customItems = new ArrayList<String>();
 	    while(scanner.hasNext()){
 	        String[] tokens = scanner.nextLine().split("\\s+");
 	        if(tokens.length>=2){
 		        if(tokens[0].equalsIgnoreCase("Number") || tokens[0].equalsIgnoreCase("Switch")){
 		        	if(tokens[1].length()>0){
 		        		if(tokens[1].startsWith("itemProServLog")){
-		        		    logger.error("Invalid Extra items found '{}' (itemProServLog is reserved) ", tokens[1]);	    		        			
+		        		    logger.error("Invalid Custom items found '{}' (itemProServLog is reserved) ", tokens[1]);	    		        			
 		        		}
 		        		else{
-		        			extraItems.add(tokens[1]);
+		        			customItems.add(tokens[1]);
 		        		}
 		        	}
 		        }
 	        }
 	    }
 	    scanner.close();
-	    String[] s = new String[ extraItems.size() ];
-	    extraItems.toArray( s );	    
-	    logger.debug("Extra items found '{}'", s.toString());	    
+	    String[] s = new String[ customItems.size() ];
+	    customItems.toArray( s );	    
+	    logger.debug("Custom items found '{}'", s.toString());	    
 	    return s;
 	}
 
