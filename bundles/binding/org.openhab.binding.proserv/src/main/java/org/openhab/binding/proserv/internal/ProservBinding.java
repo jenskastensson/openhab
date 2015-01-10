@@ -1102,6 +1102,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservData.updateProservMapFile();
 		proservData.updateProservItemFile(proservCronJobs);
 		proservData.updateProservSitemapFile();
+		proservData.updateProservSitemapClassicFile();
 		proservData.updateRrd4jPersistFile();
 		proservData.updateDb4oPersistFile();		
 		// generate html file and rules file based on the proservData and cronjobs

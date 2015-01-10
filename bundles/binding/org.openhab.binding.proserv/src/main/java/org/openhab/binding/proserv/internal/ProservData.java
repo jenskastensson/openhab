@@ -68,6 +68,7 @@ public class ProservData {
 	byte weatherStationDefs = 0;
 	private int[] weatherStationMapId = new int[6];
 	private int weatherStationDataPoint;
+	private int lastMapId = 0;
 
 	private Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
@@ -207,7 +208,10 @@ public class ProservData {
 		return weatherStationMapId[index];
 	}
 
-
+	public int getLastMapId() {
+		return lastMapId;
+	}
+	
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException {
 		int lengthDescription = 24;
 		int lengthUnit = 5;
@@ -488,6 +492,7 @@ public class ProservData {
 			}	
 
 		}
+		lastMapId = mapId;
 	}
 
 	private static void changeProperty(String filename, String key, String value) throws IOException {
@@ -648,6 +653,11 @@ public class ProservData {
 
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			writer.println("Group gProserv");
+			
+			int lastMapId = getLastMapId() / 10;
+			for (int n = 0; n <= lastMapId; n++) {
+				writer.println("Group gProserv"+ n);
+			}
 			writer.println("");
 
 			for (int x = 0; x < 18; x++) {
@@ -656,25 +666,28 @@ public class ProservData {
 						if (functionLogThis[x][y][0] && functionLogThis[x][y][1]) {
 							String indexActual = Integer.toString(functionMapId[x][y][0]);
 							String indexPreset = Integer.toString(functionMapId[x][y][1]);
+							String indexGroupActual = Integer.toString(functionMapId[x][y][0] / 10);
+							String indexGroupPreset = Integer.toString(functionMapId[x][y][0] / 10);
 							writer.println("Group gitemProServLog" + indexActual + indexPreset);
 							String item0 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexActual
 									+ "   \"{MAP(proserv.map):STRING-" + indexActual + "} " + mapProservLang.get("ACTUAL") + " "
-									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gitemProServLog"
-									+ indexActual + indexPreset + ")";
+									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gProserv" 
+									+ indexGroupActual + " gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item0);
 							String item1 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexPreset
 									+ "   \"{MAP(proserv.map):STRING-" + indexPreset + "} " + mapProservLang.get("PRESET") + " "
-									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gitemProServLog"
-									+ indexActual + indexPreset + ")";
+									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gProserv" 
+									+ indexGroupPreset + " gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item1);
 						} else {
 							for (int z = 0; z <= 1; z++) {
 								if (functionLogThis[x][y][z]) {
 									String index = Integer.toString(functionMapId[x][y][z]);
+									String indexGroup = Integer.toString(functionMapId[x][y][0] / 10);
 									String actualOrPreset = (z == 0 ? mapProservLang.get("ACTUAL") : mapProservLang.get("ACTUAL"));
 									String item = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + index
 											+ "   \"{MAP(proserv.map):STRING-" + index + "} " + actualOrPreset + " "
-											+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv)";
+											+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gProserv" + indexGroup + ")";
 									writer.println(item);
 								}
 							}
@@ -682,19 +695,23 @@ public class ProservData {
 					}
 				}
 			}
+			String lastIndexGroup = "";
 			for (int x = 0; x < 18; x++) {
 				if (heatingLogThis[x]) {
 					if (heatingDescriptions[x] != null && !heatingDescriptions[x].isEmpty()) {
 						String indexActual = Integer.toString(heatingMapId[x][0]);
 						String indexPreset = Integer.toString(heatingMapId[x][1]);
+						String indexGroupActual = Integer.toString(heatingMapId[x][0] / 10);
+						String indexGroupPreset = Integer.toString(heatingMapId[x][1] / 10);
+						lastIndexGroup = indexGroupPreset;
 						writer.println("Group gitemProServLog" + indexActual + indexPreset);
 						String item0 = "Number itemProServLog" + indexActual + "   \"{MAP(proserv.map):STRING-" + indexActual + "} "
 								+ mapProservLang.get("ACTUAL") + " " + getFormatString(heatingCodes[x], "°C")
-								+ "\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
+								+ "\" <none> (gProserv, gProserv" + indexGroupActual + " gitemProServLog" + indexActual + indexPreset + ")";
 						writer.println(item0);
 						String item1 = "Number itemProServLog" + indexPreset + "   \"{MAP(proserv.map):STRING-" + indexPreset + "} "
 								+ mapProservLang.get("PRESET") + " " + getFormatString(heatingCodes[x], "°C")
-								+ "\" <none> (gProserv, gitemProServLog" + indexActual + indexPreset + ")";
+								+ "\" <none> (gProserv, gProserv" + indexGroupPreset + " gitemProServLog" + indexActual + indexPreset + ")";
 						writer.println(item1);
 						if (getWeatherStationOutdoorTempIsEnabled()) {
 							String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
@@ -714,42 +731,42 @@ public class ProservData {
 				String index = Integer.toString(getWeatherStationMapId(0));						
 				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
-						+ "\" <none> (gProserv)";	
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";	
 				writer.println(item);
 			}
 			if (getWeatherStationBrigtnessSouthIsEnabled()) {
 				String index = Integer.toString(getWeatherStationMapId(1));						
 				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
-						+ "\" <none> (gProserv)";	
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";	
 				writer.println(item);			
 			}
 			if (getWeatherStationBrigtnessWestIsEnabled()) {
 				String index = Integer.toString(getWeatherStationMapId(2));						
 				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + "[%.0f Lux]"
-						+ "\" <none> (gProserv)";	
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";	
 				writer.println(item);
 			}
 			if (getWeatherStationWindSpeedIsEnabled()) {
 				String index = Integer.toString(getWeatherStationMapId(3));						
 				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + getFormatString(weatherStationCode, "m/s")
-						+ "\" <none> (gProserv)";				
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";				
 				writer.println(item);
 			}
 			 if (getWeatherStationOutdoorTempIsEnabled()){
 				String index = Integer.toString(getWeatherStationMapId(4));	
 				String item = "Number itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + getFormatString(weatherStationCode, "°C")
-						+ "\" <none> (gProserv)";				
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";				
 				writer.println(item);
 			}
 			 if (getWeatherStationRainIsEnabled())  {
 				String index = Integer.toString(getWeatherStationMapId(5));						
 				String item = "Switch itemProServLog" + index + "   \"{MAP(proserv.map):STRING-" + index + "} "
 						+ mapProservLang.get("ACTUAL") + " " + getFormatString(0x31, "")
-						+ "\" <none> (gProserv)";	
+						+ "\" <none> (gProserv, gProserv" + lastIndexGroup + ")";	
 				writer.println(item);
 			}
 				
@@ -856,7 +873,7 @@ public class ProservData {
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			String labelAllValues = mapProservLang.get("ALL-VALUES");
 			String labelProservCharts = mapProservLang.get("PROSERV-CHARTS");
-			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n\n		Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"\n   }\n");			
+			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n		Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"\n   }\n");			
 
 			for (int x = 0; x < 18; x++) {
 				for (int y = 0; y < 16; y++) {
@@ -973,6 +990,438 @@ public class ProservData {
 
 	}
 
+	private void sitemapFileHelperClassic(PrintWriter writer, String index) {
+		writer.println("		Group label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
+		writer.println("		Text item=itemProServLog" + index);
+		
+		// All charts
+		writer.println("			Group label=\"All charts\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (!mapProservLang.get("SCROLL-FOR-MORE-CHARTS").isEmpty()) {
+			writer.println("         Frame label=\"" + mapProservLang.get("SCROLL-FOR-MORE-CHARTS") + "\"{");
+		} else { writer.println("         Frame {"); 					}
+		if (chartItemRefreshHour != null)
+			writer.println("				Chart item=itemProServLog" + index+ " period=h refresh=" + chartItemRefreshHour);
+		if (chartItemRefreshDay != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=D refresh=" + chartItemRefreshDay);
+		if (chartItemRefreshWeek != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=W refresh=" + chartItemRefreshWeek);
+		if (chartItemRefreshMonth != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=M refresh=" + chartItemRefreshMonth);
+		if (chartItemRefreshYear != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=Y refresh=" + chartItemRefreshYear);
+		writer.println("			}}");
+		
+		// Hour chart
+		writer.println("			Group label=\"Hour chart\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (chartItemRefreshHour != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=h refresh=" + chartItemRefreshHour);
+		writer.println("         }");
+
+		// Day chart
+		writer.println("			Group label=\"Day chart\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (chartItemRefreshDay != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=D refresh=" + chartItemRefreshDay);
+		writer.println("         }");
+
+		// Week chart
+		writer.println("			Group label=\"Week chart\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (chartItemRefreshWeek != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=W refresh=" + chartItemRefreshWeek);
+		writer.println("         }");
+
+		// Month chart
+		writer.println("			Group label=\"Month chart\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (chartItemRefreshMonth != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=M refresh=" + chartItemRefreshMonth);
+		writer.println("         }");
+
+		// Year chart
+		writer.println("			Group label=\"Year chart\" icon=\"chart\" {");
+		writer.println("				Text item=itemProServLog" + index);
+		if (chartItemRefreshYear != null)
+			writer.println("				Chart item=itemProServLog" + index + " period=Y refresh=" + chartItemRefreshYear);
+		writer.println("         }");
+		writer.println("		}\n");
+	}
+
+	private void sitemapFileHelperClassic(PrintWriter writer, String indexActual, String indexPreset) {		
+		
+		String outdoorTempString = "";
+		if (getWeatherStationOutdoorTempIsEnabled()) {
+			String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
+			outdoorTempString = "         Text item=itemProServLog" + indexOutdoorTemp;
+		}
+		
+		writer.println("      Group label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		
+		// All charts
+		writer.println("         Group label=\"All charts\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshHour != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=" + chartItemRefreshHour);
+		if (chartItemRefreshDay != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=" + chartItemRefreshDay);
+		if (chartItemRefreshWeek != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=" + chartItemRefreshWeek);
+		if (chartItemRefreshMonth != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=" + chartItemRefreshMonth);
+		if (chartItemRefreshYear != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=" + chartItemRefreshYear);
+		writer.println("         }");
+				
+		// Hour chart
+		writer.println("         Group label=\"Hour chart\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshHour != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh=" + chartItemRefreshHour);
+		writer.println("         }");
+
+		// Day chart
+		writer.println("         Group label=\"Day chart\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshDay != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh=" + chartItemRefreshDay);
+		writer.println("         }");
+
+		// Week chart
+		writer.println("         Group label=\"Week chart\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshWeek != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh=" + chartItemRefreshWeek);
+		writer.println("         }");
+
+		// Month chart
+		writer.println("         Group label=\"Month chart\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshMonth != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh=" + chartItemRefreshMonth);
+		writer.println("         }");
+
+		// Year chart
+		writer.println("         Group label=\"Year chart\" icon=\"chart\" {");
+		writer.println("         Text item=itemProServLog" + indexActual);
+		writer.println("         Text item=itemProServLog" + indexPreset);
+		if (getWeatherStationOutdoorTempIsEnabled())
+			writer.println(outdoorTempString);
+		if (chartItemRefreshYear != null)
+			writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh=" + chartItemRefreshYear);
+		writer.println("         }");
+		writer.println("		}\n");	
+	}
+	
+	public void updateProservSitemapClassicFile() {
+
+		String filename = "proserv-classic.sitemap";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filename;
+
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			String labelAllValues = mapProservLang.get("ALL-VALUES");
+			String labelProservCharts = mapProservLang.get("PROSERV-CHARTS");
+			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelAllValues + "\" {");			
+			writer.println("			Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"");
+			int lastMapId = getLastMapId() / 10;
+			for (int n = 0; n <= lastMapId; n++) {
+				int m = n+1;
+				writer.println("			Group item=gProserv"+ n +" icon=\"pie\" label=\"" + labelAllValues + " " + m + "\"");
+			}
+			writer.println("		}\n   }\n");
+			
+			writer.println("	Frame  icon=\"chart\" {");			
+			for (int x = 0; x < 18; x++) {
+				for (int y = 0; y < 16; y++) {
+					if (functionDescriptions[x][y] != null && !functionDescriptions[x][y].isEmpty()) {
+						if (functionLogThis[x][y][0] && functionLogThis[x][y][1]) {
+							sitemapFileHelperClassic(writer, Integer.toString(functionMapId[x][y][0]), Integer.toString(functionMapId[x][y][1]));
+							
+/*							String indexActual = Integer.toString(functionMapId[x][y][0]);
+							String indexPreset = Integer.toString(functionMapId[x][y][1]);
+							writer.println("      Group label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
+							
+							// All charts
+							writer.println("         Group label=\"All charts\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshHour != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh="
+										+ chartItemRefreshHour);
+							if (chartItemRefreshDay != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh="
+										+ chartItemRefreshDay);
+							if (chartItemRefreshWeek != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh="
+										+ chartItemRefreshWeek);
+							if (chartItemRefreshMonth != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh="
+										+ chartItemRefreshMonth);
+							if (chartItemRefreshYear != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh="
+										+ chartItemRefreshYear);
+							writer.println("         }");
+							
+							// Hour chart
+							writer.println("         Group label=\"Hour chart\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshHour != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh="
+										+ chartItemRefreshHour);
+							writer.println("         }");
+
+							// Day chart
+							writer.println("         Group label=\"Day chart\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshDay != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh="
+										+ chartItemRefreshDay);
+							writer.println("         }");
+
+							// Week chart
+							writer.println("         Group label=\"Week chart\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshWeek != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh="
+										+ chartItemRefreshWeek);
+							writer.println("         }");
+
+							// Month chart
+							writer.println("         Group label=\"Month chart\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshMonth != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh="
+										+ chartItemRefreshMonth);
+							writer.println("         }");
+
+							// Year chart
+							writer.println("         Group label=\"Year chart\" icon=\"chart\" {");
+							writer.println("         Text item=itemProServLog" + indexActual);
+							writer.println("         Text item=itemProServLog" + indexPreset);
+							if (chartItemRefreshYear != null)
+								writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh="
+										+ chartItemRefreshYear);
+							writer.println("         }");
+							writer.println("		}\n");
+*/							
+						} else {
+							for (int z = 0; z <= 1; z++) {
+								if (functionLogThis[x][y][z]) {
+									sitemapFileHelperClassic(writer, Integer.toString(functionMapId[x][y][z]));
+
+/*									String index = Integer.toString(functionMapId[x][y][z]);
+									writer.println("		Group label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
+									
+									// All charts
+									writer.println("			Group label=\"All charts\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshHour != null)
+										writer.println("				Chart item=itemProServLog" + index+ " period=h refresh="
+												+ chartItemRefreshHour);
+									if (chartItemRefreshDay != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=D refresh="
+												+ chartItemRefreshDay);
+									if (chartItemRefreshWeek != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=W refresh="
+												+ chartItemRefreshWeek);
+									if (chartItemRefreshMonth != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=M refresh="
+												+ chartItemRefreshMonth);
+									if (chartItemRefreshYear != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=Y refresh="
+												+ chartItemRefreshYear);
+									writer.println("			}");
+									
+									// Hour chart
+									writer.println("			Group label=\"Hour chart\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshHour != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=h refresh="
+												+ chartItemRefreshHour);
+									writer.println("         }");
+
+									// Day chart
+									writer.println("			Group label=\"Day chart\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshDay != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=D refresh="
+												+ chartItemRefreshDay);
+									writer.println("         }");
+
+									// Week chart
+									writer.println("			Group label=\"Week chart\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshWeek != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=W refresh="
+												+ chartItemRefreshWeek);
+									writer.println("         }");
+
+									// Month chart
+									writer.println("			Group label=\"Month chart\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshMonth != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=M refresh="
+												+ chartItemRefreshMonth);
+									writer.println("         }");
+
+									// Year chart
+									writer.println("			Group label=\"Year chart\" icon=\"chart\" {");
+									writer.println("				Text item=itemProServLog" + index);
+									if (chartItemRefreshYear != null)
+										writer.println("				Chart item=itemProServLog" + index + " period=Y refresh="
+												+ chartItemRefreshYear);
+									writer.println("         }");
+									writer.println("		}\n");
+*/								}
+							}
+						}
+					}
+				}
+			}
+
+			for (int x = 0; x < 18; x++) {
+				if (heatingLogThis[x]) {
+					if (heatingDescriptions[x] != null && !heatingDescriptions[x].isEmpty()) {
+						sitemapFileHelperClassic(writer, Integer.toString(heatingMapId[x][0]), Integer.toString(heatingMapId[x][1]));
+						/*
+						String indexActual = Integer.toString(heatingMapId[x][0]);
+						String indexPreset = Integer.toString(heatingMapId[x][1]);
+						
+						writer.println("      Group label=\"{MAP(proserv.map):STRING-" + indexActual + "}\" icon=\"chart\" {");
+						
+						// All charts
+						writer.println("         Group label=\"All charts\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (getWeatherStationOutdoorTempIsEnabled()) {
+							String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
+							writer.println("         Text item=itemProServLog" + indexOutdoorTemp);
+						}
+						if (chartItemRefreshHour != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh="
+									+ chartItemRefreshHour);
+						if (chartItemRefreshDay != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh="
+									+ chartItemRefreshDay);
+						if (chartItemRefreshWeek != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh="
+									+ chartItemRefreshWeek);
+						if (chartItemRefreshMonth != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh="
+									+ chartItemRefreshMonth);
+						if (chartItemRefreshYear != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh="
+									+ chartItemRefreshYear);
+						writer.println("         }");
+						
+						
+						// Hour chart
+						writer.println("         Group label=\"Hour chart\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (chartItemRefreshHour != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=h refresh="
+									+ chartItemRefreshHour);
+						writer.println("         }");
+
+						// Day chart
+						writer.println("         Group label=\"Day chart\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (chartItemRefreshDay != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=D refresh="
+									+ chartItemRefreshDay);
+						writer.println("         }");
+
+						// Week chart
+						writer.println("         Group label=\"Week chart\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (chartItemRefreshWeek != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=W refresh="
+									+ chartItemRefreshWeek);
+						writer.println("         }");
+
+						// Month chart
+						writer.println("         Group label=\"Month chart\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (chartItemRefreshMonth != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=M refresh="
+									+ chartItemRefreshMonth);
+						writer.println("         }");
+
+						// Year chart
+						writer.println("         Group label=\"Year chart\" icon=\"chart\" {");
+						writer.println("         Text item=itemProServLog" + indexActual);
+						writer.println("         Text item=itemProServLog" + indexPreset);
+						if (chartItemRefreshYear != null)
+							writer.println("			Chart item=gitemProServLog" + indexActual + indexPreset + " period=Y refresh="
+									+ chartItemRefreshYear);
+						writer.println("         }");
+						writer.println("		}\n");
+						*/
+					}
+				}
+			}
+			
+			if (getWeatherStationBrigtnessEastIsEnabled()) {
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(0)));
+			}
+			if (getWeatherStationBrigtnessSouthIsEnabled()) {
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(1)));
+			}
+			if (getWeatherStationBrigtnessWestIsEnabled()) {
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(2)));
+			}
+			if (getWeatherStationWindSpeedIsEnabled()) {
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(3)));
+			}
+			if (getWeatherStationOutdoorTempIsEnabled()){
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(4)));
+			}
+			if (getWeatherStationRainIsEnabled())  {
+				sitemapFileHelperClassic(writer, Integer.toString(getWeatherStationMapId(5)));
+			}	
+			writer.println("	}\n");
+			
+			writer.println("}");
+			writer.close();
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {
+
+		}
+
+	}
+	
+	
 	public void updateRrd4jPersistFile() {
 
 		String filename = "rrd4j.persist";

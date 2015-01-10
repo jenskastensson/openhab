@@ -25,7 +25,7 @@
 		<script src="jquery.miniColors.js"></script>
 
 		<script>
-			WA.AddEventListener("endasync", function(evt) {	
+			WA.AddEventListener("endasync", function(evt) {				
 				hash = document.location.hash.substring(2);
 				if(evt.context[0].indexOf(hash)>=0 || hash=="Home") {
 					if (evt.target.responseXML) {
@@ -35,7 +35,7 @@
 					}
 				}
 			});
-			         
+			
 			WA.AddEventListener("endslide", function(evt) {
 				hash = document.location.hash;
 				path = document.location.pathname;
@@ -44,24 +44,20 @@
 				} else {
 					search = "?";
 				}
-				search = search + "sitemap=%sitemap%&w=" + hash.substring(2) + "&poll=false";
+				search = search + "sitemap=%sitemap%&w=" + hash.substring(2) + "&poll=true";
 				url = path + search; 
 				WA.Request(url, null, -1, true, null);
 				imageRefresh = imagesToRefreshOnPage;
-				imagesToRefreshOnPage = 0;			
-         });
-
-			WA.AddEventListener("load", function() {
-				setTimeout("WA.Request('../%servletname%?sitemap=%sitemap%&poll=false', null, -1, true, null)", 1500);
+				imagesToRefreshOnPage = 0;
 			});
 
-         function reloadPage(){
-            location.reload();
-         }
-         
-	      function ChangeState(request) {
-            WA.Request(request, null, null);
-	      }
+			WA.AddEventListener("load", function() {
+				setTimeout("WA.Request('../%servletname%?sitemap=%sitemap%&poll=true', null, -1, true, null)", 1500);
+			});
+			
+	        function ChangeState(request) {
+	            WA.Request(request, null, null);
+	        }
 
 			// Functions for image refresh
 			var imageRefresh=0;
@@ -156,7 +152,6 @@
 		<div id="iLoader"><span>Loading...</span></div>
 
 		<div id="iHeader">
-         <button class="iButton iBClassic iRightButton" onclick="reloadPage()">update</button>
 			<a href="#" id="waBackButton">Back</a>
 			<a href="#" id="waHomeButton">Home</a>
 			<a href="#" onclick="return WA.HideBar()"><span id="waHeadTitle">%label%</span></a>
