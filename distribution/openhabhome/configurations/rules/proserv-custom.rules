@@ -1,6 +1,12 @@
 import org.openhab.core.library.types.*
 import org.openhab.core.persistence.*
 import org.openhab.model.script.actions.*
+import java.lang.Math
+import java.util.Calendar
+import java.util.Date
+import java.util.TimeZone
+import java.text.SimpleDateFormat
+    
 
 rule "PhasesTotal"
 when
@@ -8,17 +14,19 @@ when
    Item  itemProServLog4 received update or
    Item  itemProServLog5 received update 
 then
-   var Number phaseTotal = 0
-   if ( !(itemProServLog3.state instanceof UnDefType) ) {
-      phaseTotal = itemProServLog3.state as DecimalType
-   }
-   if ( !(itemProServLog4.state instanceof UnDefType) ) {
-      phaseTotal = phaseTotal + itemProServLog4.state as DecimalType
-   }
-   if ( !(itemProServLog5.state instanceof UnDefType) ) {
-      phaseTotal = phaseTotal + itemProServLog5.state as DecimalType
-   }
-   postUpdate(itemNumber1,phaseTotal)
+	var Number phaseTotal = 0
+	logDebug("rule.PhasesTotal","Start execution")
+	if ( !(itemProServLog3.state instanceof UnDefType) ) {
+		phaseTotal = itemProServLog3.state as DecimalType
+	}
+	if ( !(itemProServLog4.state instanceof UnDefType) ) {
+		phaseTotal = phaseTotal + itemProServLog4.state as DecimalType
+	}
+	if ( !(itemProServLog5.state instanceof UnDefType) ) {
+		phaseTotal = phaseTotal + itemProServLog5.state as DecimalType
+	}
+	postUpdate(itemNumber1,phaseTotal)
+	logDebug("rule.PhasesTotal","End execution")
 end
 
 rule "Update Temperature Min- and Max values"
@@ -29,6 +37,7 @@ then
     var Number Min
     var Number Max
     var String tmp
+    logDebug("rule.Temp.Min.Max","Start execution")
     var SimpleDateFormat df = new SimpleDateFormat( "HH:mm" ) 
     
     if (itemProServLog38.state instanceof DecimalType) {
@@ -43,4 +52,5 @@ then
         tmp = (Math::round(Max.floatValue*10.0)/10.0) + " °C (" + df.format(itemProServLog38.maximumSince(now.toDateMidnight, "rrd4j").timestamp) + ")"
         postUpdate(Temperature_Garden_Max_Formatted, tmp)
     }
+    logDebug("rule.Temp.Min.Max","End execution")
 end
