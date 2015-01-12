@@ -1,6 +1,8 @@
+del .\configurations\rules\proserv-custom.rules
+del /Q /S .\configurations\rules\proserv.rules
+del /Q /S .\configurations\rules\proserv-custom.rules.bak
 del /Q /S .\configurations\items\proserv.items
 del /Q /S .\configurations\items\proserv-custom.items
-del /Q /S .\configurations\rules\proserv.rules
 del /Q /S .\configurations\persistence\db4o.persist
 del /Q /S .\configurations\persistence\rrd4j.persist
 del /Q /S .\configurations\sitemaps\proserv.sitemap
