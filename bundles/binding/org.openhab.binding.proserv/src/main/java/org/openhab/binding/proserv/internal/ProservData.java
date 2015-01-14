@@ -264,14 +264,14 @@ public class ProservData {
 					functionDefs[x][y] = proServAllValues[offset + 31];
 					
 					// #m only with 0x31 
-					if (functionDescriptions[x][y].contains("#m")) {
+					if (functionDescriptions[x][y].toLowerCase().contains("#m")) {
 						if (((int) functionCodes[x][y] & 0xFF) == 0x31) {
 							functionIsEmailTrigger[x][y] = true;
 						}
 					}
 
 					// #t with 0x01, 0x02, 0x04, 0x05, 0x11, 0x12, 0x13, 0x21, 0x23, 0x31 
-					if (functionDescriptions[x][y].contains("#t")) {
+					if (functionDescriptions[x][y].toLowerCase().contains("#t")) {
 						switch ((int) functionCodes[x][y] & 0xFF) {
 						case 0x01:
 						case 0x02:
@@ -294,7 +294,7 @@ public class ProservData {
 					}
 
 					//#l no restrictions
-		            if(functionDescriptions[x][y].contains("#l"))
+		            if(functionDescriptions[x][y].toLowerCase().contains("#l"))
 		            {
 		            	if( ((int)functionCodes[x][y] & 0xFF)>=0x91 && ((int)functionCodes[x][y] & 0xFF)<=0x97 )
 		            	{		            	
@@ -321,8 +321,8 @@ public class ProservData {
 							functionStateIsInverted[x][y] = true;
 					}		            	
 		            
-					if (functionDescriptions[x][y].contains("#l") || functionDescriptions[x][y].contains("#m")
-							|| functionDescriptions[x][y].contains("#t")) {
+					if (functionDescriptions[x][y].toLowerCase().contains("#l") || functionDescriptions[x][y].toLowerCase().contains("#m")
+							|| functionDescriptions[x][y].toLowerCase().contains("#t")) {
 						functionDescriptions[x][y] = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#"));
 						logger.debug("-----x{}y{}  offset:{}  {}  code:0x{}  log actual:{}, log preset:{}  StateIsInverted:{}", x, y, offset,
 								functionDescriptions[x][y], Integer.toHexString((int) functionCodes[x][y] & 0xFF), functionLogThis[x][y][0],
@@ -355,11 +355,11 @@ public class ProservData {
 				heatingProfiles[x] = proServAllValues[offset + 30];
 				heatingDefs[x] = proServAllValues[offset + 31];
 
-				if (heatingDescriptions[x].contains("#t")) {
+				if (heatingDescriptions[x].toLowerCase().contains("#t")) {
 					heatingIsTimer[x] = true;
 				}
 
-				if (heatingDescriptions[x].contains("#l") || heatingDescriptions[x].contains("#t")) {
+				if (heatingDescriptions[x].toLowerCase().contains("#l") || heatingDescriptions[x].toLowerCase().contains("#t")) {
 					heatingLogThis[x] = true;
 					heatingDescriptions[x] = heatingDescriptions[x].substring(0, heatingDescriptions[x].indexOf("#"));
 					int startDatapoint = 865 + x * 5;
