@@ -1640,7 +1640,7 @@ public class ProservData {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps" + File.separator + "proserv"
 					+ File.separator + filename;
 
-			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			PrintWriter writer = new PrintWriter(path, "ISO-8859-1");
 			writer.println(start);
 			for (Map.Entry<String, CronJob> entry : proservCronJobs.getSorted().entrySet()) {
 				String dp = entry.getValue().dataPointID;
