@@ -41,6 +41,6 @@ public class OpenhabStateOpenClosedBlock extends DesignerRuleCreator {
 	}
 	
 	enum Operators {
-		ON, OFF;
+		OPEN, CLOSED;
 	}
 }

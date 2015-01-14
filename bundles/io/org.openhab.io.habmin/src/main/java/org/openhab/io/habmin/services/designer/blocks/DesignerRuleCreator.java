@@ -150,7 +150,7 @@ public abstract class DesignerRuleCreator {
 		// Trim any whitespace
 		name = name.trim();
 
-		RuleContext context = new RuleContext();
+		RuleContext context = new RuleContext(id);
 
 		DesignerRuleCreator processor = getBlockProcessor(rootBlock.type);
 		if (processor == null) {

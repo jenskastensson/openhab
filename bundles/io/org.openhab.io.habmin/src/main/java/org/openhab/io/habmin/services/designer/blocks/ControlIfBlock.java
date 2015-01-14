@@ -54,10 +54,12 @@ public class ControlIfBlock extends DesignerRuleCreator {
 			ruleContext.level--;
 //			if(response == null)
 //				return null;
-			if(x == 0)
-				blockString += startLine(ruleContext.level) + "if" + response + " {" + EOL;
-			else
-				blockString += startLine(ruleContext.level) + "else if" + response + " {" + EOL;
+			if(x == 0) {
+				blockString += startLine(ruleContext.level) + "if (" + response + ") {" + EOL;
+			}
+			else {
+				blockString += startLine(ruleContext.level) + "else if (" + response + ") {" + EOL;
+			}
 
 			// And then the DO...
 			child = findChild(block.children, "DO" + x);

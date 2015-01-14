@@ -31,16 +31,20 @@ public class RuleContext {
 
 	int cronTime = 0;
 
+	int ruleId = 0;
 	int globalId = 0;
 	
 	int level = 0;
 
+	RuleContext(int id) {
+		ruleId = id;
+	}
 	
 	String getGlobalId() {
 		int a = globalId / 26;
 		int b = globalId % 26;
 		
-		String id = new String();
+		String id = String.format("_%03d_", ruleId);
 		if(a > 0) {
 			id += (char)(a + 'A');
 		}

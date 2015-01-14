@@ -153,7 +153,7 @@ public class BundleResource {
                 .getBundleContext();
 
 		for (Bundle bundle : bundleContext.getBundles()) {
-			logger.debug(bundle.toString());
+			logger.trace(bundle.toString());
 			BundleBean bean = (BundleBean)createBundleBean(bundle, uriPath, false);
 
 			if(bean != null)

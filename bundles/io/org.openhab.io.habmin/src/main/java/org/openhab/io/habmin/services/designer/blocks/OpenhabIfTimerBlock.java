@@ -47,7 +47,7 @@ public class OpenhabIfTimerBlock extends DesignerRuleCreator {
 		}
 		response = callBlock(ruleContext, child.block);
 
-		blockString += startLine(ruleContext.level) + "if" + response + " {" + EOL;
+		blockString += startLine(ruleContext.level) + "if (" + response + ") {" + EOL;
 
 		ruleContext.level++;
 		blockString += startLine(ruleContext.level) + "if(" + timerID + " == null) {" + EOL;
@@ -75,13 +75,18 @@ public class OpenhabIfTimerBlock extends DesignerRuleCreator {
 		blockString += startLine(ruleContext.level) + timerID + " = createTimer(now.plus" + period.toString() + "("
 				+ field.value + ")) [|" + EOL;
 
+		ruleContext.level++;
+
+		// And the code to stop the timer once it's run
+		blockString += startLine(ruleContext.level) + timerID + ".cancel()" + EOL;
+		blockString += startLine(ruleContext.level) + timerID + " = null" + EOL;
+
 		// And then the DO...
 		child = findChild(block.children, "DO0");
 		if (child == null) {
 			logger.error("OPENHAB IF TIMER contains no DO0");
 			return null;
 		}
-		ruleContext.level++;
 		blockString += callBlock(ruleContext, child.block);
 		ruleContext.level--;
 

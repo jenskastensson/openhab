@@ -8,11 +8,13 @@
  */
 package org.openhab.io.habmin.services.chart;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -726,11 +728,10 @@ public class PersistenceResource {
 			folder.mkdirs();
 		}
 
-		FileOutputStream fout;
 		try {
 			long timerStart = System.currentTimeMillis();
 
-			fout = new FileOutputStream(HABminApplication.HABMIN_DATA_DIR + CHART_FILE);
+			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(HABminApplication.HABMIN_DATA_DIR + CHART_FILE),"UTF-8"));
 
 			XStream xstream = new XStream(new StaxDriver());
 			xstream.alias("charts", ChartListBean.class);
@@ -739,9 +740,9 @@ public class PersistenceResource {
 			xstream.alias("axis", ChartAxisConfigBean.class);
 			xstream.processAnnotations(ChartListBean.class);
 
-			xstream.toXML(chart, fout);
+			xstream.toXML(chart, out);
 
-			fout.close();
+			out.close();
 
 			long timerStop = System.currentTimeMillis();
 			logger.debug("Chart list saved in {}ms.", timerStop - timerStart);
