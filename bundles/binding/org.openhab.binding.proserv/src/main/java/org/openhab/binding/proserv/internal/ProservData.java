@@ -672,12 +672,12 @@ public class ProservData {
 							String item0 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexActual
 									+ "   \"{MAP(proserv.map):STRING-" + indexActual + "} " + mapProservLang.get("ACTUAL") + " "
 									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gProserv" 
-									+ indexGroupActual + " gitemProServLog" + indexActual + indexPreset + ")";
+									+ indexGroupActual + ", gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item0);
 							String item1 = getDataTypeString(functionCodes[x][y]) + " itemProServLog" + indexPreset
 									+ "   \"{MAP(proserv.map):STRING-" + indexPreset + "} " + mapProservLang.get("PRESET") + " "
 									+ getFormatString(functionCodes[x][y], functionUnits[x][y]) + "\" <none> (gProserv, gProserv" 
-									+ indexGroupPreset + " gitemProServLog" + indexActual + indexPreset + ")";
+									+ indexGroupPreset + ", gitemProServLog" + indexActual + indexPreset + ")";
 							writer.println(item1);
 						} else {
 							for (int z = 0; z <= 1; z++) {
@@ -707,11 +707,11 @@ public class ProservData {
 						writer.println("Group gitemProServLog" + indexActual + indexPreset);
 						String item0 = "Number itemProServLog" + indexActual + "   \"{MAP(proserv.map):STRING-" + indexActual + "} "
 								+ mapProservLang.get("ACTUAL") + " " + getFormatString(heatingCodes[x], "°C")
-								+ "\" <none> (gProserv, gProserv" + indexGroupActual + " gitemProServLog" + indexActual + indexPreset + ")";
+								+ "\" <none> (gProserv, gProserv" + indexGroupActual + ", gitemProServLog" + indexActual + indexPreset + ")";
 						writer.println(item0);
 						String item1 = "Number itemProServLog" + indexPreset + "   \"{MAP(proserv.map):STRING-" + indexPreset + "} "
 								+ mapProservLang.get("PRESET") + " " + getFormatString(heatingCodes[x], "°C")
-								+ "\" <none> (gProserv, gProserv" + indexGroupPreset + " gitemProServLog" + indexActual + indexPreset + ")";
+								+ "\" <none> (gProserv, gProserv" + indexGroupPreset + ", gitemProServLog" + indexActual + indexPreset + ")";
 						writer.println(item1);
 						if (getWeatherStationOutdoorTempIsEnabled()) {
 							String indexOutdoorTemp = Integer.toString(weatherStationMapId[4]);
