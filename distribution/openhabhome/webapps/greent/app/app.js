@@ -2644,7 +2644,7 @@ var oph_app = Ext.application({
 
         leftNavPanel = sitemapUIpanel.add(new Ext.NestedList({
               docked : 'left',
-              width : '14em',
+              width : '17em',
               //allowDeselect: false,
               scrollable : 'auto',
               //deselectOnContainerClick: false,
