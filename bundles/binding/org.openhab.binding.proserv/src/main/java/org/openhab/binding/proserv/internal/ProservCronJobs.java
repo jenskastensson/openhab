@@ -104,6 +104,7 @@ public class ProservCronJobs implements Serializable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void mergeOldJobs() {
 		try {
 			FileInputStream fileIn = new FileInputStream(serializeFile);

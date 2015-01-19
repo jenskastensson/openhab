@@ -187,6 +187,7 @@ public class ProservConnector {
 			// Object Server message
 			byte mainService = (byte) 0xF0;
 			byte subService = (byte) 0x06;
+			@SuppressWarnings("unused")
 			byte filter = (byte) 0x00;
 			dataout.writeByte(mainService);
 			dataout.writeByte(subService);

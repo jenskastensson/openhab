@@ -9,8 +9,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +65,7 @@ public class ProservData {
 	private byte weatherStationCode = 0x71;
 	byte weatherStationDefs = 0;
 	private int[] weatherStationMapId = new int[6];
+	@SuppressWarnings("unused")
 	private int weatherStationDataPoint;
 	private int lastMapId = 0;
 
