@@ -28,24 +28,11 @@ import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.Properties;
-
-// Start ProservConnectServer
-/*
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.net.ssl.HttpsURLConnection;
-*/
-// end ProservConnectServer
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -74,46 +61,11 @@ import org.openhab.action.mail.internal.Mail;
 @SuppressWarnings("unused")
 public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider> implements ManagedService {
 
-//////////////////////////////////////////////////////
-// Start ProservConnectServer
-/*
-	private StringBuffer sendToProservConnectServer(String MAC, String PIP, String LIP) throws Exception {
-		String url = "https://script.google.com/macros/s/AKfycbwz0tCIHC_d59jV0uiuXDABPX48e0lYGyDjifc7-9O6ATbEh8dB/exec?method=set";
-		url += "&mac=" + MAC + "&pip=" + PIP + "&lip=" + LIP;
-		//mac=01:23:45:67:89:ab&pip=33.44.55.66&lip=192.168.1.1
-		URL obj;
-
-		obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-		con.setRequestMethod("GET");
-		int responseCode = con.getResponseCode();
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
-		return response;
-	}
-	private static final String PATTERN_IPv4 = 
-	        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-
-	public static boolean validateIPv4(final String ip){          
-
-	      Pattern pattern = Pattern.compile(PATTERN_IPv4);
-	      Matcher matcher = pattern.matcher(ip);
-	      return matcher.matches();             
-	}
-*/
-// End ProservConnectServer
-//////////////////////////////////////////////////////
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProservBinding.class);
 
 	private static ProservConnector connector = null;
+	ProservXConnect proservXConnect = new ProservXConnect();
 	
 	/** Default refresh interval (currently 2 minute) */
 	private long refreshInterval = 125000L;
@@ -497,82 +449,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			eventPublisher.postUpdate(itemName, new StringType(ProservBinding.language));
 		}
 		//http://localhost:8080/CMD?ProservEmail=aa@bb.cc
-		else if(itemName.equals("ProservEmail") ){
-			
-// Start ProservConnectServer			
-//////////////////////////////////////////////////////
-/*
-			boolean bFoundGIP = false;
-			boolean bFoundLIP = false;
-			boolean bFoundMAC = false;
-			String publicIp = "";
-			String localIp = "";
-			String MacID = "";
-			try {
-				// Get public IP
-		        URL whatismyip = new URL("http://checkip.amazonaws.com");
-		        BufferedReader in = null;		
-	            in = new BufferedReader(new InputStreamReader(
-	                    whatismyip.openStream()));
-	            publicIp = in.readLine();	
-	            if(validateIPv4(publicIp)){
-	            	bFoundGIP = true;
-	            	logger.debug("Current public IP address : {}", publicIp);
-	            }
-				
-	            // force a connection to get the real local IP
-				Socket s = new Socket("www.google.com", 80);
-				localIp = s.getLocalAddress().getHostAddress();
-				s.close();
-	            if(validateIPv4(localIp)){
-	            	bFoundLIP = true;
-	            	logger.debug("Current local IP address : {}", localIp);
-	            }
-
-				// find the MacID
-				for (NetworkInterface network : IterableEnumeration.make(NetworkInterface.getNetworkInterfaces())) {
-					byte[] mac = network.getHardwareAddress();
-					if (mac != null) {
-						StringBuilder sb = new StringBuilder();
-						for (int i = 0; i < mac.length; i++) {
-							sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-						}
-						logger.debug("Examine MAC address : {}", sb.toString());
-
-						// Bound InetAddress for interface
-						for (InetAddress address : IterableEnumeration.make(network.getInetAddresses())) {
-							String currentIP = address.getHostAddress();
-							logger.debug(" is bound to: {}", currentIP);
-							if(currentIP.equals(localIp)){
-								MacID = sb.toString();
-								logger.debug("Found MacID bound to local IP: {} MacID: {}", currentIP, sb.toString());
-								bFoundMAC = true;
-							}
-						}
-					}
-				}
-			} catch ( IOException e) {
-				logger.debug("IOException when looking for IP and MacID: Error:{}", e.toString());
-			}		
-			
-			if(bFoundGIP && bFoundLIP && bFoundMAC){
-				logger.debug("Send HTTP to proSevConnectServer");
-				try {
-					sendToProservConnectServer(MacID, publicIp, localIp);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-			}
-			else {
-				logger.error("Error: Did not find all of GlobalIP:{} LocalIP:{} MacID:{}", bFoundGIP, bFoundLIP, bFoundMAC);
-			}
-			
-*/			
-// End ProservConnectServer
-//////////////////////////////////////////////////////
-			
+		else if(itemName.equals("ProservEmail") ){			
 			if(command.toString().equals("?")){
 				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.mailTo));				
 			} else {
@@ -653,10 +530,14 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
 		case 0x31:{
 			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
-			if(proservData.getFunctionStateIsInverted(x,y))
+			//logger.debug("updateSendEmail: dataValue[0]:{},  b:{}, x:{}, y:{}", dataValue[0], b, x, y);
+			if(proservData.getFunctionStateIsInverted(x,y)){
 				b = !b;
+				//logger.debug("updateSendEmail: isInverted b:{}, x:{}, y:{}", b, x, y);
+			}
 			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
 			{
+				//logger.debug("updateSendEmail: previousEmailTrigger:{},  b:{}    isTrigger:{}, x:{}, y:{}", previousEmailTrigger, b, proservData.getFunctionIsEmailTrigger(x, y), x, y);
 				previousEmailTrigger = b;
 				sendAlertMail(proservData.getFunctionDescription(x, y));
 		    }
@@ -960,9 +841,11 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 		logger.debug("proServ binding refresh cycle starts!");
 	
+		proservXConnect.handleProservConnectServer();
+		
 		try {
 			if(connector == null && !ip.isEmpty()) {
-				connector = new ProservConnector(ip, port);	
+				connector = new ProservConnector(ip, port);					
 			}			
 			
 			if(connector != null) {
@@ -1097,7 +980,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 		}
 	}
-
+	
 	private void createFiles() {
 		proservData.updateProservMapFile();
 		proservData.updateProservItemFile(proservCronJobs);
