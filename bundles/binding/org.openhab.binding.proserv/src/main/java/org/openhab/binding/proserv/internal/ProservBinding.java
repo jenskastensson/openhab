@@ -76,7 +76,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String mailTo = "";
 	private static String mailSubject = "";
 	private static String mailContent = "";
-	private static Boolean previousEmailTrigger = null;
+	private static Boolean previousEmailTrigger[][] = new Boolean[18][16];
 	private static String language = null;
 	private static String chartItemRefreshHour = null;
 	private static String chartItemRefreshDay = null;
@@ -524,28 +524,29 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		}
 	}
 	
-	public void updateSendEmail(int x, int y, byte[] dataValue) {
+	public synchronized void updateSendEmail(int x, int y, byte[] dataValue) {
 		int startDatapoint = (48*x) + (y*3) + 1;
 		proservData.setFunctionDataPoint(startDatapoint, x, y, 0);
 		switch ((int)proservData.getFunctionCodes(x, y) & 0xFF) {
 		case 0x31:{
-			boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
-			//logger.debug("updateSendEmail: dataValue[0]:{},  b:{}, x:{}, y:{}", dataValue[0], b, x, y);
+			boolean bCurrent = proservData.parse1ByteBooleanValue(dataValue[0]);
+			//logger.debug("updateSendEmail: dataValue[0]:{},  bCurrent:{}, x:{}, y:{}", dataValue[0], bCurrent, x, y);
 			if(proservData.getFunctionStateIsInverted(x,y)){
-				b = !b;
-				//logger.debug("updateSendEmail: isInverted b:{}, x:{}, y:{}", b, x, y);
+				bCurrent = !bCurrent;
+				//logger.debug("updateSendEmail: isInverted bCurrent:{}, x:{}, y:{}", bCurrent, x, y);
 			}
-			if(previousEmailTrigger!=null && previousEmailTrigger==false && b==true && proservData.getFunctionIsEmailTrigger(x, y))
+			if(previousEmailTrigger[x][y]!=null && previousEmailTrigger[x][y]==false && bCurrent==true && proservData.getFunctionIsEmailTrigger(x, y))
 			{
-				//logger.debug("updateSendEmail: previousEmailTrigger:{},  b:{}    isTrigger:{}, x:{}, y:{}", previousEmailTrigger, b, proservData.getFunctionIsEmailTrigger(x, y), x, y);
-				previousEmailTrigger = b;
+				logger.debug("updateSendEmail: ---Sending!--- previousEmailTrigger[{}][{}]:{},  bCurrent:{}", x, y, previousEmailTrigger[x][y], bCurrent);
 				sendAlertMail(proservData.getFunctionDescription(x, y));
 		    }
-			previousEmailTrigger = b;
+			else{
+				logger.debug("updateSendEmail: set previousEmailTrigger[{}][{}] = {} to new value:{}", x, y, previousEmailTrigger[x][y], bCurrent);
+			}
+			previousEmailTrigger[x][y] = bCurrent;
 		} break;
 		default:
-			logger.debug("proServ binding, unhandled functioncode 0x{}", 
-					Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
+			logger.debug("proServ binding, unhandled functioncode 0x{}", Integer.toHexString(((int)proservData.getFunctionCodes(x, y) & 0xFF)));
 		}		
 	}
 	
