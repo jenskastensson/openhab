@@ -845,6 +845,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservXConnect.handleProservConnectServer();
 		
 		try {
+//			if(connector == null && ip.isEmpty()) {
+//				ProservDiscovery.search();
+//			}
+				
 			if(connector == null && !ip.isEmpty()) {
 				connector = new ProservConnector(ip, port);					
 			}			

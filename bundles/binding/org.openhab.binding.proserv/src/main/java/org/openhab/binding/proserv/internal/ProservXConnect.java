@@ -50,7 +50,7 @@ public class ProservXConnect {
 		return MacID;
 	}
 
-	private String getLocalIPAddress() {
+	public static String getLocalIPAddress() {
 		try {
 			for (Enumeration<NetworkInterface> mEnumeration = NetworkInterface.getNetworkInterfaces(); mEnumeration.hasMoreElements();) {
 				NetworkInterface intf = (NetworkInterface) mEnumeration.nextElement();
