@@ -22,7 +22,7 @@ public class ProservXConnect {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProservBinding.class);
 	
-	private String findMacidFromIp(String localIp) throws SocketException {
+	private static String findMacidFromIp(String localIp) throws SocketException {
 		String MacID = "";
 		for (NetworkInterface network : IterableEnumeration.make(NetworkInterface.getNetworkInterfaces())) {
 			byte[] mac = network.getHardwareAddress();
@@ -50,7 +50,7 @@ public class ProservXConnect {
 		return MacID;
 	}
 
-	public static String getLocalIPAddress() {
+	private static String getLocalIPAddress() {
 		try {
 			for (Enumeration<NetworkInterface> mEnumeration = NetworkInterface.getNetworkInterfaces(); mEnumeration.hasMoreElements();) {
 				NetworkInterface intf = (NetworkInterface) mEnumeration.nextElement();
@@ -86,15 +86,117 @@ public class ProservXConnect {
 		}
 	}
 
+	private static boolean bFoundGIP = false;
+	private static boolean bFoundLIP = false;
+	private static boolean bFoundMAC = false;
+	private static String publicIp = "";
+	private static String localIp = "";
+	private static String MacID = "";
+	private static String hostName = "";
+
+	public static boolean isbFoundLIP() {
+		return bFoundLIP;
+	}
+
+	public static void setbFoundLIP(boolean bFoundLIP) {
+		ProservXConnect.bFoundLIP = bFoundLIP;
+	}
+
+	public static String getLocalIp() {
+		return localIp;
+	}
+
+	public static void setLocalIp(String localIp) {
+		ProservXConnect.localIp = localIp;
+	}
+	
+	public static boolean getValidMacIdAndIP4Address(){
+		boolean bRet = false;
+		setbFoundLIP(false);
+		bFoundMAC = false;
+		setLocalIp("");
+		MacID = "";
+		
+		try {
+			// Get local IP and MacID Method 1
+			// PC : OK
+			// PC & VPN: OK
+			// DS : nok (wrong local IP v6?)
+			// DS & VPN: nok (wrong local ip vpn server plus wrong macid)
+			setLocalIp(getLocalIPAddress());
+			logger.debug("Method1: getLocalIPAddress returns local IP : {}", getLocalIp());
+			if (validateIPv4(getLocalIp())) {
+				setbFoundLIP(true);
+				MacID = findMacidFromIp(getLocalIp());
+				if (!MacID.isEmpty()) {
+					bFoundMAC = true;
+					logger.debug("Method 1: found local IP : {}, MacID : {}", getLocalIp(), MacID);
+				}
+			} else {
+				logger.debug("Invalid local IP address : {}", getLocalIp());
+			}
+			logger.debug("Method 1 summary : MacID: {}, publicIp: {}, localIp: {}", MacID, publicIp, getLocalIp());
+
+			// Get local IP and MacID Method 2
+			// PC : OK
+			// PC & VPN: nok (wrong local ip vpn server & empty macid)
+			// DS : OK
+			// DS & VPN: nok (wrong local ip vpn server & invalid macid)
+			if (MacID.isEmpty()) {
+				// force a connection to get the real local IP
+				Socket s = new Socket("www.google.com", 80);
+				setLocalIp(s.getLocalAddress().getHostAddress());
+				s.close();
+				logger.debug("Method 2: local IP address : {}", getLocalIp());
+				if (validateIPv4(getLocalIp())) {
+					setbFoundLIP(true);
+					logger.debug("Alternative method found local IP address : {}", getLocalIp());
+					MacID = findMacidFromIp(getLocalIp());
+					if (!MacID.isEmpty()) {
+						bFoundMAC = true;
+						logger.debug("Method 2: found local IP : {}, MacID : {}", getLocalIp(), MacID);
+					}
+				} else {
+					logger.debug("Invalid local IP address : {}", getLocalIp());
+				}
+				logger.debug("Method 2 summary : MacID: {}, publicIp: {}, localIp: {}", MacID, publicIp, getLocalIp());
+			}
+
+			// Get local IP and MacID Method 3
+			// PC : nok
+			// PC & VPN: nok (wrong local v6?)
+			// DS : OK
+			// DS & VPN: OK
+			if (MacID.isEmpty()) {
+				InetAddress addrs[] = InetAddress.getAllByName(hostName);
+				for (InetAddress a : addrs) {
+					setLocalIp(a.getHostAddress());
+					logger.debug("Method 3: local IP address : {}", getLocalIp());
+					if (validateIPv4(getLocalIp())) {
+						MacID = findMacidFromIp(getLocalIp());
+						if (!MacID.isEmpty()) {
+							bFoundMAC = true;
+							logger.debug("Method 3: found local IP : {}, MacID : {}", getLocalIp(), MacID);
+						}
+					} else {
+						logger.debug("Invalid local IP address : {}", getLocalIp());
+					}
+				}
+				logger.debug("Method 3 summary : MacID: {}, publicIp: {}, localIp: {}, hostName:{}", MacID, publicIp, getLocalIp(), hostName);
+			}
+		
+		} catch (IOException e) {
+			logger.debug("IOException when looking for IP and MacID: Error:{}", e.toString());
+		}
+		return bRet;
+	}
+	
 	private boolean doProservConnectServer() {
 		boolean bRet = false;
-		boolean bFoundGIP = false;
-		boolean bFoundLIP = false;
-		boolean bFoundMAC = false;
-		String publicIp = "";
-		String localIp = "";
-		String MacID = "";
-		String hostName = "";
+		bFoundGIP = false;
+		hostName = "";
+		publicIp = "";
+
 		try {
 			// Get public IP
 			URL whatismyip = new URL("http://checkip.amazonaws.com");
@@ -110,89 +212,24 @@ public class ProservXConnect {
 			
 			// Get the hostname
 			hostName = InetAddress.getLocalHost().getHostName();
-
-			// Get local IP and MacID Method 1
-			// PC : OK
-			// PC & VPN: OK
-			// DS : nok (wrong local IP v6?)
-			// DS & VPN: nok (wrong local ip vpn server plus wrong macid)
-			localIp = getLocalIPAddress();
-			logger.debug("Method1: getLocalIPAddress returns local IP : {}", localIp);
-			if (validateIPv4(localIp)) {
-				bFoundLIP = true;
-				MacID = findMacidFromIp(localIp);
-				if (!MacID.isEmpty()) {
-					bFoundMAC = true;
-					logger.debug("Method 1: found local IP : {}, MacID : {}", localIp, MacID);
-				}
-			} else {
-				logger.debug("Invalid local IP address : {}", localIp);
-			}
-			logger.debug("Method 1 summary : MacID: {}, publicIp: {}, localIp: {}", MacID, publicIp, localIp);
-
-			// Get local IP and MacID Method 2
-			// PC : OK
-			// PC & VPN: nok (wrong local ip vpn server & empty macid)
-			// DS : OK
-			// DS & VPN: nok (wrong local ip vpn server & invalid macid)
-			if (MacID.isEmpty()) {
-				// force a connection to get the real local IP
-				Socket s = new Socket("www.google.com", 80);
-				localIp = s.getLocalAddress().getHostAddress();
-				s.close();
-				logger.debug("Method 2: local IP address : {}", localIp);
-				if (validateIPv4(localIp)) {
-					bFoundLIP = true;
-					logger.debug("Alternative method found local IP address : {}", localIp);
-					MacID = findMacidFromIp(localIp);
-					if (!MacID.isEmpty()) {
-						bFoundMAC = true;
-						logger.debug("Method 2: found local IP : {}, MacID : {}", localIp, MacID);
-					}
-				} else {
-					logger.debug("Invalid local IP address : {}", localIp);
-				}
-				logger.debug("Method 2 summary : MacID: {}, publicIp: {}, localIp: {}", MacID, publicIp, localIp);
-			}
-
-			// Get local IP and MacID Method 3
-			// PC : nok
-			// PC & VPN: nok (wrong local v6?)
-			// DS : OK
-			// DS & VPN: OK
-			if (MacID.isEmpty()) {
-				InetAddress addrs[] = InetAddress.getAllByName(hostName);
-				for (InetAddress a : addrs) {
-					localIp = a.getHostAddress();
-					logger.debug("Method 3: local IP address : {}", localIp);
-					if (validateIPv4(localIp)) {
-						MacID = findMacidFromIp(localIp);
-						if (!MacID.isEmpty()) {
-							bFoundMAC = true;
-							logger.debug("Method 3: found local IP : {}, MacID : {}", localIp, MacID);
-						}
-					} else {
-						logger.debug("Invalid local IP address : {}", localIp);
-					}
-				}
-				logger.debug("Method 3 summary : MacID: {}, publicIp: {}, localIp: {}, hostName:{}", MacID, publicIp, localIp, hostName);
-			}
-
+			
+			getValidMacIdAndIP4Address();
+			
 		} catch (IOException e) {
 			logger.debug("IOException when looking for IP and MacID: Error:{}", e.toString());
 		}
 
-		if (bFoundGIP && bFoundLIP && bFoundMAC) {
+		if (bFoundGIP && isbFoundLIP() && bFoundMAC) {
 			logger.debug("Send HTTP to proSevConnectServer");
 			try {
-				logger.info("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}", MacID, publicIp, localIp, hostName);
-				bRet = sendToProservConnectServer(MacID, publicIp, localIp, hostName);
+				logger.info("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}", MacID, publicIp, getLocalIp(), hostName);
+				bRet = sendToProservConnectServer(MacID, publicIp, getLocalIp(), hostName);
 			} catch (Exception e) {
 				logger.error("sendToProservConnectServer exception: {}", e);
 			}
 
 		} else {
-			logger.error("Error: Did not find all of GlobalIP:{} LocalIP:{} MacID:{}", bFoundGIP, bFoundLIP, bFoundMAC);
+			logger.error("Error: Did not find all of GlobalIP:{} LocalIP:{} MacID:{}", bFoundGIP, isbFoundLIP(), bFoundMAC);
 		}
 		return bRet;
 	}

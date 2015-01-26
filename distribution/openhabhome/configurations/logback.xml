@@ -28,6 +28,8 @@
 	<logger name="org.atmosphere.cpr.AtmosphereFramework" level="OFF" />
 	<logger name="org.openhab.binding.sonos" level="ERROR" />
 	<logger name="org.teleal.cling" level="ERROR" />
+	<logger name="org.openhab.ui.webapp.internal.servlet" level="ERROR" />
+
 	<root level="WARN">
 		<appender-ref ref="FILE" />
 	</root>
