@@ -27,8 +27,7 @@ public class ProservDiscovery {
     	proservIP = "";
     	
 		try {
-			ProservXConnect.getValidMacIdAndIP4Address();
-			if (ProservXConnect.isbFoundLIP() ) {
+			if (ProservXConnect.getValidMacIdAndIP4Address()) {
 				InetAddress ipLocal = InetAddress.getByName(ProservXConnect.getLocalIp());
 				byte[] bytesIP = ipLocal.getAddress();		
 		    	byte[] outBuf = new byte[14];
