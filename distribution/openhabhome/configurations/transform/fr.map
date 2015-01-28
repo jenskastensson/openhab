@@ -40,4 +40,7 @@ CLOSE=Fermer
 OPEN=Ouvrir
 IN=Rentrer
 OUT=Sortir
-
+PLEASE-CONFIGURE-IP=FR:Please configure proserv IP ---------------->
+NO-CONNECTION-PROSERV=FR:No connection to proServ, check IP configuration! After a change of IP, wait 2 minutes to take effect. Finally refresh the browser.
+PLEASE-CONFIGURE-CLASSIC=FR:Please configure proserv IP from proServX 'standard'
+NO-CONNECTION-PROSERV-CLASSIC=FR:No connection to proServ, check IP configuration!

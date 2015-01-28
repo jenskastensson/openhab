@@ -846,6 +846,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		
 		try {
 			if(connector == null && ip.isEmpty()) {
+				ProservData.updateProservDefaultSitemapFiles(language);
 				if(ProservDiscovery.search()){
 					ProservBinding.ip = ProservDiscovery.getProservIP(); 
 					ProservData.writeConfigData("proserv:ip", ProservBinding.ip);	
