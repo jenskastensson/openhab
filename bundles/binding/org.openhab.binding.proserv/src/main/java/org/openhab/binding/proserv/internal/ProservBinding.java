@@ -847,6 +847,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		try {
 			if(connector == null && ip.isEmpty()) {
 				ProservData.updateProservDefaultSitemapFiles(language);
+				ProservData.updateLangDirJsFile(language);
 				if(ProservDiscovery.search()){
 					ProservBinding.ip = ProservDiscovery.getProservIP(); 
 					ProservData.writeConfigData("proserv:ip", ProservBinding.ip);	
@@ -864,6 +865,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					proservData = null;
 					proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, 
 							chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear, language );
+					ProservData.updateLangDirJsFile(language);
 					byte[] proservAllConfigValues = getConfigValues();
 					if (proservAllConfigValues == null) {
 						logger.debug("proServ getConfigValues failed try again");
