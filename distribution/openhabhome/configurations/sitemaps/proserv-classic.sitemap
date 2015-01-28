@@ -1,8 +1,7 @@
 sitemap proserv label="Please configure proserv IP from proServX 'standard'"
 {
-
    Frame {
-		Group item=gProservBoot icon="pie" label="No connection to proServ, check IP configuration! "
+		Group icon="pie" label="No connection to proServ, check IP configuration!"
    }
 
 }

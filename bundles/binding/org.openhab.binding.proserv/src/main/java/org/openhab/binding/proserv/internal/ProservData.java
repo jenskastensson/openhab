@@ -69,7 +69,7 @@ public class ProservData {
 	private int weatherStationDataPoint;
 	private int lastMapId = 0;
 
-	private Map<String, String> mapProservLang = new HashMap<String, String>();
+	private static Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
 	public boolean refresh = false;
 
@@ -528,7 +528,7 @@ public class ProservData {
 		return false;
 	}
 
-	public void loadProservLang() {
+	public static void loadProservLang() {
 		Reader reader = null;
 		String filename = ProservData.language + ".map";
 		try {
@@ -537,6 +537,7 @@ public class ProservData {
 			reader = new FileReader(path);
 			properties.load(reader);
 
+			mapProservLang.clear();
 			mapProservLang.put("ACTIVATE", properties.getProperty("ACTIVATE"));
 			mapProservLang.put("ACTUAL", properties.getProperty("ACTUAL"));
 			mapProservLang.put("PRESET", properties.getProperty("PRESET"));
@@ -566,7 +567,11 @@ public class ProservData {
 			mapProservLang.put("DOWN", properties.getProperty("DOWN"));
 			mapProservLang.put("IN", properties.getProperty("IN"));
 			mapProservLang.put("OUT", properties.getProperty("OUT"));
-
+			mapProservLang.put("PLEASE-CONFIGURE-IP", properties.getProperty("PLEASE-CONFIGURE-IP"));
+			mapProservLang.put("NO-CONNECTION-PROSERV", properties.getProperty("NO-CONNECTION-PROSERV"));
+			mapProservLang.put("PLEASE-CONFIGURE-CLASSIC", properties.getProperty("PLEASE-CONFIGURE-CLASSIC"));
+			mapProservLang.put("NO-CONNECTION-PROSERV-CLASSIC", properties.getProperty("NO-CONNECTION-PROSERV-CLASSIC"));
+			
 		} catch (IOException e) {
 			String message = "opening file '" + filename + "' throws exception";
 			logger.error(message, e);
@@ -836,6 +841,35 @@ public class ProservData {
 		return formatString;
 	}
 
+	public static void updateProservDefaultSitemapFiles(String language) {
+		String filenameStandard = "proserv.sitemap";
+		String filenameClassic = "proserv-classic.sitemap";
+		ProservData.language = language;
+		try {
+			loadProservLang();
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filenameStandard;
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			String labelPleaseConfigure = mapProservLang.get("PLEASE-CONFIGURE-IP");
+			String labelNoConnectionProserv = mapProservLang.get("NO-CONNECTION-PROSERV");
+			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
+			writer.println("}");
+			writer.close();
+			path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filenameClassic;
+			writer = new PrintWriter(path, "UTF-8");
+			labelPleaseConfigure = mapProservLang.get("PLEASE-CONFIGURE-CLASSIC");
+			labelNoConnectionProserv = mapProservLang.get("NO-CONNECTION-PROSERV-CLASSIC");
+			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
+			writer.println("}");
+			writer.close();
+		} catch (IOException e) {
+			String message = "opening file '" + filenameStandard + "' throws exception";
+			logger.error(message, e);
+		} finally {
+
+		}
+		
+	}
+	
 	private void sitemapFileHelper(PrintWriter writer, String index) {
 		writer.println("	Frame {\n      Text label=\"{MAP(proserv.map):STRING-" + index + "}\" icon=\"chart\" {");
 		writer.println("         Text item=itemProServLog" + index);
@@ -1533,5 +1567,6 @@ public class ProservData {
 		}
 
 	}
+
 
 }

@@ -1,8 +1,7 @@
 sitemap proserv label="Please configure proserv IP ---------------->"
 {
-
    Frame {
-		Group item=gProservBoot icon="pie" label="No connection to proServ, check IP configuration! After a change of IP, wait 30 sec to take effect. Finally refresh the browser."
+		Group icon="pie" label="No connection to proServ, check IP configuration! After a change of IP, wait 2 minutes to take effect. Finally refresh the browser."
    }
 
 }
