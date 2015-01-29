@@ -16,4 +16,4 @@ del /Q /S .\etc\habmin\charts.xml
 del /Q /S .\logs\*.*
 del /Q /S .\webapps\static\*.*
 rmdir .\webapps\static
-del /Q /S .\webapps\proserv\scheduler.html
+del /Q /S .\webapps\proserv\langdir.js
