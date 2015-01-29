@@ -2734,7 +2734,8 @@ var oph_app = Ext.application({
       } else {
         loadUIData(sitemap);
       }
-
+      if(window.location.hash.toLowerCase()=='#settings')
+        showSettingsWindow();
     }
   });
 
