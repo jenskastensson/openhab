@@ -1170,7 +1170,7 @@ public class ProservData {
 			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelAllValues + "\" {");			
 			writer.println("			Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"");
 			int lastMapId = getLastMapId() / 10;
-			for (int n = 0; n <= lastMapId; n++) {
+			for (int n = 0; n < lastMapId; n++) {
 				int m = n+1;
 				writer.println("			Group item=gProserv"+ n +" icon=\"pie\" label=\"" + labelAllValues + " " + m + "\"");
 			}
