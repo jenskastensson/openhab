@@ -441,6 +441,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			boolean retVal = true;
 			if(isSupportedLanguage(command.toString())){
 				ProservBinding.language = command.toString();
+				ProservData.updateLangDirJsFile(language);				
 				retVal = ProservData.writeConfigData("proserv:language", ProservBinding.language);	
 			}
 			if(retVal==false)

@@ -423,7 +423,7 @@ var settingsWindow = {
                                 setTimeout(function(){ 
                                   alert(OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect); 
                                   window.location.reload(true); 
-                                  },60000);                    
+                                  },120000);                    
                               }
                             }
                           });
