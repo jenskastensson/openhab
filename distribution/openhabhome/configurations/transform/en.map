@@ -43,4 +43,4 @@ OUT=Out
 PLEASE-CONFIGURE-IP=Please configure proserv IP ---------------->
 NO-CONNECTION-PROSERV=No connection to proServ, check IP configuration! After a change of IP, wait 2 minutes to take effect. Finally refresh the browser.
 PLEASE-CONFIGURE-CLASSIC=Please configure proserv IP from proServX 'standard'
-NO-CONNECTION-PROSERV-CLASSIC=No connection to proServ, check IP configuration!
+NO-CONNECTION-PROSERV-CLASSIC=No connection to proServ, check IP configuration! 
