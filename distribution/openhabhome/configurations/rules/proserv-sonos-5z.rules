@@ -1,0 +1,1442 @@
+import org.openhab.core.library.types.* 
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+
+var String[] RinconString1 = "RINCON_000AAA7C590C01400"
+var String[] RinconString2 = "RINCON_000E58BDA44001400"
+var String[] RinconString3 = "RINCON_B8E937380D2C01400"
+var String[] RinconString4 = "RINCON_000E587C590C01400"
+var String[] RinconString5 = "RINCON_000AAA87C59C01400"
+var String[] RadioStation1 = "TSF Jazz"
+var String[] RadioStation2 = "France Info"
+var String[] RadioStation3 = "Joe Cocker"
+var String[] RadioStation4 = "MaListe"
+var String[] RadioStation5 = "Mozart No 40"
+var Number counter
+
+rule "Startup"
+when 
+	System started
+	then
+		counter = 0
+end
+
+rule "test every 30 seconds"
+when 
+	Time cron "*/30 * * * * ?"
+	then
+		if (counter == 0) {
+			sendCommand( z1Sonos_Standalone, ON)
+			sendCommand( z2Sonos_Standalone, ON)
+			sendCommand( z3Sonos_Standalone, ON)
+			sendCommand( z4Sonos_Standalone, ON)
+			sendCommand( z5Sonos_Standalone, ON)
+			counter = 1
+		}
+end
+
+rule "ungroup all"
+	when
+		Item  KNX_Standalone received command
+	then
+		sendCommand( z1Sonos_Standalone, ON)
+		sendCommand( z2Sonos_Standalone, ON)
+		sendCommand( z3Sonos_Standalone, ON)
+		sendCommand( z4Sonos_Standalone, ON)
+		sendCommand( z5Sonos_Standalone, ON)
+end
+
+rule "Send transport to all"
+	when
+		Item  KNX_Power received command
+	then
+		sendCommand( z1KNX_Power, receivedCommand)
+		sendCommand( z2KNX_Power, receivedCommand)
+		sendCommand( z3KNX_Power, receivedCommand)
+		sendCommand( z4KNX_Power, receivedCommand)
+		sendCommand( z5KNX_Power, receivedCommand)
+end
+
+/**
+ * This rule saves the actual zone master to a KNX item
+ */
+rule "z1 Master control"
+	when
+		Item  z1Sonos_goupid received update
+	then
+		var String[] z1master = z1Sonos_goupid.state.toString().split(":").get(0)
+		switch (z1master) {
+			case RinconString1 : sendCommand( z1ZoneMaster, 1)
+			case RinconString2 : sendCommand( z1ZoneMaster, 2)
+			case RinconString3 : sendCommand( z1ZoneMaster, 3)
+			case RinconString4 : sendCommand( z1ZoneMaster, 4)
+			case RinconString5 : sendCommand( z1ZoneMaster, 5)
+		}
+		logDebug("z1ZoneMaster ", " " + z1ZoneMaster )
+end
+rule "z2 Master control"
+	when
+		Item  z2Sonos_goupid received update
+	then
+		var String[] z2master = z2Sonos_goupid.state.toString().split(":").get(0)
+		switch (z2master) {
+			case RinconString1 : sendCommand( z2ZoneMaster, 1)
+			case RinconString2 : sendCommand( z2ZoneMaster, 2)
+			case RinconString3 : sendCommand( z2ZoneMaster, 3)
+			case RinconString4 : sendCommand( z2ZoneMaster, 4)
+			case RinconString5 : sendCommand( z2ZoneMaster, 5)
+		}
+		logDebug("z2zoneMaster", " " + z2ZoneMaster )
+end
+rule "z3 Master control"
+	when
+		Item  z3Sonos_goupid received update
+	then
+		var String[] z3master = z3Sonos_goupid.state.toString().split(":").get(0)
+		switch (z3master) {
+			case RinconString1 : sendCommand( z3ZoneMaster, 1)
+			case RinconString2 : sendCommand( z3ZoneMaster, 2)
+			case RinconString3 : sendCommand( z3ZoneMaster, 3)
+			case RinconString4 : sendCommand( z3ZoneMaster, 4)
+			case RinconString5 : sendCommand( z3ZoneMaster, 5)
+		}
+		logDebug("z3zoneMaster", " " + z3ZoneMaster )
+end
+rule "z4 Master control"
+	when
+		Item  z4Sonos_goupid received update
+	then
+		var String[] z4master = z4Sonos_goupid.state.toString().split(":").get(0)
+		switch (z4master) {
+			case RinconString1 : sendCommand( z4ZoneMaster, 1)
+			case RinconString2 : sendCommand( z4ZoneMaster, 2)
+			case RinconString3 : sendCommand( z4ZoneMaster, 3)
+			case RinconString4 : sendCommand( z4ZoneMaster, 4)
+			case RinconString5 : sendCommand( z4ZoneMaster, 5)
+		}
+		logDebug("z4zoneMaster", " " + z4ZoneMaster )
+end
+rule "z5 Master control"
+	when
+		Item  z5Sonos_goupid received update
+	then
+		var String[] z5master = z5Sonos_goupid.state.toString().split(":").get(0)
+		switch (z5master) {
+			case RinconString1 : sendCommand( z5ZoneMaster, 1)
+			case RinconString2 : sendCommand( z5ZoneMaster, 2)
+			case RinconString3 : sendCommand( z5ZoneMaster, 3)
+			case RinconString4 : sendCommand( z5ZoneMaster, 4)
+			case RinconString5 : sendCommand( z5ZoneMaster, 5)
+		}
+		logDebug("z5zoneMaster", " " + z5ZoneMaster )
+end
+
+
+
+/**
+ * This rule controls the state on the sonos z1
+ */
+rule "z1State transport control"
+	when
+		Item z1Sonos_Transport received update
+	then
+		var value = z1KNX_Power.state
+			
+		if(z1Sonos_Transport.state == "PLAYING") value = ON
+		else if(z1Sonos_Transport.state == "PAUSED_PLAYBACK") value = OFF
+		else if(z1Sonos_Transport.state == "STOPPED") value = OFF
+
+		sendCommand(z1KNX_PowerOut, value.toString);
+		sendCommand(z1Sonos_Mute, OFF)
+end
+
+rule "z1Send State transport to slaves"
+	when
+
+		Item  z1KNX_PowerOut received update
+	then
+		var value =  z1KNX_PowerOut.state
+/*		if(z1ZoneMaster.state == 1){
+			logDebug("send z1 state to z1 slave", " " + value)
+			sendCommand( z1KNX_PowerOut, value.toString);
+			sendCommand( z1Sonos_Mute, OFF)
+		}*/
+		if(z2ZoneMaster.state == 1){
+			logDebug("send z1 state to z2 slave", " " + value)
+			sendCommand( z2KNX_PowerOut, value.toString);
+			sendCommand( z2Sonos_Mute, OFF)
+		}
+		if(z3ZoneMaster.state == 1){
+			logDebug("send z1 state to z3 slave", " " + value)
+			sendCommand( z3KNX_PowerOut, value.toString);
+			sendCommand( z3Sonos_Mute, OFF)
+		}
+		if(z4ZoneMaster.state == 1){
+			logDebug("send z1 state to z4 slave", " " + value)
+			sendCommand( z4KNX_PowerOut, value.toString);
+			sendCommand( z4Sonos_Mute, OFF)
+		}
+		if(z5ZoneMaster.state == 1){
+			logDebug("send z1 state to z5 slave", " " + value)
+			sendCommand( z5KNX_PowerOut, value.toString);
+			sendCommand( z5Sonos_Mute, OFF)
+		}
+end
+
+rule "z1Send State transport to master"
+	when
+		Item  z1KNX_Power received command
+	then
+/*		if(z1ZoneMaster.state == 1){
+			logDebug("mastercontrol", " " + z1ZoneMaster)
+			sendCommand( z1KNX_Power, receivedCommand)
+		}*/
+		if(z1ZoneMaster.state == 2){
+			logDebug("mastercontrol", " " + z2ZoneMaster)
+			sendCommand( z2KNX_Power, receivedCommand)
+		}
+		if(z1ZoneMaster.state == 3){
+			logDebug("mastercontrol", " " + z3ZoneMaster)
+			sendCommand( z3KNX_Power, receivedCommand)
+		}
+		if(z1ZoneMaster.state == 4){
+			logDebug("mastercontrol", " " + z4ZoneMaster)
+			sendCommand( z4KNX_Power, receivedCommand)
+		}
+		if(z1ZoneMaster.state == 5){
+			logDebug("mastercontrol", " " + z5ZoneMaster)
+			sendCommand( z5KNX_Power, receivedCommand)
+		}
+end
+
+rule "z1Send Next to master"
+	when
+		Item z1Sonos_Next received command
+	then
+		switch (z1ZoneMaster.state){
+			//case 1 : sendCommand( z1Sonos_Next, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Next, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Next, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Next, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Next, receivedCommand)
+		}
+end
+
+rule "z1Send Previous to master"
+	when
+		Item z1Sonos_Previous received command
+	then
+		switch (z1ZoneMaster.state){
+			//case 1 : sendCommand( z1Sonos_Previous, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Previous, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Previous, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Previous, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Previous, receivedCommand)
+		}
+end
+
+rule "z1Mute control"
+	when
+		Item z1Sonos_Mute received command
+	then
+		sendCommand(z1KNX_MuteOut, receivedCommand)
+end
+
+/**
+ * This rule changes the radio station with 1Bit Telegramm
+ */
+rule "z1Change Radio Station"
+	when
+		Item z1KNX_Ch_Radio received command
+	then
+		var Number Radiostation = 1
+		if(z1KNX_Radio_Out.state instanceof DecimalType) Radiostation = z1KNX_Radio_Out.state as DecimalType 
+		if(receivedCommand==ON) {
+			Radiostation = Radiostation + 1
+			if(Radiostation>5) Radiostation = 1
+		} else {
+			Radiostation = Radiostation - 1
+			if(Radiostation<1) Radiostation = 5
+		}
+		var value = " "
+		switch (Radiostation.toString()) {
+			case "1" : value = RadioStation1
+			case "2" : value = RadioStation2
+			case "3" : value = RadioStation3
+			case "4" : value = RadioStation4
+			case "5" : value = RadioStation5
+		}
+		switch (z1ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Radio_Out, value)
+			case 2 : sendCommand( z2Sonos_Radio_Out, value)
+			case 3 : sendCommand( z3Sonos_Radio_Out, value)
+			case 4 : sendCommand( z4Sonos_Radio_Out, value)
+			case 5 : sendCommand( z5Sonos_Radio_Out, value)
+		}
+		sendCommand( z1KNX_Radio_Out, Radiostation);
+
+end
+
+/**
+ * This rule controls the Radio List on the living sonos
+ */
+rule "z1Radio station control"
+	when
+		Item z1Sonos_Radio_In received update
+	then
+		var value = " "
+		switch(z1Sonos_Radio_In.state) {
+			case 1 : value = RadioStation1
+			case 2 : value = RadioStation2
+			case 3 : value = RadioStation3
+			case 4 : value = RadioStation4
+			case 5 : value = RadioStation5
+		}
+		if( z1Sonos_Radio_In.state!=0) {	
+			switch (z1ZoneMaster.state){
+				case 1 : sendCommand( z1Sonos_Radio_Out, value)
+				case 2 : sendCommand( z2Sonos_Radio_Out, value)
+				case 3 : sendCommand( z3Sonos_Radio_Out, value)
+				case 4 : sendCommand( z4Sonos_Radio_Out, value)
+				case 5 : sendCommand( z5Sonos_Radio_Out, value)
+			}		
+			sendCommand( z1KNX_Radio_Out,  z1Sonos_Radio_In.state.toString());
+		} else {
+			switch (z1ZoneMaster.state){
+				case 1 : sendCommand( z1KNX_Power, OFF)
+				case 2 : sendCommand( z2KNX_Power, OFF)
+				case 3 : sendCommand( z3KNX_Power, OFF)
+				case 4 : sendCommand( z4KNX_Power, OFF)
+				case 5 : sendCommand( z5KNX_Power, OFF)
+			}
+		}
+
+end
+/**
+ * This rules send the Meta tag Strings to knx
+ */
+ rule "z1Track control"
+	when
+		Item  z1Sonos_Curr_Track received update
+	then
+		var String value = ( z1Sonos_Curr_Track.state as StringType).toString()
+		var String station = value.split(" - ").get(0)
+		var String album = value.split(" - ").get(1)
+		var String title = value.split(" - ").get(2)
+		if( station.length > 14 )  station = station.substring(0,14)
+		if( album.length > 14 )  album  = album.substring(0,14)
+		if( title.length > 14 )  title = title.substring(0,14)
+		if (z1ZoneMaster.state==1){
+			sendCommand( z1KNX_Curr_Title, title);
+			sendCommand( z1KNX_Curr_Album, album);
+			sendCommand( z1KNX_Curr_Artist, station);
+		}
+		if (z2ZoneMaster.state==1){
+			sendCommand( z2KNX_Curr_Title, title);
+			sendCommand( z2KNX_Curr_Album, album);
+			sendCommand( z2KNX_Curr_Artist, station);
+		}
+		if (z3ZoneMaster.state==1){
+			sendCommand( z3KNX_Curr_Title, title);
+			sendCommand( z3KNX_Curr_Album, album);
+			sendCommand( z3KNX_Curr_Artist, station);
+		}
+		if (z4ZoneMaster.state==1){
+			sendCommand( z4KNX_Curr_Title, title);
+			sendCommand( z4KNX_Curr_Album, album);
+			sendCommand( z4KNX_Curr_Artist, station);
+		}
+		if (z5ZoneMaster.state==1){
+			sendCommand( z5KNX_Curr_Title, title);
+			sendCommand( z5KNX_Curr_Album, album);
+			sendCommand( z5KNX_Curr_Artist, station);
+		}
+end
+/**
+ * These rules controls the volume 
+ */
+rule "z1Sonos Volume control"
+	when
+		Item z1Sonos_VolumeIn received update
+	then
+		logDebug("Sonos Volume control", " z1Sonos_VolumeIn received update: " + z1Sonos_VolumeIn.state as DecimalType)
+		var Number value = z1Sonos_VolumeIn.state as DecimalType
+		sendCommand(z1KNX_VolumeOut, value.intValue);
+end		
+rule "z1KNX Volume control"
+	when
+		Item z1KNX_VolumeIn received update
+	then
+		logDebug("KNX Volume control", " z1KNX_VolumeIn received update: " + z1KNX_VolumeIn.state as DecimalType)
+		var Number value = z1KNX_VolumeIn.state as DecimalType
+		sendCommand(z1Sonos_VolumeOut, value.intValue);		//postUpdate(Sonos_VolOut, value);
+end
+
+rule "z1Volume Rel control"
+	when
+		Item z1KNX_Volume_Rel received command
+	then
+		var Number z1volCounter = 0
+		if(z1KNX_VolumeOut.state instanceof DecimalType) z1volCounter = z1KNX_VolumeOut.state as DecimalType 
+		if(receivedCommand==ON) {
+			if(( z1KNX_PowerOut.state == OFF)||(z1KNX_MuteOut.state == ON)) {
+				sendCommand( z1KNX_Power, ON);
+				sendCommand( z1Sonos_Mute, OFF)
+			} else {
+				z1volCounter = z1volCounter + 3
+				if(z1volCounter>100) z1volCounter = 100
+			}
+		} else {
+			z1volCounter = z1volCounter - 3
+			if(z1volCounter<0) z1volCounter = 0
+		}
+		sendCommand(z1Sonos_VolumeOut, z1volCounter.intValue)
+end
+
+
+
+/**
+ * This rule controls the state on the sonos z2
+ */
+rule "z2State transport control"
+	when
+		Item z2Sonos_Transport received update
+	then
+		var value = z2KNX_Power.state
+			
+		if(z2Sonos_Transport.state == "PLAYING") value = ON
+		else if(z2Sonos_Transport.state == "PAUSED_PLAYBACK") value = OFF
+		else if(z2Sonos_Transport.state == "STOPPED") value = OFF
+
+		sendCommand(z2KNX_PowerOut, value.toString);
+		sendCommand(z2Sonos_Mute, OFF)
+end
+
+rule "z2Send State transport to slaves"
+	when
+
+		Item  z2KNX_PowerOut received update
+	then
+		var value =  z2KNX_PowerOut.state
+		if(z1ZoneMaster.state == 2){
+			logDebug("send z2 state to z1 slave", " " + value)
+			sendCommand( z1KNX_PowerOut, value.toString);
+			sendCommand( z1Sonos_Mute, OFF)
+		}
+/*		if(z2ZoneMaster.state == 2){
+			logDebug("send z2 state to z2 slave", " " + value)
+			sendCommand( z2KNX_PowerOut, value.toString);
+			sendCommand( z2Sonos_Mute, OFF)
+		}*/
+		if(z3ZoneMaster.state == 2){
+			logDebug("send z2 state to z3 slave", " " + value)
+			sendCommand( z3KNX_PowerOut, value.toString);
+			sendCommand( z3Sonos_Mute, OFF)
+		}
+		if(z4ZoneMaster.state == 2){
+			logDebug("send z2 state to z4 slave", " " + value)
+			sendCommand( z4KNX_PowerOut, value.toString);
+			sendCommand( z4Sonos_Mute, OFF)
+		}
+		if(z5ZoneMaster.state == 2){
+			logDebug("send z2 state to z5 slave", " " + value)
+			sendCommand( z5KNX_PowerOut, value.toString);
+			sendCommand( z5Sonos_Mute, OFF)
+		}
+end
+
+rule "z2Send State transport to master"
+	when
+		Item  z2KNX_Power received command
+	then
+		if(z2ZoneMaster.state == 1){
+			logDebug("mastercontrol", " " + z1ZoneMaster)
+			sendCommand( z1KNX_Power, receivedCommand)
+		}
+/*		if(z2ZoneMaster.state == 2){
+			logDebug("mastercontrol", " " + z2ZoneMaster)
+			sendCommand( z2KNX_Power, receivedCommand)
+		}*/
+		if(z2ZoneMaster.state == 3){
+			logDebug("mastercontrol", " " + z3ZoneMaster)
+			sendCommand( z3KNX_Power, receivedCommand)
+		}
+		if(z2ZoneMaster.state == 4){
+			logDebug("mastercontrol", " " + z4ZoneMaster)
+			sendCommand( z4KNX_Power, receivedCommand)
+		}
+		if(z2ZoneMaster.state == 5){
+			logDebug("mastercontrol", " " + z5ZoneMaster)
+			sendCommand( z5KNX_Power, receivedCommand)
+		}
+end
+
+rule "z2Send Next to master"
+	when
+		Item z2Sonos_Next received command
+	then
+		switch (z2ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Next, receivedCommand)
+			//case 2 : sendCommand( z2Sonos_Next, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Next, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Next, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Next, receivedCommand)
+		}
+end
+
+rule "z2Send Previous to master"
+	when
+		Item z2Sonos_Previous received command
+	then
+		switch (z2ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Previous, receivedCommand)
+			//case 2 : sendCommand( z2Sonos_Previous, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Previous, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Previous, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Previous, receivedCommand)
+		}
+end
+
+rule "z2Mute control"
+	when
+		Item z2Sonos_Mute received command
+	then
+		sendCommand(z2KNX_MuteOut, receivedCommand)
+end
+
+/**
+ * This rule changes the radio station with 1Bit Telegramm
+ */
+rule "z2Change Radio Station"
+	when
+		Item z2KNX_Ch_Radio received command
+	then
+		var Number Radiostation = 1
+		if(z2KNX_Radio_Out.state instanceof DecimalType) Radiostation = z2KNX_Radio_Out.state as DecimalType 
+		if(receivedCommand==ON) {
+			Radiostation = Radiostation + 1
+			if(Radiostation>5) Radiostation = 1
+		} else {
+			Radiostation = Radiostation - 1
+			if(Radiostation<1) Radiostation = 5
+		}
+		var value = " "
+		switch (Radiostation.toString()) {
+			case "1" : value = RadioStation1
+			case "2" : value = RadioStation2
+			case "3" : value = RadioStation3
+			case "4" : value = RadioStation4
+			case "5" : value = RadioStation5
+		}
+		switch (z2ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Radio_Out, value)
+			case 2 : sendCommand( z2Sonos_Radio_Out, value)
+			case 3 : sendCommand( z3Sonos_Radio_Out, value)
+			case 4 : sendCommand( z4Sonos_Radio_Out, value)
+			case 5 : sendCommand( z5Sonos_Radio_Out, value)
+		}
+		sendCommand( z2KNX_Radio_Out, Radiostation);
+
+end
+
+/**
+ * This rule controls the Radio List on the living sonos
+ */
+rule "z2Radio station control"
+	when
+		Item z2Sonos_Radio_In received update
+	then
+		var value = " "
+		switch(z2Sonos_Radio_In.state) {
+			case 1 : value = RadioStation1
+			case 2 : value = RadioStation2
+			case 3 : value = RadioStation3
+			case 4 : value = RadioStation4
+			case 5 : value = RadioStation5
+		}
+		if( z2Sonos_Radio_In.state!=0) {	
+			switch (z2ZoneMaster.state){
+				case 1 : sendCommand( z1Sonos_Radio_Out, value)
+				case 2 : sendCommand( z2Sonos_Radio_Out, value)
+				case 3 : sendCommand( z3Sonos_Radio_Out, value)
+				case 4 : sendCommand( z4Sonos_Radio_Out, value)
+				case 5 : sendCommand( z5Sonos_Radio_Out, value)
+			}		
+			sendCommand( z2KNX_Radio_Out,  z2Sonos_Radio_In.state.toString());
+		} else {
+			switch (z2ZoneMaster.state){
+				case 1 : sendCommand( z1KNX_Power, OFF)
+				case 2 : sendCommand( z2KNX_Power, OFF)
+				case 3 : sendCommand( z3KNX_Power, OFF)
+				case 4 : sendCommand( z4KNX_Power, OFF)
+				case 5 : sendCommand( z5KNX_Power, OFF)
+			}
+		}
+
+end
+/**
+ * This rules send the Meta tag Strings to knx
+ */
+ rule "z2Track control"
+	when
+		Item  z2Sonos_Curr_Track received update
+	then
+		var String value = ( z2Sonos_Curr_Track.state as StringType).toString()
+		var String station = value.split(" - ").get(0)
+		var String album = value.split(" - ").get(1)
+		var String title = value.split(" - ").get(2)
+		if( station.length > 14 )  station = station.substring(0,14)
+		if( album.length > 14 )  album  = album.substring(0,14)
+		if( title.length > 14 )  title = title.substring(0,14)
+		if (z1ZoneMaster.state==2){
+			sendCommand( z1KNX_Curr_Title, title);
+			sendCommand( z1KNX_Curr_Album, album);
+			sendCommand( z1KNX_Curr_Artist, station);
+		}
+		if (z2ZoneMaster.state==2){
+			sendCommand( z2KNX_Curr_Title, title);
+			sendCommand( z2KNX_Curr_Album, album);
+			sendCommand( z2KNX_Curr_Artist, station);
+		}
+		if (z3ZoneMaster.state==2){
+			sendCommand( z3KNX_Curr_Title, title);
+			sendCommand( z3KNX_Curr_Album, album);
+			sendCommand( z3KNX_Curr_Artist, station);
+		}
+		if (z4ZoneMaster.state==2){
+			sendCommand( z4KNX_Curr_Title, title);
+			sendCommand( z4KNX_Curr_Album, album);
+			sendCommand( z4KNX_Curr_Artist, station);
+		}
+		if (z5ZoneMaster.state==2){
+			sendCommand( z5KNX_Curr_Title, title);
+			sendCommand( z5KNX_Curr_Album, album);
+			sendCommand( z5KNX_Curr_Artist, station);
+		}
+end
+/**
+ * These rules controls the volume 
+ */
+rule "z2Sonos Volume control"
+	when
+		Item z2Sonos_VolumeIn received update
+	then
+		logDebug("Sonos Volume control", " z2Sonos_VolumeIn received update: " + z2Sonos_VolumeIn.state as DecimalType)
+		var Number value = z2Sonos_VolumeIn.state as DecimalType
+		sendCommand(z2KNX_VolumeOut, value.intValue);
+end		
+rule "z2KNX Volume control"
+	when
+		Item z2KNX_VolumeIn received update
+	then
+		logDebug("KNX Volume control", " z2KNX_VolumeIn received update: " + z2KNX_VolumeIn.state as DecimalType)
+		var Number value = z2KNX_VolumeIn.state as DecimalType
+		sendCommand(z2Sonos_VolumeOut, value.intValue);		//postUpdate(Sonos_VolOut, value);
+end
+
+rule "z2Volume Rel control"
+	when
+		Item z2KNX_Volume_Rel received command
+	then
+		var Number z2volCounter = 0
+		if(z2KNX_VolumeOut.state instanceof DecimalType) z2volCounter = z2KNX_VolumeOut.state as DecimalType 
+		if(receivedCommand==ON) {
+			if(( z2KNX_PowerOut.state == OFF)||(z2KNX_MuteOut.state == ON)) {
+				sendCommand( z2KNX_Power, ON);
+				sendCommand( z2Sonos_Mute, OFF)
+			} else {
+				z2volCounter = z2volCounter + 3
+				if(z2volCounter>100) z2volCounter = 100
+			}
+		} else {
+			z2volCounter = z2volCounter - 3
+			if(z2volCounter<0) z2volCounter = 0
+		}
+		sendCommand(z2Sonos_VolumeOut, z2volCounter.intValue)
+end
+
+
+
+/**
+ * This rule controls the state on the sonos z3
+ */
+rule "z3State transport control"
+	when
+		Item z3Sonos_Transport received update
+	then
+		var value = z3KNX_Power.state
+			
+		if(z3Sonos_Transport.state == "PLAYING") value = ON
+		else if(z3Sonos_Transport.state == "PAUSED_PLAYBACK") value = OFF
+		else if(z3Sonos_Transport.state == "STOPPED") value = OFF
+
+		sendCommand(z3KNX_PowerOut, value.toString);
+		sendCommand(z3Sonos_Mute, OFF)
+end
+
+rule "z3Send State transport to slaves"
+	when
+
+		Item  z3KNX_PowerOut received update
+	then
+		var value =  z3KNX_PowerOut.state
+		if(z1ZoneMaster.state == 3){
+			logDebug("send z3 state to z1 slave", " " + value)
+			sendCommand( z1KNX_PowerOut, value.toString);
+			sendCommand( z1Sonos_Mute, OFF)
+		}
+		if(z2ZoneMaster.state == 3){
+			logDebug("send z3 state to z2 slave", " " + value)
+			sendCommand( z2KNX_PowerOut, value.toString);
+			sendCommand( z2Sonos_Mute, OFF)
+		}
+/*		if(z3ZoneMaster.state == 3){
+			logDebug("send z3 state to z3 slave", " " + value)
+			sendCommand( z3KNX_PowerOut, value.toString);
+			sendCommand( z3Sonos_Mute, OFF)
+		}*/
+		if(z4ZoneMaster.state == 3){
+			logDebug("send z3 state to z4 slave", " " + value)
+			sendCommand( z4KNX_PowerOut, value.toString);
+			sendCommand( z4Sonos_Mute, OFF)
+		}
+		if(z5ZoneMaster.state == 3){
+			logDebug("send z3 state to z5 slave", " " + value)
+			sendCommand( z5KNX_PowerOut, value.toString);
+			sendCommand( z5Sonos_Mute, OFF)
+		}
+end
+
+rule "z3Send State transport to master"
+	when
+		Item  z3KNX_Power received command
+	then
+		if(z3ZoneMaster.state == 1){
+			logDebug("mastercontrol", " " + z1ZoneMaster)
+			sendCommand( z1KNX_Power, receivedCommand)
+		}
+		if(z3ZoneMaster.state == 2){
+			logDebug("mastercontrol", " " + z2ZoneMaster)
+			sendCommand( z2KNX_Power, receivedCommand)
+		}
+/*		if(z3ZoneMaster.state == 3){
+			logDebug("mastercontrol", " " + z3ZoneMaster)
+			sendCommand( z3KNX_Power, receivedCommand)
+		}*/
+		if(z3ZoneMaster.state == 4){
+			logDebug("mastercontrol", " " + z4ZoneMaster)
+			sendCommand( z4KNX_Power, receivedCommand)
+		}
+		if(z3ZoneMaster.state == 5){
+			logDebug("mastercontrol", " " + z5ZoneMaster)
+			sendCommand( z5KNX_Power, receivedCommand)
+		}
+end
+
+rule "z3Send Next to master"
+	when
+		Item z3Sonos_Next received command
+	then
+		switch (z3ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Next, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Next, receivedCommand)
+			//case 3 : sendCommand( z3Sonos_Next, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Next, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Next, receivedCommand)
+		}
+end
+
+rule "z3Send Previous to master"
+	when
+		Item z3Sonos_Previous received command
+	then
+		switch (z3ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Previous, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Previous, receivedCommand)
+			//case 3 : sendCommand( z3Sonos_Previous, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Previous, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Previous, receivedCommand)
+		}
+end
+
+rule "z3Mute control"
+	when
+		Item z3Sonos_Mute received command
+	then
+		sendCommand(z3KNX_MuteOut, receivedCommand)
+end
+
+/**
+ * This rule changes the radio station with 1Bit Telegramm
+ */
+rule "z3Change Radio Station"
+	when
+		Item z3KNX_Ch_Radio received command
+	then
+		var Number Radiostation = 1
+		if(z3KNX_Radio_Out.state instanceof DecimalType) Radiostation = z3KNX_Radio_Out.state as DecimalType 
+		if(receivedCommand==ON) {
+			Radiostation = Radiostation + 1
+			if(Radiostation>5) Radiostation = 1
+		} else {
+			Radiostation = Radiostation - 1
+			if(Radiostation<1) Radiostation = 5
+		}
+		var value = " "
+		switch (Radiostation.toString()) {
+			case "1" : value = RadioStation1
+			case "2" : value = RadioStation2
+			case "3" : value = RadioStation3
+			case "4" : value = RadioStation4
+			case "5" : value = RadioStation5
+		}
+		switch (z3ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Radio_Out, value)
+			case 2 : sendCommand( z2Sonos_Radio_Out, value)
+			case 3 : sendCommand( z3Sonos_Radio_Out, value)
+			case 4 : sendCommand( z4Sonos_Radio_Out, value)
+			case 5 : sendCommand( z5Sonos_Radio_Out, value)
+		}
+		sendCommand( z3KNX_Radio_Out, Radiostation);
+
+end
+
+/**
+ * This rule controls the Radio List on the living sonos
+ */
+rule "z3Radio station control"
+	when
+		Item z3Sonos_Radio_In received update
+	then
+		var value = " "
+		switch(z3Sonos_Radio_In.state) {
+			case 1 : value = RadioStation1
+			case 2 : value = RadioStation2
+			case 3 : value = RadioStation3
+			case 4 : value = RadioStation4
+			case 5 : value = RadioStation5
+		}
+		if( z3Sonos_Radio_In.state!=0) {	
+			switch (z3ZoneMaster.state){
+				case 1 : sendCommand( z1Sonos_Radio_Out, value)
+				case 2 : sendCommand( z2Sonos_Radio_Out, value)
+				case 3 : sendCommand( z3Sonos_Radio_Out, value)
+				case 4 : sendCommand( z4Sonos_Radio_Out, value)
+				case 5 : sendCommand( z5Sonos_Radio_Out, value)
+			}		
+			sendCommand( z3KNX_Radio_Out,  z3Sonos_Radio_In.state.toString());
+		} else {
+			switch (z3ZoneMaster.state){
+				case 1 : sendCommand( z1KNX_Power, OFF)
+				case 2 : sendCommand( z2KNX_Power, OFF)
+				case 3 : sendCommand( z3KNX_Power, OFF)
+				case 4 : sendCommand( z4KNX_Power, OFF)
+				case 5 : sendCommand( z5KNX_Power, OFF)
+			}
+		}
+
+end
+/**
+ * This rules send the Meta tag Strings to knx
+ */
+ rule "z3Track control"
+	when
+		Item  z3Sonos_Curr_Track received update
+	then
+		var String value = ( z3Sonos_Curr_Track.state as StringType).toString()
+		var String station = value.split(" - ").get(0)
+		var String album = value.split(" - ").get(1)
+		var String title = value.split(" - ").get(2)
+		if( station.length > 14 )  station = station.substring(0,14)
+		if( album.length > 14 )  album  = album.substring(0,14)
+		if( title.length > 14 )  title = title.substring(0,14)
+		if (z1ZoneMaster.state==3){
+			sendCommand( z1KNX_Curr_Title, title);
+			sendCommand( z1KNX_Curr_Album, album);
+			sendCommand( z1KNX_Curr_Artist, station);
+		}
+		if (z2ZoneMaster.state==3){
+			sendCommand( z2KNX_Curr_Title, title);
+			sendCommand( z2KNX_Curr_Album, album);
+			sendCommand( z2KNX_Curr_Artist, station);
+		}
+		if (z3ZoneMaster.state==3){
+			sendCommand( z3KNX_Curr_Title, title);
+			sendCommand( z3KNX_Curr_Album, album);
+			sendCommand( z3KNX_Curr_Artist, station);
+		}
+		if (z4ZoneMaster.state==3){
+			sendCommand( z4KNX_Curr_Title, title);
+			sendCommand( z4KNX_Curr_Album, album);
+			sendCommand( z4KNX_Curr_Artist, station);
+		}
+		if (z5ZoneMaster.state==3){
+			sendCommand( z5KNX_Curr_Title, title);
+			sendCommand( z5KNX_Curr_Album, album);
+			sendCommand( z5KNX_Curr_Artist, station);
+		}
+end
+/**
+ * These rules controls the volume 
+ */
+rule "z3Sonos Volume control"
+	when
+		Item z3Sonos_VolumeIn received update
+	then
+		logDebug("Sonos Volume control", " z3Sonos_VolumeIn received update: " + z3Sonos_VolumeIn.state as DecimalType)
+		var Number value = z3Sonos_VolumeIn.state as DecimalType
+		sendCommand(z3KNX_VolumeOut, value.intValue);
+end		
+rule "z3KNX Volume control"
+	when
+		Item z3KNX_VolumeIn received update
+	then
+		logDebug("KNX Volume control", " z3KNX_VolumeIn received update: " + z3KNX_VolumeIn.state as DecimalType)
+		var Number value = z3KNX_VolumeIn.state as DecimalType
+		sendCommand(z3Sonos_VolumeOut, value.intValue);		//postUpdate(Sonos_VolOut, value);
+end
+
+rule "z3Volume Rel control"
+	when
+		Item z3KNX_Volume_Rel received command
+	then
+		var Number z3volCounter = 0
+		if(z3KNX_VolumeOut.state instanceof DecimalType) z3volCounter = z3KNX_VolumeOut.state as DecimalType 
+		if(receivedCommand==ON) {
+			if(( z3KNX_PowerOut.state == OFF)||(z3KNX_MuteOut.state == ON)) {
+				sendCommand( z3KNX_Power, ON);
+				sendCommand( z3Sonos_Mute, OFF)
+			} else {
+				z3volCounter = z3volCounter + 3
+				if(z3volCounter>100) z3volCounter = 100
+			}
+		} else {
+			z3volCounter = z3volCounter - 3
+			if(z3volCounter<0) z3volCounter = 0
+		}
+		sendCommand(z3Sonos_VolumeOut, z3volCounter.intValue)
+end
+
+
+
+/**
+ * This rule controls the state on the sonos z4
+ */
+rule "z4State transport control"
+	when
+		Item z4Sonos_Transport received update
+	then
+		var value = z4KNX_Power.state
+			
+		if(z4Sonos_Transport.state == "PLAYING") value = ON
+		else if(z4Sonos_Transport.state == "PAUSED_PLAYBACK") value = OFF
+		else if(z4Sonos_Transport.state == "STOPPED") value = OFF
+
+		sendCommand(z4KNX_PowerOut, value.toString);
+		sendCommand(z4Sonos_Mute, OFF)
+end
+
+rule "z4Send State transport to slaves"
+	when
+
+		Item  z4KNX_PowerOut received update
+	then
+		var value =  z4KNX_PowerOut.state
+		if(z1ZoneMaster.state == 4){
+			logDebug("send z4 state to z1 slave", " " + value)
+			sendCommand( z1KNX_PowerOut, value.toString);
+			sendCommand( z1Sonos_Mute, OFF)
+		}
+		if(z2ZoneMaster.state == 4){
+			logDebug("send z4 state to z2 slave", " " + value)
+			sendCommand( z2KNX_PowerOut, value.toString);
+			sendCommand( z2Sonos_Mute, OFF)
+		}
+		if(z3ZoneMaster.state == 4){
+			logDebug("send z4 state to z3 slave", " " + value)
+			sendCommand( z3KNX_PowerOut, value.toString);
+			sendCommand( z3Sonos_Mute, OFF)
+		}
+/*		if(z4ZoneMaster.state == 4){
+			logDebug("send z4 state to z4 slave", " " + value)
+			sendCommand( z4KNX_PowerOut, value.toString);
+			sendCommand( z4Sonos_Mute, OFF)
+		}*/
+		if(z5ZoneMaster.state == 4){
+			logDebug("send z4 state to z5 slave", " " + value)
+			sendCommand( z5KNX_PowerOut, value.toString);
+			sendCommand( z5Sonos_Mute, OFF)
+		}
+end
+
+rule "z4Send State transport to master"
+	when
+		Item  z4KNX_Power received command
+	then
+		if(z4ZoneMaster.state == 1){
+			logDebug("mastercontrol", " " + z1ZoneMaster)
+			sendCommand( z1KNX_Power, receivedCommand)
+		}
+		if(z4ZoneMaster.state == 2){
+			logDebug("mastercontrol", " " + z2ZoneMaster)
+			sendCommand( z2KNX_Power, receivedCommand)
+		}
+		if(z4ZoneMaster.state == 3){
+			logDebug("mastercontrol", " " + z3ZoneMaster)
+			sendCommand( z3KNX_Power, receivedCommand)
+		}
+/*		if(z4ZoneMaster.state == 4){
+			logDebug("mastercontrol", " " + z4ZoneMaster)
+			sendCommand( z4KNX_Power, receivedCommand)
+		}*/
+		if(z4ZoneMaster.state == 5){
+			logDebug("mastercontrol", " " + z5ZoneMaster)
+			sendCommand( z5KNX_Power, receivedCommand)
+		}
+end
+
+rule "z4Send Next to master"
+	when
+		Item z4Sonos_Next received command
+	then
+		switch (z4ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Next, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Next, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Next, receivedCommand)
+			//case 4 : sendCommand( z4Sonos_Next, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Next, receivedCommand)
+		}
+end
+
+rule "z4Send Previous to master"
+	when
+		Item z4Sonos_Previous received command
+	then
+		switch (z4ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Previous, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Previous, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Previous, receivedCommand)
+			//case 4 : sendCommand( z4Sonos_Previous, receivedCommand)
+			case 5 : sendCommand( z5Sonos_Previous, receivedCommand)
+		}
+end
+
+rule "z4Mute control"
+	when
+		Item z4Sonos_Mute received command
+	then
+		sendCommand(z4KNX_MuteOut, receivedCommand)
+end
+
+/**
+ * This rule changes the radio station with 1Bit Telegramm
+ */
+rule "z4Change Radio Station"
+	when
+		Item z4KNX_Ch_Radio received command
+	then
+		var Number Radiostation = 1
+		if(z4KNX_Radio_Out.state instanceof DecimalType) Radiostation = z4KNX_Radio_Out.state as DecimalType 
+		if(receivedCommand==ON) {
+			Radiostation = Radiostation + 1
+			if(Radiostation>5) Radiostation = 1
+		} else {
+			Radiostation = Radiostation - 1
+			if(Radiostation<1) Radiostation = 5
+		}
+		var value = " "
+		switch (Radiostation.toString()) {
+			case "1" : value = RadioStation1
+			case "2" : value = RadioStation2
+			case "3" : value = RadioStation3
+			case "4" : value = RadioStation4
+			case "5" : value = RadioStation5
+		}
+		switch (z4ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Radio_Out, value)
+			case 2 : sendCommand( z2Sonos_Radio_Out, value)
+			case 3 : sendCommand( z3Sonos_Radio_Out, value)
+			case 4 : sendCommand( z4Sonos_Radio_Out, value)
+			case 5 : sendCommand( z5Sonos_Radio_Out, value)
+		}
+		sendCommand( z4KNX_Radio_Out, Radiostation);
+
+end
+
+/**
+ * This rule controls the Radio List on the living sonos
+ */
+rule "z4Radio station control"
+	when
+		Item z4Sonos_Radio_In received update
+	then
+		var value = " "
+		switch(z4Sonos_Radio_In.state) {
+			case 1 : value = RadioStation1
+			case 2 : value = RadioStation2
+			case 3 : value = RadioStation3
+			case 4 : value = RadioStation4
+			case 5 : value = RadioStation5
+		}
+		if( z4Sonos_Radio_In.state!=0) {	
+			switch (z4ZoneMaster.state){
+				case 1 : sendCommand( z1Sonos_Radio_Out, value)
+				case 2 : sendCommand( z2Sonos_Radio_Out, value)
+				case 3 : sendCommand( z3Sonos_Radio_Out, value)
+				case 4 : sendCommand( z4Sonos_Radio_Out, value)
+				case 5 : sendCommand( z5Sonos_Radio_Out, value)
+			}		
+			sendCommand( z4KNX_Radio_Out,  z4Sonos_Radio_In.state.toString());
+		} else {
+			switch (z4ZoneMaster.state){
+				case 1 : sendCommand( z1KNX_Power, OFF)
+				case 2 : sendCommand( z2KNX_Power, OFF)
+				case 3 : sendCommand( z3KNX_Power, OFF)
+				case 4 : sendCommand( z4KNX_Power, OFF)
+				case 5 : sendCommand( z5KNX_Power, OFF)
+			}
+		}
+
+end
+/**
+ * This rules send the Meta tag Strings to knx
+ */
+ rule "z4Track control"
+	when
+		Item  z4Sonos_Curr_Track received update
+	then
+		var String value = ( z4Sonos_Curr_Track.state as StringType).toString()
+		var String station = value.split(" - ").get(0)
+		var String album = value.split(" - ").get(1)
+		var String title = value.split(" - ").get(2)
+		if( station.length > 14 )  station = station.substring(0,14)
+		if( album.length > 14 )  album  = album.substring(0,14)
+		if( title.length > 14 )  title = title.substring(0,14)
+		if (z1ZoneMaster.state==4){
+			sendCommand( z1KNX_Curr_Title, title);
+			sendCommand( z1KNX_Curr_Album, album);
+			sendCommand( z1KNX_Curr_Artist, station);
+		}
+		if (z2ZoneMaster.state==4){
+			sendCommand( z2KNX_Curr_Title, title);
+			sendCommand( z2KNX_Curr_Album, album);
+			sendCommand( z2KNX_Curr_Artist, station);
+		}
+		if (z3ZoneMaster.state==4){
+			sendCommand( z3KNX_Curr_Title, title);
+			sendCommand( z3KNX_Curr_Album, album);
+			sendCommand( z3KNX_Curr_Artist, station);
+		}
+		if (z4ZoneMaster.state==4){
+			sendCommand( z4KNX_Curr_Title, title);
+			sendCommand( z4KNX_Curr_Album, album);
+			sendCommand( z4KNX_Curr_Artist, station);
+		}
+		if (z5ZoneMaster.state==4){
+			sendCommand( z5KNX_Curr_Title, title);
+			sendCommand( z5KNX_Curr_Album, album);
+			sendCommand( z5KNX_Curr_Artist, station);
+		}
+end
+/**
+ * These rules controls the volume 
+ */
+rule "z4Sonos Volume control"
+	when
+		Item z4Sonos_VolumeIn received update
+	then
+		logDebug("Sonos Volume control", " z4Sonos_VolumeIn received update: " + z4Sonos_VolumeIn.state as DecimalType)
+		var Number value = z4Sonos_VolumeIn.state as DecimalType
+		sendCommand(z4KNX_VolumeOut, value.intValue);
+end		
+rule "z4KNX Volume control"
+	when
+		Item z4KNX_VolumeIn received update
+	then
+		logDebug("KNX Volume control", " z4KNX_VolumeIn received update: " + z4KNX_VolumeIn.state as DecimalType)
+		var Number value = z4KNX_VolumeIn.state as DecimalType
+		sendCommand(z4Sonos_VolumeOut, value.intValue);		//postUpdate(Sonos_VolOut, value);
+end
+
+rule "z4Volume Rel control"
+	when
+		Item z4KNX_Volume_Rel received command
+	then
+		var Number z4volCounter = 0
+		if(z4KNX_VolumeOut.state instanceof DecimalType) z4volCounter = z4KNX_VolumeOut.state as DecimalType 
+		if(receivedCommand==ON) {
+			if(( z4KNX_PowerOut.state == OFF)||(z4KNX_MuteOut.state == ON)) {
+				sendCommand( z4KNX_Power, ON);
+				sendCommand( z4Sonos_Mute, OFF)
+			} else {
+				z4volCounter = z4volCounter + 3
+				if(z4volCounter>100) z4volCounter = 100
+			}
+		} else {
+			z4volCounter = z4volCounter - 3
+			if(z4volCounter<0) z4volCounter = 0
+		}
+		sendCommand(z4Sonos_VolumeOut, z4volCounter.intValue)
+end
+
+
+
+/**
+ * This rule controls the state on the sonos z5
+ */
+rule "z5State transport control"
+	when
+		Item z5Sonos_Transport received update
+	then
+		var value = z5KNX_Power.state
+			
+		if(z5Sonos_Transport.state == "PLAYING") value = ON
+		else if(z5Sonos_Transport.state == "PAUSED_PLAYBACK") value = OFF
+		else if(z5Sonos_Transport.state == "STOPPED") value = OFF
+
+		sendCommand(z5KNX_PowerOut, value.toString);
+		sendCommand(z5Sonos_Mute, OFF)
+end
+
+rule "z5Send State transport to slaves"
+	when
+
+		Item  z5KNX_PowerOut received update
+	then
+		var value =  z5KNX_PowerOut.state
+		if(z1ZoneMaster.state == 5){
+			logDebug("send z5 state to z1 slave", " " + value)
+			sendCommand( z1KNX_PowerOut, value.toString);
+			sendCommand( z1Sonos_Mute, OFF)
+		}
+		if(z2ZoneMaster.state == 5){
+			logDebug("send z5 state to z2 slave", " " + value)
+			sendCommand( z2KNX_PowerOut, value.toString);
+			sendCommand( z2Sonos_Mute, OFF)
+		}
+		if(z3ZoneMaster.state == 5){
+			logDebug("send z5 state to z3 slave", " " + value)
+			sendCommand( z3KNX_PowerOut, value.toString);
+			sendCommand( z3Sonos_Mute, OFF)
+		}
+		if(z4ZoneMaster.state == 5){
+			logDebug("send z5 state to z4 slave", " " + value)
+			sendCommand( z4KNX_PowerOut, value.toString);
+			sendCommand( z4Sonos_Mute, OFF)
+		}
+/*		if(z5ZoneMaster.state == 5){
+			logDebug("send z5 state to z5 slave", " " + value)
+			sendCommand( z5KNX_PowerOut, value.toString);
+			sendCommand( z5Sonos_Mute, OFF)
+		}*/
+end
+
+rule "z5Send State transport to master"
+	when
+		Item  z5KNX_Power received command
+	then
+		if(z5ZoneMaster.state == 1){
+			logDebug("mastercontrol", " " + z1ZoneMaster)
+			sendCommand( z1KNX_Power, receivedCommand)
+		}
+		if(z5ZoneMaster.state == 2){
+			logDebug("mastercontrol", " " + z2ZoneMaster)
+			sendCommand( z2KNX_Power, receivedCommand)
+		}
+		if(z5ZoneMaster.state == 3){
+			logDebug("mastercontrol", " " + z3ZoneMaster)
+			sendCommand( z3KNX_Power, receivedCommand)
+		}
+		if(z5ZoneMaster.state == 4){
+			logDebug("mastercontrol", " " + z4ZoneMaster)
+			sendCommand( z4KNX_Power, receivedCommand)
+		}
+/*		if(z5ZoneMaster.state == 5){
+			logDebug("mastercontrol", " " + z5ZoneMaster)
+			sendCommand( z5KNX_Power, receivedCommand)
+		}*/
+end
+
+rule "z5Send Next to master"
+	when
+		Item z5Sonos_Next received command
+	then
+		switch (z5ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Next, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Next, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Next, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Next, receivedCommand)
+			//case 5 : sendCommand( z5Sonos_Next, receivedCommand)
+		}
+end
+
+rule "z5Send Previous to master"
+	when
+		Item z5Sonos_Previous received command
+	then
+		switch (z5ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Previous, receivedCommand)
+			case 2 : sendCommand( z2Sonos_Previous, receivedCommand)
+			case 3 : sendCommand( z3Sonos_Previous, receivedCommand)
+			case 4 : sendCommand( z4Sonos_Previous, receivedCommand)
+			//case 5 : sendCommand( z5Sonos_Previous, receivedCommand)
+		}
+end
+
+rule "z5Mute control"
+	when
+		Item z5Sonos_Mute received command
+	then
+		sendCommand(z5KNX_MuteOut, receivedCommand)
+end
+
+/**
+ * This rule changes the radio station with 1Bit Telegramm
+ */
+rule "z5Change Radio Station"
+	when
+		Item z5KNX_Ch_Radio received command
+	then
+		var Number Radiostation = 1
+		if(z5KNX_Radio_Out.state instanceof DecimalType) Radiostation = z5KNX_Radio_Out.state as DecimalType 
+		if(receivedCommand==ON) {
+			Radiostation = Radiostation + 1
+			if(Radiostation>5) Radiostation = 1
+		} else {
+			Radiostation = Radiostation - 1
+			if(Radiostation<1) Radiostation = 5
+		}
+		var value = " "
+		switch (Radiostation.toString()) {
+			case "1" : value = RadioStation1
+			case "2" : value = RadioStation2
+			case "3" : value = RadioStation3
+			case "4" : value = RadioStation4
+			case "5" : value = RadioStation5
+		}
+		switch (z5ZoneMaster.state){
+			case 1 : sendCommand( z1Sonos_Radio_Out, value)
+			case 2 : sendCommand( z2Sonos_Radio_Out, value)
+			case 3 : sendCommand( z3Sonos_Radio_Out, value)
+			case 4 : sendCommand( z4Sonos_Radio_Out, value)
+			case 5 : sendCommand( z5Sonos_Radio_Out, value)
+		}
+		sendCommand( z5KNX_Radio_Out, Radiostation);
+
+end
+
+/**
+ * This rule controls the Radio List on the living sonos
+ */
+rule "z5Radio station control"
+	when
+		Item z5Sonos_Radio_In received update
+	then
+		var value = " "
+		switch(z5Sonos_Radio_In.state) {
+			case 1 : value = RadioStation1
+			case 2 : value = RadioStation2
+			case 3 : value = RadioStation3
+			case 4 : value = RadioStation4
+			case 5 : value = RadioStation5
+		}
+		if( z5Sonos_Radio_In.state!=0) {	
+			switch (z5ZoneMaster.state){
+				case 1 : sendCommand( z1Sonos_Radio_Out, value)
+				case 2 : sendCommand( z2Sonos_Radio_Out, value)
+				case 3 : sendCommand( z3Sonos_Radio_Out, value)
+				case 4 : sendCommand( z4Sonos_Radio_Out, value)
+				case 5 : sendCommand( z5Sonos_Radio_Out, value)
+			}		
+			sendCommand( z5KNX_Radio_Out,  z5Sonos_Radio_In.state.toString());
+		} else {
+			switch (z5ZoneMaster.state){
+				case 1 : sendCommand( z1KNX_Power, OFF)
+				case 2 : sendCommand( z2KNX_Power, OFF)
+				case 3 : sendCommand( z3KNX_Power, OFF)
+				case 4 : sendCommand( z4KNX_Power, OFF)
+				case 5 : sendCommand( z5KNX_Power, OFF)
+			}
+		}
+
+end
+/**
+ * This rules send the Meta tag Strings to knx
+ */
+ rule "z5Track control"
+	when
+		Item  z5Sonos_Curr_Track received update
+	then
+		var String value = ( z5Sonos_Curr_Track.state as StringType).toString()
+		var String station = value.split(" - ").get(0)
+		var String album = value.split(" - ").get(1)
+		var String title = value.split(" - ").get(2)
+		if( station.length > 14 )  station = station.substring(0,14)
+		if( album.length > 14 )  album  = album.substring(0,14)
+		if( title.length > 14 )  title = title.substring(0,14)
+		if (z1ZoneMaster.state==5){
+			sendCommand( z1KNX_Curr_Title, title);
+			sendCommand( z1KNX_Curr_Album, album);
+			sendCommand( z1KNX_Curr_Artist, station);
+		}
+		if (z2ZoneMaster.state==5){
+			sendCommand( z2KNX_Curr_Title, title);
+			sendCommand( z2KNX_Curr_Album, album);
+			sendCommand( z2KNX_Curr_Artist, station);
+		}
+		if (z3ZoneMaster.state==5){
+			sendCommand( z3KNX_Curr_Title, title);
+			sendCommand( z3KNX_Curr_Album, album);
+			sendCommand( z3KNX_Curr_Artist, station);
+		}
+		if (z4ZoneMaster.state==5){
+			sendCommand( z4KNX_Curr_Title, title);
+			sendCommand( z4KNX_Curr_Album, album);
+			sendCommand( z4KNX_Curr_Artist, station);
+		}
+		if (z5ZoneMaster.state==5){
+			sendCommand( z5KNX_Curr_Title, title);
+			sendCommand( z5KNX_Curr_Album, album);
+			sendCommand( z5KNX_Curr_Artist, station);
+		}
+end
+/**
+ * These rules controls the volume 
+ */
+rule "z5Sonos Volume control"
+	when
+		Item z5Sonos_VolumeIn received update
+	then
+		logDebug("Sonos Volume control", " z5Sonos_VolumeIn received update: " + z5Sonos_VolumeIn.state as DecimalType)
+		var Number value = z5Sonos_VolumeIn.state as DecimalType
+		sendCommand(z5KNX_VolumeOut, value.intValue);
+end		
+rule "z5KNX Volume control"
+	when
+		Item z5KNX_VolumeIn received update
+	then
+		logDebug("KNX Volume control", " z5KNX_VolumeIn received update: " + z5KNX_VolumeIn.state as DecimalType)
+		var Number value = z5KNX_VolumeIn.state as DecimalType
+		sendCommand(z5Sonos_VolumeOut, value.intValue);		//postUpdate(Sonos_VolOut, value);
+end
+
+rule "z5Volume Rel control"
+	when
+		Item z5KNX_Volume_Rel received command
+	then
+		var Number z5volCounter = 0
+		if(z5KNX_VolumeOut.state instanceof DecimalType) z5volCounter = z5KNX_VolumeOut.state as DecimalType 
+		if(receivedCommand==ON) {
+			if(( z5KNX_PowerOut.state == OFF)||(z5KNX_MuteOut.state == ON)) {
+				sendCommand( z5KNX_Power, ON);
+				sendCommand( z5Sonos_Mute, OFF)
+			} else {
+				z5volCounter = z5volCounter + 3
+				if(z5volCounter>100) z5volCounter = 100
+			}
+		} else {
+			z5volCounter = z5volCounter - 3
+			if(z5volCounter<0) z5volCounter = 0
+		}
+		sendCommand(z5Sonos_VolumeOut, z5volCounter.intValue)
+end

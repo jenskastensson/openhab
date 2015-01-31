@@ -1,0 +1,129 @@
+/* all zones */
+Switch KNX_Power		{ knx="1.001:10/0/0"}
+Switch KNX_Standalone		{ knx="1.001:10/0/1"}
+Switch z1Sonos_Standalone	{ sonos="[ON:zone_1:standalone], [OFF:zone_1:standalone]"}
+Switch z2Sonos_Standalone	{ sonos="[ON:zone_2:standalone], [OFF:zone_2:standalone]"}
+Switch z3Sonos_Standalone	{ sonos="[ON:zone_3:standalone], [OFF:zone_3:standalone]"}
+Switch z4Sonos_Standalone	{ sonos="[ON:zone_4:standalone], [OFF:zone_4:standalone]"}
+Switch z5Sonos_Standalone	{ sonos="[ON:zone_5:standalone], [OFF:zone_5:standalone]"}
+
+/* Zone 1 */
+Switch z1KNX_Volume_Rel		{ knx="1.001:10/1/5"}
+Switch z1KNX_Power		{ sonos="[ON:zone_1:play], [OFF:zone_1:pause]", knx="1.001:10/1/1", autoupdate="true"}
+Switch z1KNX_PowerOut		{ knx="1.001:10/1/2"}
+String z1Sonos_Curr_Track		{ sonos="[zone_1:currenttrack]", autoupdate="true"}
+String z1KNX_Curr_Title		{ knx="16.001:10/1/9"}
+String z1KNX_Curr_Album		{ knx="16.001:10/1/11"}
+String z1KNX_Curr_Artist		{ knx="16.001:10/1/10"}
+Dimmer z1Sonos_VolumeIn "VolumeSIn [%d %%]" (gS) {sonos="[OFF:zone_1:volume], [ON:zone_1:volume], [DECREASE:zone_1:volume], [INCREASE:zone_1:volume]", autoupdate="false"}
+Number z1KNX_VolumeOut		"VolumeKOut [%d]" 		(gS) { knx="5.010:10/1/4"}
+Number z1KNX_VolumeIn		"VolumeKIn [%d]" 		(gS) { knx="5.010:10/1/3"}
+Number z1Sonos_VolumeOut		"VolumeSOut [%d]" 		(gS) { sonos="[zone_1:volume]"}
+Switch z1Sonos_Next		"Next [%d]"			(gS)	{knx="1.001:10/1/12" , sonos="[ON:zone_1:next]"}
+Switch z1Sonos_Previous		"Previous [%d]"			(gS)	{knx="1.001:10/1/13", sonos="[ON:zone_1:previous]"}
+Switch z1Sonos_Mute		"Mute [%d]"			(gS)	{knx="1.001:10/1/6", sonos="[ON:zone_1:mute], [OFF:zone_1:mute]", autoupdate="true"}
+Switch z1KNX_MuteOut		"MuteOut [%d]"			(gS)	{knx="1.001:10/1/7", autoupdate="true"}
+Switch z1KNX_Ch_Radio							{knx="1.001:10/1/17"}
+Number z1Sonos_Radio_In   						{knx="5.010:10/1/18", autoupdate="true"}
+Number z1KNX_Radio_Out							{knx="5.010:10/1/19"}
+String z1Sonos_Radio_Out							{sonos="[zone_1:radio]"}
+String z1Sonos_Transport		"State: [%s]"			(gS)	{sonos="[zone_1:transportstate]"}
+String z1Sonos_goupid		"State: [%s]"			(gS)	{sonos="[zone_1:zonegroupid]", autoupdate="true"}
+Number z1ZoneMaster		{ knx="5.010:10/1/8"}
+
+/* Zone 2 */
+Switch z2KNX_Volume_Rel		{ knx="1.001:10/2/5"}
+Switch z2KNX_Power		{ sonos="[ON:zone_2:play], [OFF:zone_2:pause]", knx="1.001:10/2/1"}
+String Bellendatei		{ sonos="[zone_2:playURI]"}
+Switch z2KNX_PowerOut		{ knx="1.001:10/2/2"}
+String z2Sonos_Curr_Track		{ sonos="[zone_2:currenttrack]", autoupdate="true"}
+String z2KNX_Curr_Title		{ knx="16.001:10/2/9"}
+String z2KNX_Curr_Album		{ knx="16.001:10/2/11"}
+String z2KNX_Curr_Artist	{ knx="16.001:10/2/10"}
+Dimmer z2Sonos_VolumeIn "VolumeSIn [%d %%]" (gS) {sonos="[OFF:zone_2:volume], [ON:zone_2:volume], [DECREASE:zone_2:volume], [INCREASE:zone_2:volume]", autoupdate="false"}
+Number z2KNX_VolumeOut		"VolumeKOut [%d]" 		(gS) { knx="5.010:10/2/4"}
+Number z2KNX_VolumeIn		"VolumeKIn [%d]" 		(gS) { knx="5.010:10/2/3"}
+Number z2Sonos_VolumeOut		"VolumeSOut [%d]" 		(gS) { sonos="[zone_2:volume]"}
+Switch z2Sonos_Next		"Next [%d]"			(gS)	{knx="1.001:10/2/12" , sonos="[ON:zone_2:next]"}
+Switch z2Sonos_Previous		"Previous [%d]"			(gS)	{knx="1.001:10/2/13", sonos="[ON:zone_2:previous]"}
+Switch z2Sonos_Mute		"Mute [%d]"			(gS)	{knx="1.001:10/2/6", sonos="[ON:zone_2:mute], [OFF:zone_2:mute]", autoupdate="true"}
+Switch z2KNX_MuteOut		"MuteOut [%d]"			(gS)	{knx="1.001:10/2/7", autoupdate="true"}
+Switch z2KNX_Ch_Radio							{knx="1.001:10/2/17"}
+Number z2Sonos_Radio_In   						{knx="5.010:10/2/18", autoupdate="true"}
+Number z2KNX_Radio_Out							{knx="5.010:10/2/19"}
+String z2Sonos_Radio_Out							{sonos="[zone_2:radio]"}
+String z2Sonos_Transport		"State: [%s]"			(gS)	{sonos="[zone_2:transportstate]"}
+String z2Sonos_goupid		"State: [%s]"			(gS)	{sonos="[zone_2:zonegroupid]", autoupdate="true"}
+Number z2ZoneMaster		{ knx="5.010:10/2/8"}
+
+/* Zone 3 */
+Switch z3KNX_Volume_Rel		{ knx="1.001:10/3/5"}
+Switch z3KNX_Power		{ sonos="[ON:zone_3:play], [OFF:zone_3:pause]", knx="1.001:10/3/1"}
+Switch z3KNX_PowerOut		{ knx="1.001:10/3/2"}
+String z3Sonos_Curr_Track		{ sonos="[zone_3:currenttrack]", autoupdate="true"}
+String z3KNX_Curr_Title		{ knx="16.001:10/3/9"}
+String z3KNX_Curr_Album		{ knx="16.001:10/3/11"}
+String z3KNX_Curr_Artist	{ knx="16.001:10/3/10"}
+Dimmer z3Sonos_VolumeIn "VolumeSIn [%d %%]" (gS) {sonos="[OFF:zone_3:volume], [ON:zone_3:volume], [DECREASE:zone_3:volume], [INCREASE:zone_3:volume]", autoupdate="false"}
+Number z3KNX_VolumeOut		"VolumeKOut [%d]" 		(gS) { knx="5.010:10/3/4"}
+Number z3KNX_VolumeIn		"VolumeKIn [%d]" 		(gS) { knx="5.010:10/3/3"}
+Number z3Sonos_VolumeOut		"VolumeSOut [%d]" 		(gS) { sonos="[zone_3:volume]"}
+Switch z3Sonos_Next		"Next [%d]"			(gS)	{knx="1.001:10/3/12" , sonos="[ON:zone_3:next]"}
+Switch z3Sonos_Previous		"Previous [%d]"			(gS)	{knx="1.001:10/3/13", sonos="[ON:zone_3:previous]"}
+Switch z3Sonos_Mute		"Mute [%d]"			(gS)	{knx="1.001:10/3/6", sonos="[ON:zone_3:mute], [OFF:zone_3:mute]", autoupdate="true"}
+Switch z3KNX_MuteOut		"MuteOut [%d]"			(gS)	{knx="1.001:10/3/7", autoupdate="true"}
+Switch z3KNX_Ch_Radio							{knx="1.001:10/3/17"}
+Number z3Sonos_Radio_In   						{knx="5.010:10/3/18", autoupdate="true"}
+Number z3KNX_Radio_Out							{knx="5.010:10/3/19"}
+String z3Sonos_Radio_Out							{sonos="[zone_3:radio]"}
+String z3Sonos_Transport		"State: [%s]"			(gS)	{sonos="[zone_3:transportstate]"}
+String z3Sonos_goupid		"State: [%s]"			(gS)	{sonos="[zone_3:zonegroupid]", autoupdate="true"}
+Number z3ZoneMaster		{ knx="5.010:10/3/8"}
+
+/* Zone 4 */
+Switch z4KNX_Volume_Rel		{ knx="1.001:10/4/5"}
+Switch z4KNX_Power		{ sonos="[ON:zone_4:play], [OFF:zone_4:pause]", knx="1.001:10/4/1"}
+Switch z4KNX_PowerOut		{ knx="1.001:10/4/2"}
+String z4Sonos_Curr_Track		{ sonos="[zone_4:currenttrack]", autoupdate="true"}
+String z4KNX_Curr_Title		{ knx="16.001:10/4/9"}
+String z4KNX_Curr_Album		{ knx="16.001:10/4/11"}
+String z4KNX_Curr_Artist	{ knx="16.001:10/4/10"}
+Dimmer z4Sonos_VolumeIn "VolumeSIn [%d %%]" (gS) {sonos="[OFF:zone_4:volume], [ON:zone_4:volume], [DECREASE:zone_4:volume], [INCREASE:zone_4:volume]", autoupdate="false"}
+Number z4KNX_VolumeOut		"VolumeKOut [%d]" 		(gS) { knx="5.010:10/4/4"}
+Number z4KNX_VolumeIn		"VolumeKIn [%d]" 		(gS) { knx="5.010:10/4/3"}
+Number z4Sonos_VolumeOut		"VolumeSOut [%d]" 		(gS) { sonos="[zone_4:volume]"}
+Switch z4Sonos_Next		"Next [%d]"			(gS)	{knx="1.001:10/4/12" , sonos="[ON:zone_4:next]"}
+Switch z4Sonos_Previous		"Previous [%d]"			(gS)	{knx="1.001:10/4/13", sonos="[ON:zone_4:previous]"}
+Switch z4Sonos_Mute		"Mute [%d]"			(gS)	{knx="1.001:10/4/6", sonos="[ON:zone_4:mute], [OFF:zone_4:mute]", autoupdate="true"}
+Switch z4KNX_MuteOut		"MuteOut [%d]"			(gS)	{knx="1.001:10/4/7", autoupdate="true"}
+Switch z4KNX_Ch_Radio							{knx="1.001:10/4/17"}
+Number z4Sonos_Radio_In   						{knx="5.010:10/4/18", autoupdate="true"}
+Number z4KNX_Radio_Out							{knx="5.010:10/4/19"}
+String z4Sonos_Radio_Out							{sonos="[zone_4:radio]"}
+String z4Sonos_Transport		"State: [%s]"			(gS)	{sonos="[zone_4:transportstate]"}
+String z4Sonos_goupid		"State: [%s]"			(gS)	{sonos="[zone_4:zonegroupid]", autoupdate="true"}
+Number z4ZoneMaster		{ knx="5.010:10/4/8"}
+
+/* Zone 5 */
+Switch z5KNX_Volume_Rel		{ knx="1.001:10/5/5"}
+Switch z5KNX_Power		{ sonos="[ON:zone_5:play], [OFF:zone_5:pause]", knx="1.001:10/5/1"}
+Switch z5KNX_PowerOut		{ knx="1.001:10/5/2"}
+String z5Sonos_Curr_Track		{ sonos="[zone_5:currenttrack]", autoupdate="true"}
+String z5KNX_Curr_Title		{ knx="16.001:10/5/9"}
+String z5KNX_Curr_Album		{ knx="16.001:10/5/11"}
+String z5KNX_Curr_Artist	{ knx="16.001:10/5/10"}
+Dimmer z5Sonos_VolumeIn "VolumeSIn [%d %%]" (gS) {sonos="[OFF:zone_5:volume], [ON:zone_5:volume], [DECREASE:zone_5:volume], [INCREASE:zone_5:volume]", autoupdate="false"}
+Number z5KNX_VolumeOut		"VolumeKOut [%d]" 		(gS) { knx="5.010:10/5/4"}
+Number z5KNX_VolumeIn		"VolumeKIn [%d]" 		(gS) { knx="5.010:10/5/3"}
+Number z5Sonos_VolumeOut		"VolumeSOut [%d]" 		(gS) { sonos="[zone_5:volume]"}
+Switch z5Sonos_Next		"Next [%d]"			(gS)	{knx="1.001:10/5/12" , sonos="[ON:zone_5:next]"}
+Switch z5Sonos_Previous		"Previous [%d]"			(gS)	{knx="1.001:10/5/13", sonos="[ON:zone_5:previous]"}
+Switch z5Sonos_Mute		"Mute [%d]"			(gS)	{knx="1.001:10/5/6", sonos="[ON:zone_5:mute], [OFF:zone_5:mute]", autoupdate="true"}
+Switch z5KNX_MuteOut		"MuteOut [%d]"			(gS)	{knx="1.001:10/5/7", autoupdate="true"}
+Switch z5KNX_Ch_Radio							{knx="1.001:10/5/17"}
+Number z5Sonos_Radio_In   						{knx="5.010:10/5/18", autoupdate="true"}
+Number z5KNX_Radio_Out							{knx="5.010:10/5/19"}
+String z5Sonos_Radio_Out							{sonos="[zone_5:radio]"}
+String z5Sonos_Transport		"State: [%s]"			(gS)	{sonos="[zone_5:transportstate]"}
+String z5Sonos_goupid		"State: [%s]"			(gS)	{sonos="[zone_5:zonegroupid]", autoupdate="true"}
+Number z5ZoneMaster		{ knx="5.010:10/5/8"}
