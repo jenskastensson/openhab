@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -208,14 +208,10 @@ public class S300THBinding extends AbstractActiveBinding<S300THBindingProvider> 
 				value = rainValue;
 				break;
 			case IS_RAINING:
-				continue;
+				value = isRaining ? 1 : 0;
+				break;
 			}
 			updateItem(config.item, value);
-		}
-		S300THBindingConfig config = findConfig(KS_300_ADDRESS, Datapoint.IS_RAINING);
-		if (config != null) {
-			OnOffType status = isRaining ? OnOffType.ON : OnOffType.OFF;
-			eventPublisher.postUpdate(config.item.getName(), status);
 		}
 	}
 

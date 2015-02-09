@@ -6,14 +6,15 @@
 	<parent>
 		<groupId>org.openhab.bundles</groupId>
 		<artifactId>binding</artifactId>
-		<version>1.5.0-SNAPSHOT</version>
+		<version>1.7.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<bundle.symbolicName>org.openhab.binding.gpio</bundle.symbolicName>
 		<bundle.namespace>org.openhab.binding.gpio</bundle.namespace>
 		<deb.name>openhab-addon-binding-gpio</deb.name>
-		<deb.description>${name}</deb.description>
+		<deb.description>${project.name}</deb.description>
+		<deb.depends>openhab-addon-io-gpio</deb.depends>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>

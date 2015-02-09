@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -33,6 +33,7 @@ import org.openhab.model.item.binding.BindingConfigParseException;
  * <li>{ maxcube="JEQ304492:type=valve" } - returns the corresponding valve position in percentage. Only available for heating thermostats.</li>
  * <li>{ maxcube="JEQ304492:type=battery" } - returns the current battery state as text.</li>
  * <li>{ maxcube="JEQ304492:type=mode" } - returns the current mode as text.</li>
+ * <li>{ maxcube="JEQ304492:type=actual" } - returns the current measured temparature.</li>
  * </ul>
  * @author Andreas Heil
  * @since 1.4.0
@@ -82,6 +83,8 @@ public class MaxCubeGenericBindingProvider extends AbstractGenericBindingProvide
 					config.bindingType = BindingType.VALVE;
 				} else if (bindingToken[1].toLowerCase().equals("mode")) {
 					config.bindingType = BindingType.MODE;
+				} else if (bindingToken[1].toLowerCase().equals("actual")) {
+					config.bindingType = BindingType.ACTUAL;
 				} else if (bindingToken[1].toLowerCase().equals("battery")) {
 					config.bindingType = BindingType.BATTERY;
 				}

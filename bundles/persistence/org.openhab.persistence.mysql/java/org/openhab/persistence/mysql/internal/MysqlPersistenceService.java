@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,12 +8,12 @@
  */
 package org.openhab.persistence.mysql.internal;
 
-import java.text.SimpleDateFormat;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemNotFoundException;
 import org.openhab.core.items.ItemRegistry;
@@ -45,10 +46,11 @@ import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.persistence.FilterCriteria;
+import org.openhab.core.persistence.FilterCriteria.Ordering;
 import org.openhab.core.persistence.HistoricItem;
 import org.openhab.core.persistence.PersistenceService;
+import org.openhab.core.persistence.PersistentStateRestorer;
 import org.openhab.core.persistence.QueryablePersistenceService;
-import org.openhab.core.persistence.FilterCriteria.Ordering;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
 import org.osgi.service.cm.ConfigurationException;
@@ -95,6 +97,7 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 
 	private boolean initialized = false;
 	protected ItemRegistry itemRegistry;
+	private PersistentStateRestorer persistentStateRestorer;
 
 	// Error counter - used to reconnect to database on error
 	private int errCnt;
@@ -107,6 +110,7 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 	private Map<String, String> sqlTables = new HashMap<String, String>();
 	private Map<String, String> sqlTypes = new HashMap<String, String>();
 
+	
 	public void activate() {
 		// Initialise the type array
 		sqlTypes.put("COLORITEM", "CHAR(25)");
@@ -131,6 +135,14 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 
 	public void unsetItemRegistry(ItemRegistry itemRegistry) {
 		this.itemRegistry = null;
+	}
+	
+	public void setPersistentStateRestorer(PersistentStateRestorer persistentStateRestorer) {
+		this.persistentStateRestorer = persistentStateRestorer;
+	}
+	
+	public void unsetPersistentStateRestorer(PersistentStateRestorer persistentStateRestorer) {
+		this.persistentStateRestorer = null;
 	}
 
 	/**
@@ -300,7 +312,8 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 		try {
 			statement = connection.createStatement();
 			sqlCmd = new String("INSERT INTO " + tableName + " (TIME, VALUE) VALUES(NOW(),'"
-					+ item.getState().toString() + "');");
+					+ item.getState().toString() + "') ON DUPLICATE KEY UPDATE VALUE='"
+					+ item.getState().toString() + "';");
 			statement.executeUpdate(sqlCmd);
 
 			logger.debug("mySQL: Stored item '{}' as '{}'[{}] in SQL database at {}.", item.getName(), item.getState()
@@ -429,6 +442,7 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 	 * @{inheritDoc
 	 */
 	public void updated(Dictionary<String, ?> config) throws ConfigurationException {
+		logger.debug("mySQL configuration starting");
 		if (config != null) {
 			Enumeration<String> keys = config.keys();
 
@@ -482,25 +496,33 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 				waitTimeout = Integer.parseInt(tmpString);
 			}
 
+			// reconnect to the database in case the configuration has changed.
 			disconnectFromDatabase();
 			connectToDatabase();
 
 			// connection has been established ... initialization completed!
 			initialized = true;
+			
+			logger.debug("mySQL configuration complete.");
+			persistentStateRestorer.initializeItems(getName());
 		}
 
 	}
 
 	@Override
 	public Iterable<HistoricItem> query(FilterCriteria filter) {
-		if (!initialized)
+		if (!initialized) {
+			logger.debug("Query aborted on item {} - mySQL not initialised!", filter.getItemName());
 			return Collections.emptyList();
+		}
 
 		if (!isConnected())
 			connectToDatabase();
 
-		if (!isConnected())
+		if (!isConnected()) {
+			logger.debug("Query aborted on item {} - mySQL not connected!", filter.getItemName());
 			return Collections.emptyList();
+		}
 
 		SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -519,6 +541,11 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 			// Set type to null - data will be returned as StringType
 			item = null;
 		}
+                   
+        if(item instanceof GroupItem){
+            // For Group Items is BaseItem needed to get correct Type of Value.
+            item = GroupItem.class.cast(item).getBaseItem();
+        }
 
 		String table = sqlTables.get(itemName);
 		if (table == null) {
@@ -578,6 +605,8 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 
 				if (item instanceof NumberItem)
 					state = new DecimalType(rs.getDouble(2));
+				else if (item instanceof ColorItem)
+					state = new HSBType(rs.getString(2));
 				else if (item instanceof DimmerItem)
 					state = new PercentType(rs.getInt(2));
 				else if (item instanceof SwitchItem)
@@ -586,8 +615,6 @@ public class MysqlPersistenceService implements QueryablePersistenceService, Man
 					state = OpenClosedType.valueOf(rs.getString(2));
 				else if (item instanceof RollershutterItem)
 					state = new PercentType(rs.getInt(2));
-				else if (item instanceof ColorItem)
-					state = new HSBType(rs.getString(2));
 				else if (item instanceof DateTimeItem) {
 					Calendar calendar = Calendar.getInstance();
 					calendar.setTimeInMillis(rs.getTimestamp(2).getTime());

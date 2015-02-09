@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,15 +34,12 @@ public class Db4oConfiguration implements ManagedService {
 	public static String backupInterval = "0 0 1 * * ?";
 	
 	/** the commit interval in seconds (optional, default to '5') */
-	public static int commitInterval = 60;
+	public static int commitInterval = 5;
 
 	/** the amount of backup files allowed in DB_FOLDER_NAME (optional, defaults to '7') */
 	public static int maxBackups = 7;
 	
-	/**  */
-	public static boolean disableService = false;
 	
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -71,16 +68,6 @@ public class Db4oConfiguration implements ManagedService {
 				}
 				catch (IllegalArgumentException iae) {
 					logger.warn("couldn't parse '{}' to an integer");
-				}
-			}
-			
-			String disableServiceString = (String) config.get("disableService");
-			if (StringUtils.isNotBlank(disableServiceString)) {
-				try {
-					disableService = Boolean.valueOf(disableServiceString);
-				}
-				catch (IllegalArgumentException iae) {
-					logger.warn("couldn't parse '{}' to an disableService");
 				}
 			}
 		}

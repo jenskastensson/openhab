@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -91,7 +91,7 @@ public class TCPBinding extends AbstractSocketChannelBinding<TCPBindingProvider>
 			if(result!=null && blocking) {
 				String resultString = "";
 				try {
-					resultString = new String(result.array(), charset);
+					resultString = new String(result.array(), charset).split("\0")[0];
 				} catch (UnsupportedEncodingException e) {
 					logger.warn("Exception while attempting an unsupported encoding scheme");
 				}
@@ -137,7 +137,7 @@ public class TCPBinding extends AbstractSocketChannelBinding<TCPBindingProvider>
 
 		String theUpdate = "";
 		try {
-			theUpdate = new String(byteBuffer.array(), charset);
+			theUpdate = new String(byteBuffer.array(), charset).split("\0")[0];
 		} catch (UnsupportedEncodingException e) {
 			logger.warn("Exception while attempting an unsupported encoding scheme");
 		}
@@ -180,14 +180,24 @@ public class TCPBinding extends AbstractSocketChannelBinding<TCPBindingProvider>
 
 			String preambleString = (String) config.get("preamble");
 			if (StringUtils.isNotBlank(preambleString)) {
-				preAmble = preambleString.replaceAll("\\\\", "\\");
+				try {
+					preAmble = preambleString.replaceAll("\\\\", "\\");
+				}
+				catch(Exception e) {
+					preAmble = preambleString;
+				}
 			} else {
 				logger.info("The preamble for all write operations will be set to the default vaulue of {}",preAmble);
 			}
 
 			String postambleString = (String) config.get("postamble");
 			if (StringUtils.isNotBlank(postambleString)) {
-				postAmble = postambleString.replaceAll("\\\\", "\\");;
+				try {
+					postAmble = postambleString.replaceAll("\\\\", "\\");
+				}
+				catch(Exception e) {
+					postAmble = postambleString;
+				}
 			} else {
 				logger.info("The postamble for all write operations will be set to the default vaulue of {}",postAmble);
 			}
@@ -253,7 +263,7 @@ public class TCPBinding extends AbstractSocketChannelBinding<TCPBindingProvider>
 				logger.warn("couldn't transform response because transformationService of type '{}' is unavailable", transformationType);
 			}
 		}
-		catch (TransformationException te) {
+		catch (Exception te) {
 			logger.error("transformation throws exception [transformation="
 					+ transformation + ", response=" + response + "]", te);
 

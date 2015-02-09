@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,6 +8,7 @@
  */
 package org.openhab.io.transport.cul;
 
+import org.openhab.io.transport.cul.internal.CULNetworkHandlerImpl;
 import org.openhab.io.transport.cul.internal.CULSerialHandlerImpl;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -33,6 +34,7 @@ public class CULActivator implements BundleActivator {
 		context = bc;
 		logger.debug("CUL transport has been started.");
 		CULManager.registerHandlerClass("serial", CULSerialHandlerImpl.class);
+		CULManager.registerHandlerClass("network", CULNetworkHandlerImpl.class);
 	}
 
 	@Override

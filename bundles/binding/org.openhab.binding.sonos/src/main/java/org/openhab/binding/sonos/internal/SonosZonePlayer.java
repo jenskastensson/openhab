@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -1106,7 +1106,7 @@ class SonosZonePlayer {
 	}
 
 	public boolean updateCurrentURIFormatted() {
-
+		
 		if(stateMap != null && isConfigured()) {
 
 			String currentURI = null;
@@ -1157,12 +1157,13 @@ class SonosZonePlayer {
 							logger.error("Could not parse RadioTime from String {}",response);
 						}
 
-						if(fields != null) {
+						resultString = new String();
 
-							resultString = new String();
-							// radio name should be first field
-							title = fields.get(0);
+						if(fields != null && fields.size()>1) {
 
+							artist = fields.get(0);
+							title = fields.get(1);
+							
 							Iterator<String> listIterator = fields.listIterator();
 							while(listIterator.hasNext()){
 								String field = listIterator.next();
@@ -1175,12 +1176,18 @@ class SonosZonePlayer {
 					} else {
 						resultString = stateMap.get("CurrentURIFormatted").getValue().toString();
 						title = stateMap.get("CurrentTitle").getValue().toString();
+						artist = stateMap.get("CurrentArtist").getValue().toString();
 					}
 
 
 				} else {
 					if(currentTrack != null) {
-						if(!currentTrack.getTitle().contains("x-sonosapi-stream")) {
+						if(currentTrack.getResource().contains("x-rincon-stream")) {
+							title = currentTrack.getTitle();
+							album = " ";
+							artist = " ";
+							resultString = title;
+						} else if(!currentTrack.getResource().contains("x-sonosapi-stream")) {
 							if (currentTrack.getAlbumArtist().equals("")) {
 								resultString = currentTrack.getCreator() + " - " + currentTrack.getAlbum() + " - " + currentTrack.getTitle();
 								artist = currentTrack.getCreator();
@@ -1191,18 +1198,26 @@ class SonosZonePlayer {
 
 							album = currentTrack.getAlbum();
 							title = currentTrack.getTitle();
-						}
+							
+							if(album.equals("")) {
+								album= " ";
+							}
 
+							if(artist.equals("")) {
+								artist= " ";
+							}
+						}
 					} else {
-						resultString = "";
+						title=" ";
+						album = " ";
+						artist = " ";
+						resultString = " ";
 					}
 				}
 
 				StateVariable newVariable = new StateVariable("CurrentURIFormatted",new StateVariableTypeDetails(Datatype.Builtin.STRING.getDatatype()));
 				StateVariableValue newValue = new StateVariableValue(newVariable, resultString);
-
 				processStateVariableValue(newVariable.getName(),newValue);		
-
 
 				// update individual variables
 				newVariable = new StateVariable("CurrentArtist",new StateVariableTypeDetails(Datatype.Builtin.STRING.getDatatype()));
@@ -1737,24 +1752,24 @@ class SonosZonePlayer {
 	}
 
 	/**
-	 * 	Play music from the line-in of the given UDN
+	 * 	Play music from the line-in of the Player given its name or UDN
 	 * 
 	 * 	@param udn
 	 * 	@return true if the sonos device started to play
 	 */
-	public boolean playLineIn(String remoteUDN) {
+	public boolean playLineIn(String remotePlayerName) {
 		if (!isConfigured) {
 			return false;
 		}
 
-		SonosZonePlayer coordinator = sonosBinding
-				.getCoordinatorForZonePlayer(this);
+		SonosZonePlayer coordinator = sonosBinding.getCoordinatorForZonePlayer(this);
+		SonosZonePlayer remotePlayer = sonosBinding.getPlayerForID(remotePlayerName);
 
 		// stop whatever is currently playing
 		coordinator.stop();
 
 		// set the
-		coordinator.setCurrentURI("x-rincon-stream:" + remoteUDN, "");
+		coordinator.setCurrentURI("x-rincon-stream:" + remotePlayer.getUdn().getIdentifierString(), "");
 
 		// take the system off mute
 		coordinator.setMute("OFF");

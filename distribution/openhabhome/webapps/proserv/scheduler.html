@@ -1,49 +1,133 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <meta charset="ISO-8859-1">
-    <title>proServ Scheduler</title>
+<meta charset="ISO-8859-1">
+<title>proServX scheduler</title>
+<script type="text/javascript" src="jquery-1.6.4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="jqCron.css" />
+<script type="text/javascript" src="jqCron.js"></script>
+<script type="text/javascript" src="jquery.blockUI.js"></script>
+<style>
+* { margin: 0; padding: 0; }
+body { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #ddd;line-height: 24px; }
+ul { margin-left: 20px; }
+ol { margin: 15px 0px 0px 20px; }
+ol li { margin-top: 10px; }
+h1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }
+h2 { margin: 30px 0 10px 10px; font-size: 1.3em; color: #555; }
+h3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }
+p { line-height: 1.3;  margin-top: 20px; }
+pre { line-height: 1.3; background-color: #369; color: #fff; padding: 10px; margin-top: 20px;}
+a { color: #369; font-weight: bold; text-decoration: none; }
+.schedule { margin: 5px; border: 1px dashed #ccc; padding: 5px;}
+.schedule-inner { margin: 3px; padding: 3px;}
+.schedule-text { visibility:hidden; font-family: monospace; }
+.button-text { font-size: 1.3em; margin: 10px 10px 10px 10px; padding: 6px; font-weight: bold; text-decoration: none; }
+#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
+#footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }
+</style> <script type="text/javascript"> $(document).ready(function() {
 
-    <style>
-    * { margin: 0; padding: 0; }
-    body { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #ddd;line-height: 24px; }
-    ul { margin-left: 20px; }
-    ol { margin: 15px 0px 0px 20px; }
-    ol li { margin-top: 10px; }
-    h1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }
-    h2 { border-bottom: 1px solid #999; margin: 30px 0 10px 0; font-size: 1.3em; color: #555; }
-    h3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }
-    p { line-height: 1.3;  margin-top: 20px; }
-    pre { line-height: 1.3; background-color: #369; color: #fff; padding: 10px; margin-top: 20px;}
-    a { color: #369; font-weight: bold; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .example { margin: 10px; border: 1px dashed #ccc; padding: 10px;}
-    .example-text { font-family: monospace; }
-    #content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
-    #footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }
-    </style>
-</head>
-<script>
-   document.addEventListener('click', function(event) {
-     var target = event.target;
-     if (target.tagName.toLowerCase() == 'a')
-     {
-         var port = target.getAttribute('href').match(/^:(\d+)(.*)/);
-         if (port)
-         {
-            target.href = port[2];
-            target.port = port[1];
-         }
-     }
-   }, false);
-</script>
-<body>
-<div id="content">
-    <h1>proServ Scheduler</h1>
+$("#scheduledpID211ON-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});
+$("#scheduledpID211OFF-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});
 
-    <p>
-    proServ is unable to communicate with proServ KNX remote controller, either the communication link is broken or the IP of proServ has not been configured.<br><br>Please configure / verify the IP from proServ Logview <a href=':8081/greent' target='_blank'>here</a>!<br><br>Finally refresh your browser (click the browser reload button or hit F5).
-    </p>
+$('#scheduledpID211a').jqCron({enabled_minute: true,
+multiple_dom: true,
+multiple_month: true,
+multiple_mins: true,
+multiple_dow: true,
+multiple_time_hours: true,
+multiple_time_minutes: true,
+numeric_zero_pad: true,
+default_period:'week',
+default_value: '0 0 8 ? * 2-6'.substr(1).replace(/\?/g,"*"),no_reset_button: true,
+lang: 'en',
+bind_to: $('#scheduledpID211a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});
 
-</body>
-</html>
+$('#scheduledpID211b').jqCron({enabled_minute: true,
+multiple_dom: true,
+multiple_month: true,
+multiple_mins: true,
+multiple_dow: true,
+multiple_time_hours: true,
+multiple_time_minutes: true,
+numeric_zero_pad: true,
+default_period:'week',
+default_value: '0 0 21 ? * 2-6'.substr(1).replace(/\?/g,"*"),no_reset_button: true,
+lang: 'en',bind_to: $('#scheduledpID211b-val'),bind_method: { set: function($element, value) { $element.html(value); }}});
+
+$("#dpID211ON-enabled").change(function() {
+if($(this).is(":checked")) {$("#scheduledpID211ON-frame").unblock(); }
+else {$("#scheduledpID211ON-frame").block({ message: null,
+ overlayCSS: {backgroundColor: '#000',
+ opacity: 0.25,
+ cursor: null},
+}); }});
+$("#dpID211OFF-enabled").change(function() {
+if($(this).is(":checked")) {$("#scheduledpID211OFF-frame").unblock(); }
+else {$("#scheduledpID211OFF-frame").block({ message: null,
+ overlayCSS: {backgroundColor: '#000',
+ opacity: 0.25,
+ cursor: null},
+}); }});
+
+$("#scheduledpID885ON-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});
+$("#scheduledpID885OFF-frame").block({ message: null, overlayCSS: {backgroundColor: '#000', opacity: 0.25, cursor: null},});
+
+$('#scheduledpID885a').jqCron({enabled_minute: true,
+multiple_dom: true,
+multiple_month: true,
+multiple_mins: true,
+multiple_dow: true,
+multiple_time_hours: true,
+multiple_time_minutes: true,
+numeric_zero_pad: true,
+default_period:'week',
+default_value: '0 0 8 ? * 2-6'.substr(1).replace(/\?/g,"*"),no_reset_button: true,
+lang: 'en',
+bind_to: $('#scheduledpID885a-val'),bind_method: { set: function($element, value) { $element.html(value); }}});
+
+$('#scheduledpID885b').jqCron({enabled_minute: true,
+multiple_dom: true,
+multiple_month: true,
+multiple_mins: true,
+multiple_dow: true,
+multiple_time_hours: true,
+multiple_time_minutes: true,
+numeric_zero_pad: true,
+default_period:'week',
+default_value: '0 0 21 ? * 2-6'.substr(1).replace(/\?/g,"*"),no_reset_button: true,
+lang: 'en',bind_to: $('#scheduledpID885b-val'),bind_method: { set: function($element, value) { $element.html(value); }}});
+
+$("#dpID885ON-enabled").change(function() {
+if($(this).is(":checked")) {$("#scheduledpID885ON-frame").unblock(); }
+else {$("#scheduledpID885ON-frame").block({ message: null,
+ overlayCSS: {backgroundColor: '#000',
+ opacity: 0.25,
+ cursor: null},
+}); }});
+$("#dpID885OFF-enabled").change(function() {
+if($(this).is(":checked")) {$("#scheduledpID885OFF-frame").unblock(); }
+else {$("#scheduledpID885OFF-frame").block({ message: null,
+ overlayCSS: {backgroundColor: '#000',
+ opacity: 0.25,
+ cursor: null},
+}); }});
+$('#save-all').click(function(){var current_value="dpID211:0:"+($('#dpID211ON-enabled').is(':checked')?'true':'false')+":"+$('#scheduledpID211a-val').text()+":"+($('#dpID211OFF-enabled').is(':checked')?'true':'false')+":" +  $('#scheduledpID211b-val').text() + 
+ ";"+"dpID885:1:"+($('#dpID885ON-enabled').is(':checked')?'true':'false')+":"+$('#scheduledpID885a-val').text()+":"+($('#dpID885OFF-enabled').is(':checked')?'true':'false')+":" +  $('#scheduledpID885b-val').text() + 
+ ";"+"";
+/*alert(current_value);*/$.ajax({type:"GET",url:"/CMD?ProservCronJobs="+current_value,success:function(){alert("The values have been saved!");},error:function(){alert("An error occured when submitting your request. Please try again!");}});});
+});
+</script></head><body><div id="content"><h1>proServX scheduler</h1>
+<button class='cron-period button-text' id='save-all'>Save all changes</button>
+<h2 id='intro'>Values /// ON/OFF</h2>
+<div class='schedule'>
+<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name="dpID211ON-enabled" id="dpID211ON-enabled" />ON :</div></a></td><td><div class='schedule-inner' id='scheduledpID211ON-frame'><div id='scheduledpID211a'></div></td></tr></table>
+<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name="dpID211OFF-enabled" id="dpID211OFF-enabled" />OFF :</div></a></td><td><div class='schedule-inner' id='scheduledpID211OFF-frame'><div id='scheduledpID211b'></div></td></tr></table></div>
+<h2 id='intro'>Values /// Roomcontroller</h2>
+<div class='schedule'>
+<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name="dpID885ON-enabled" id="dpID885ON-enabled" />Comfort :</div></a></td><td><div class='schedule-inner' id='scheduledpID885ON-frame'><div id='scheduledpID885a'></div></td></tr></table>
+<table style='width: 100%'><tr><td style='width: 18%'><a><div ><input style='width: 20px' type='checkbox' name="dpID885OFF-enabled" id="dpID885OFF-enabled" />Night :</div></a></td><td><div class='schedule-inner' id='scheduledpID885OFF-frame'><div id='scheduledpID885b'></div></td></tr></table></div>
+</div>
+<p class='schedule-text'>Generated cron entries: <span class='schedule-text' id='scheduledpID211a-val'>  </span><span class='schedule-text' id='scheduledpID211b-val'></span></p>
+<p class='schedule-text'>Generated cron entries: <span class='schedule-text' id='scheduledpID885a-val'>  </span><span class='schedule-text' id='scheduledpID885b-val'></span></p>
+</body></html>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,7 +22,7 @@ import org.openhab.core.library.items.RollershutterItem;
  * Represents all valid value selectors which could be processed by this
  * binding.
  * 
- * @author Pauli Anttila, Evert van Es
+ * @author Pauli Anttila, Evert van Es, Neil Renaud
  * @since 1.2.0
  */
 public enum RFXComValueSelector {
@@ -30,6 +30,7 @@ public enum RFXComValueSelector {
 	RAW_DATA ("RawData", StringItem.class),
 	SHUTTER ("Shutter", RollershutterItem.class),
 	COMMAND ("Command", SwitchItem.class),
+	MOOD ("Mood", NumberItem.class),
 	SIGNAL_LEVEL ("SignalLevel", NumberItem.class),
 	DIMMING_LEVEL ("DimmingLevel", DimmerItem.class),
 	TEMPERATURE ("Temperature", NumberItem.class),

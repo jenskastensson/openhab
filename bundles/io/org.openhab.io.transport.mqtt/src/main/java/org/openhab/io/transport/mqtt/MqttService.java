@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2014, openHAB.org and others.
+ * Copyright (c) 2010-2015, openHAB.org and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -95,6 +95,12 @@ public class MqttService implements ManagedService {
 				conn.setAsync(Boolean.parseBoolean(value));
 			} else if (property.equals("clientId")) {
 				conn.setClientId(value);
+			} else if (property.equals("lwt")) {
+				MqttWillAndTestament will = MqttWillAndTestament.fromString(value);
+				logger.debug("Setting last will: {}", will);
+				conn.setLastWill(will);
+			} else if (property.equals("keepAlive")) {
+				conn.setKeepAliveInterval(Integer.parseInt(value));
 			} else {
 				logger.warn("Unrecognized property: {}", key);
 			}
@@ -140,7 +146,7 @@ public class MqttService implements ManagedService {
 	 *            to look for.
 	 * @return existing connection or new one if it didn't exist yet.
 	 */
-	private MqttBrokerConnection getConnection(String brokerName) {
+	private synchronized MqttBrokerConnection getConnection(String brokerName) {
 
 		MqttBrokerConnection conn = brokerConnections.get(brokerName
 				.toLowerCase());

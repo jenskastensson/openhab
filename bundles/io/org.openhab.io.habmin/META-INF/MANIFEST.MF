@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: openHAB HABmin Web Administration
 Bundle-SymbolicName: org.openhab.io.habmin
-Bundle-Version: 1.4.0.qualifier
+Bundle-Version: 1.7.0.qualifier
 Bundle-Vendor: openHAB.org
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: com.sun.jersey.api.json,
  com.sun.jersey.core.util,
  javax.servlet,

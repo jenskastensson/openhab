@@ -11,4 +11,5 @@ String ProservEmail  "ProservEmail"  { proserv="proserv_email", autoupdate="fals
 String ProservIP  "ProservIP"  { proserv="proserv_ip", autoupdate="false" }
 String ProservCronJobs  "ProservCronJobs"  { proserv="proserv_cronjobs", autoupdate="false" }
 Group gProservBoot
+Group gDummy
 
