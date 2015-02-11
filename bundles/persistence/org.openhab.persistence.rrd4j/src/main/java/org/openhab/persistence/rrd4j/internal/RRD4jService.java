@@ -265,28 +265,6 @@ public class RRD4jService implements QueryablePersistenceService {
 		return rrdDef;
 	}
 	
-	
-//	private RrdDef getRrdDef(ConsolFun function, File file) {
-//    	RrdDef rrdDef = new RrdDef(file.getAbsolutePath());
-//    	if(function==ConsolFun.AVERAGE) {
-//        // for measurement values, we define archives that are suitable for charts
-//			rrdDef.setStep(60);
-//	        rrdDef.setStartTime(System.currentTimeMillis()/1000-1);
-//	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 60, Double.NaN, Double.NaN);
-//	        rrdDef.addArchive(function, 0.5, 1, 40320); // 4 week (granularity 1 min)
-//	        rrdDef.addArchive(function, 0.5, 10, 52560); // one year (granularity 10 min)
-//	        rrdDef.addArchive(function, 0.5, 60, 26280); // three years (granularity 1 hour)
-//    	} else {
-//			rrdDef.setStep(20);
-//	        rrdDef.setStartTime(System.currentTimeMillis()/1000-1);
-//	        rrdDef.addDatasource(DATASOURCE_STATE, DsType.GAUGE, 180, Double.NaN, Double.NaN);
-//	        rrdDef.addArchive(function, 0.5, 1, 4*30240); // 4 weeks (granularity 20 sec)
-//	        rrdDef.addArchive(function, 0.5, 30, 52560); // one year (granularity 10 min)
-//	        rrdDef.addArchive(function, 0.5, 180, 26280); // three years (granularity 1 hour)    		
-//    	}
-//		return rrdDef;
-//	}
-
 	static public ConsolFun getConsolidationFunction(Item item) {
 		if(item instanceof NumberItem) {
 			return ConsolFun.AVERAGE;
