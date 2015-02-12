@@ -67,7 +67,7 @@ public class ProservData {
 	private int[] weatherStationMapId = new int[6];
 	@SuppressWarnings("unused")
 	private int weatherStationDataPoint;
-	private int lastMapId = 0;
+	private int nofUsedMapId = 0;
 
 	private static Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
@@ -207,8 +207,8 @@ public class ProservData {
 		return weatherStationMapId[index];
 	}
 
-	public int getLastMapId() {
-		return lastMapId;
+	public int getNofUsedMapId() {
+		return nofUsedMapId;
 	}
 	
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException {
@@ -461,6 +461,7 @@ public class ProservData {
 			}
 		}
 
+		nofUsedMapId = mapId;
 		if (getWeatherStationLogThis()) {
 			for (int x = 0; x < 6; x++) {
 				weatherStationMapId[x] = 0;
@@ -468,30 +469,35 @@ public class ProservData {
 			mapId++;
 			if (getWeatherStationBrigtnessEastIsEnabled()) {
 				weatherStationMapId[0] = mapId;
+				nofUsedMapId++;
 			}
 			mapId++;
 			if (getWeatherStationBrigtnessSouthIsEnabled()) {
 				weatherStationMapId[1] = mapId;
+				nofUsedMapId++;
 			}
 			mapId++;
 			if (getWeatherStationBrigtnessWestIsEnabled()) {
 				weatherStationMapId[2] = mapId;
+				nofUsedMapId++;
 			}
 			mapId++;
 			if (getWeatherStationWindSpeedIsEnabled()) {
 				weatherStationMapId[3] = mapId;
+				nofUsedMapId++;
 			}
 			mapId++;
 			if (getWeatherStationOutdoorTempIsEnabled()){
 				weatherStationMapId[4] = mapId;
+				nofUsedMapId++;
 			}
 			mapId++;
 			if (getWeatherStationRainIsEnabled())  {
 				weatherStationMapId[5] = mapId;
+				nofUsedMapId++;
 			}	
 
 		}
-		lastMapId = mapId;
 	}
 
 	private static void changeProperty(String filename, String key, String value) throws IOException {
@@ -658,8 +664,8 @@ public class ProservData {
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			writer.println("Group gProserv");
 			
-			int lastMapId = getLastMapId() / 10;
-			for (int n = 0; n <= lastMapId; n++) {
+			int nofMapIdGroupsOfTen = getNofUsedMapId() / 10;
+			for (int n = 0; n <= nofMapIdGroupsOfTen; n++) {
 				writer.println("Group gProserv"+ n);
 			}
 			writer.println("");
@@ -1169,8 +1175,8 @@ public class ProservData {
 			String labelProservCharts = mapProservLang.get("PROSERV-CHARTS");
 			writer.println("sitemap proserv label=\"" + labelProservCharts + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelAllValues + "\" {");			
 			writer.println("			Group item=gProserv icon=\"pie\" label=\"" + labelAllValues + "\"");
-			int lastMapId = getLastMapId() / 10;
-			for (int n = 0; n < lastMapId; n++) {
+			int nofMapIdGroupsOfTen = (getNofUsedMapId() / 10);
+			for (int n = 0; n <= nofMapIdGroupsOfTen; n++) {
 				int m = n+1;
 				writer.println("			Group item=gProserv"+ n +" icon=\"pie\" label=\"" + labelAllValues + " " + m + "\"");
 			}
