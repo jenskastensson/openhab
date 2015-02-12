@@ -274,7 +274,7 @@ public class ProservXConnect {
 		if (bFoundGIP && bFoundLIP && bFoundMAC) {
 			logger.debug("Send HTTP to proSevConnectServer");
 			try {
-				logger.info("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}", MacID, publicIp, getLocalIp(), hostName);
+				logger.debug("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}", MacID, publicIp, getLocalIp(), hostName);
 				bRet = sendToProservConnectServer(MacID, publicIp, getLocalIp(), hostName);
 			} catch (Exception e) {
 				logger.error("sendToProservConnectServer exception: {}", e);
