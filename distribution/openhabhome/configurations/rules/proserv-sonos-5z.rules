@@ -2,6 +2,10 @@ import org.openhab.core.library.types.*
 import org.openhab.core.persistence.*
 import org.openhab.model.script.actions.*
 
+/*  To activate this script file, comment or remove the line below to */
+COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT
+
+
 var String[] RinconString1 = "RINCON_000AAA7C590C01400"
 var String[] RinconString2 = "RINCON_000E58BDA44001400"
 var String[] RinconString3 = "RINCON_B8E937380D2C01400"
@@ -1440,3 +1444,5 @@ rule "z5Volume Rel control"
 		}
 		sendCommand(z5Sonos_VolumeOut, z5volCounter.intValue)
 end
+
+

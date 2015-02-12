@@ -6,8 +6,16 @@ import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 import java.text.SimpleDateFormat
-    
 
+    
+/*  To activate this script file, comment or remove the line below to */
+COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT
+
+
+//
+// The PhasesTotal demonstrates how to calculate the sum of three phases
+// Assumes itemProServLog3-5 are bound to phase1-3
+//
 rule "PhasesTotal"
 when
    Item  itemProServLog3 received update or
@@ -29,7 +37,12 @@ then
 	logDebug("rule.PhasesTotal","End execution")
 end
 
-rule "Update Temperature Min- and Max values"
+
+//
+// The MinMaxTemperature Script demonstrates how to calculate daily max and min temp
+// Assumes itemProServLog38 is bound to outside temperature.
+//
+rule "MinMaxTemperature"
 when
     Item  itemProServLog38 received update
     
@@ -37,7 +50,7 @@ then
     var Number Min
     var Number Max
     var String tmp
-    logDebug("rule.Temp.Min.Max","Start execution")
+    logDebug("rule.MinMaxTemperature","Start execution")
     var SimpleDateFormat df = new SimpleDateFormat( "HH:mm" ) 
     
     if (itemProServLog38.state instanceof DecimalType) {
@@ -52,5 +65,6 @@ then
         tmp = (Math::round(Max.floatValue*10.0)/10.0) + " °C (" + df.format(itemProServLog38.maximumSince(now.toDateMidnight, "rrd4j").timestamp) + ")"
         postUpdate(Temperature_Garden_Max_Formatted, tmp)
     }
-    logDebug("rule.Temp.Min.Max","End execution")
+    logDebug("rule.MinMaxTemperature","End execution")
 end
+
