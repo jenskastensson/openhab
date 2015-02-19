@@ -430,6 +430,7 @@ public class SnmpBinding extends AbstractActiveBinding<SnmpBindingProvider>
 		if (mapping) {
 			listen();
 		}
+		setProperlyConfigured(true);
 	}
 
 	private void sendPDU(CommunityTarget target, PDU pdu) {

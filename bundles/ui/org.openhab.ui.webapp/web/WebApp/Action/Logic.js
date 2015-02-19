@@ -161,9 +161,6 @@ var WebApp = (function() {
 			return false;
 		},
 
-		Refresh1: function() {
-				history.go(_historyPos);
-		},
 		Home: function() {
 			if (history.length - _initialNav == _historyPos) {
 				history.go(-_historyPos);
@@ -1450,6 +1447,9 @@ var WebApp = (function() {
 				f = f || i;
 				g = g || $A(dst, "go");		// For compatibility with older version
 				i = $(i || dst.firstChild.nodeValue);	// For compatibility with older version
+
+				// Skip this part if the target el does not exist
+				if (!i) break;
 
 				/* if we target the active layer, remove buttons */
 				if (!k && a && a.id == i.id) {
