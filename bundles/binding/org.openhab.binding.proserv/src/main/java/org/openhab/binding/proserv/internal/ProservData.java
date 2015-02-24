@@ -2,6 +2,7 @@ package org.openhab.binding.proserv.internal;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -69,6 +70,8 @@ public class ProservData {
 	private int weatherStationDataPoint;
 	private int nofUsedMapId = 0;
 
+	private String[] urlSchemes = new String[20];
+	
 	private static Map<String, String> mapProservLang = new HashMap<String, String>();
 	private String allItemNames;
 	public boolean refresh = false;
@@ -375,6 +378,19 @@ public class ProservData {
 		int weatherStationOffset = 16065;
 		weatherStationDefs = proServAllValues[weatherStationOffset];
 
+		// URLSchemes
+		int urlSchemesOffset = 16194;
+		int lengthSchemes = 150;
+		for(int i=0;i<20;i++){
+			int offset = urlSchemesOffset + lengthSchemes * i;
+			int actualLength = 0;
+			for (actualLength = 0; actualLength < lengthSchemes && proServAllValues[offset + actualLength] != 0; actualLength++) {
+			}
+			if (actualLength > 0)
+				urlSchemes[i] = (new String(proServAllValues, offset, actualLength, "ISO-8859-1"));
+			else
+				urlSchemes[i] = new String();
+		}
 	}
 
 	public float parse2ByteFloatValue(byte[] dataValue, int index) {
@@ -500,6 +516,19 @@ public class ProservData {
 		}
 	}
 
+	private static void updateLine(String fileName, String toUpdate, String updated) throws IOException {
+	    BufferedReader file = new BufferedReader(new FileReader(fileName));
+	    String line;
+	    String input = "";
+	    while ((line = file.readLine()) != null)
+	        input += line + System.lineSeparator();
+	    input = input.replace(toUpdate, updated);
+	    FileOutputStream os = new FileOutputStream(fileName);
+	    os.write(input.getBytes());
+	    file.close();
+	    os.close();
+	}	
+	
 	private static void changeProperty(String filename, String key, String value) throws IOException {
 		final File tmpFile = new File(filename + ".tmp");
 		final File file = new File(filename);
@@ -508,7 +537,7 @@ public class ProservData {
 		boolean found = false;
 		final String toAdd = key + '=' + value;
 		for (String line; (line = br.readLine()) != null;) {
-			if (line.startsWith(key + '=')) {
+			if( line.startsWith(key + '=') || line.startsWith('#' + key + '=') ) {
 				line = toAdd;
 				found = true;
 			}
@@ -1389,6 +1418,85 @@ public class ProservData {
 	    return s;
 	}
 
+	public void updateSonosRulesFile() {
+
+		String filename = "proserv-sonos-5z.rules";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + "rules" + File.separator + filename;
+
+			int sonosxDefinition = -1;
+			for(int i=0; i<20; i++){
+				if(urlSchemes[i].startsWith("#SONOSX#")){
+					sonosxDefinition = i;
+					break;
+				}
+			}
+			int radioDefinition = -1;
+			for(int i=0; i<20; i++){
+				if(urlSchemes[i].startsWith("#RADIO#")){
+					radioDefinition = i;				
+					break;
+				}
+			}
+
+			if(sonosxDefinition != -1 && radioDefinition != -1){
+				String[] rinCons = urlSchemes[sonosxDefinition].replaceFirst("#SONOSX#", "").split("#");
+				int count = 0;
+				for (String s: rinCons)
+			    {					
+					if(s.startsWith("RINCON")){
+						count++;
+						String key = "var String[] RinconString" + count + " ";
+						String newValue = " \"" + s + "\"";
+						changeProperty(path, key, newValue );						
+					}
+			    }
+				for(;count<5;){
+					count++;
+					String key = "var String[] RinconString" + count + " ";
+					String newValue = " \"\"";
+					changeProperty(path, key, newValue );										
+				}
+
+				String[] radioStations = urlSchemes[radioDefinition].replaceFirst("#RADIO#", "").split("#");
+				count = 0;
+				for (String s: radioStations)
+			    {					
+					count++;
+					String key = "var String[] RadioStation" + count + " ";
+					String newValue = " \"" + s + "\"";
+					changeProperty(path, key, newValue );						
+			    }
+				for(;count<5;){
+					count++;
+					String key = "var String[] RadioStation" + count + " ";
+					String newValue = " \"\"";
+					changeProperty(path, key, newValue );										
+				}
+				updateLine(path, "COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT", "/*COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT commented and activated by proserv binding*/");
+				
+				int altIpDefinition = -1;
+				for(int i=0; i<20; i++){
+					if(urlSchemes[i].startsWith("#ALTIP#")){
+						altIpDefinition = i;
+						break;
+					}
+				}
+				if(altIpDefinition != -1){
+					String altIp = urlSchemes[altIpDefinition].replaceFirst("#ALTIP#", "");
+					writeConfigData("knx:ip", altIp);	
+				}
+				
+			}
+			
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {
+		}
+		
+	}
+	
 	public void updateProservRulesFile(ProservCronJobs proservCronJobs) {
 
 		String filename = "proserv.rules";
@@ -1576,22 +1684,22 @@ public class ProservData {
 	
 
 	public static void updateLangDirJsFile(String language) {
-	String filename = "langdir.js";
-	try {
-		String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps" + File.separator + "proserv"
-				+ File.separator + filename;
+		String filename = "langdir.js";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator + ".." + File.separator + "webapps" + File.separator + "proserv"
+					+ File.separator + filename;
+	
+			PrintWriter writer = new PrintWriter(path, "US-ASCII");
+			writer.println("var langCode='" + language + "';");
+			writer.println("var langcodes=['en','fr','de'];var lang=langCode.toLowerCase();lang=lang.substr(0,2);var dest=window.location.origin+'/proserv/index.html';for(i=langcodes.length-1;i>=0;i--){if(lang==langcodes[i]){dest=dest.substr(0,dest.lastIndexOf('.'))+'-'+lang.substr(0,2)+dest.substr(dest.lastIndexOf('.'));window.location.replace?window.location.replace(dest):window.location=dest;}}");
+			writer.close();
 
-		PrintWriter writer = new PrintWriter(path, "US-ASCII");
-		writer.println("var langCode='" + language + "';");
-		writer.println("var langcodes=['en','fr','de'];var lang=langCode.toLowerCase();lang=lang.substr(0,2);var dest=window.location.origin+'/proserv/index.html';for(i=langcodes.length-1;i>=0;i--){if(lang==langcodes[i]){dest=dest.substr(0,dest.lastIndexOf('.'))+'-'+lang.substr(0,2)+dest.substr(dest.lastIndexOf('.'));window.location.replace?window.location.replace(dest):window.location=dest;}}");
-		writer.close();
-
-	} catch (IOException e) {
-		String message = "opening file '" + filename + "' throws exception";
-		logger.error(message, e);
-	} finally {
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {
+		}
+	
 	}
-
-}
 	
 }

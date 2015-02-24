@@ -6,16 +6,16 @@ import org.openhab.model.script.actions.*
 COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT
 
 
-var String[] RinconString1 = "RINCON_000AAA7C590C01400"
-var String[] RinconString2 = "RINCON_B8E937B079CC01400"
-var String[] RinconString3 = "RINCON_B8E937380D2C01400"
-var String[] RinconString4 = "RINCON_000E587C590C01400"
-var String[] RinconString5 = "RINCON_000AAA87C59C01400"
-var String[] RadioStation1 = "ANTENNE BAYERN"
-var String[] RadioStation2 = "TSF Jazz"
-var String[] RadioStation3 = "Nostalgie Best of 60's"
-var String[] RadioStation4 = "Nostalgie Best of 80's"
-var String[] RadioStation5 = "NRJ"
+var String[] RinconString1 = ""
+var String[] RinconString2 = ""
+var String[] RinconString3 = ""
+var String[] RinconString4 = ""
+var String[] RinconString5 = ""
+var String[] RadioStation1 = ""
+var String[] RadioStation2 = ""
+var String[] RadioStation3 = ""
+var String[] RadioStation4 = ""
+var String[] RadioStation5 = ""
 var Number counter
 
 rule "Startup"

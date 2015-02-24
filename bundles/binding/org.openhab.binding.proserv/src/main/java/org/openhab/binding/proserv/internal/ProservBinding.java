@@ -856,6 +856,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 				
 			if(connector == null && !ip.isEmpty()) {
+				if(!ProservData.writeConfigData("knx:localIp", ProservXConnect.getLocalIp())){
+					logger.error("Failed to write to openhab.cf knx:localIp={}", ProservXConnect.getLocalIp());
+				}				
 				connector = new ProservConnector(ip, port);					
 			}			
 			
@@ -1000,6 +1003,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservData.updateProservSitemapClassicFile();
 		proservData.updateRrd4jPersistFile();
 		proservData.updateDb4oPersistFile();		
+		proservData.updateSonosRulesFile();		
 		// generate html file and rules file based on the proservData and cronjobs
 		proservData.updateSchedulerHtmlFile(proservCronJobs);
 		proservData.updateProservRulesFile(proservCronJobs);		
@@ -1066,7 +1070,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		byte[] proservAllConfigValues = null;
 		try {
 
-			short PROSERV_MEMORY_LENGTH = 16067;// stop reading after weather data
+			short PROSERV_MEMORY_LENGTH = 19194;
 			short NUMBER_OF_BYTES_IN_CHUNK = 500;
 			proservAllConfigValues = new byte[PROSERV_MEMORY_LENGTH];
 

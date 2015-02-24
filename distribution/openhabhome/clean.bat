@@ -1,5 +1,6 @@
 del .\configurations\rules\proserv-custom.rules
 del /Q /S .\configurations\rules\proserv.rules
+del /Q /S .\configurations\rules\proserv-sonos-5z.rules
 del /Q /S .\configurations\rules\proserv-custom.rules.bak
 del /Q /S .\configurations\items\proserv.items
 del /Q /S .\configurations\items\proserv-custom.items
