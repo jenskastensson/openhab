@@ -67,5 +67,25 @@
       	<include>*:org.openhab.runtime.product:zip:*</include>
       </includes>
     </dependencySet>
+    <dependencySet>
+    	<useStrictFiltering>true</useStrictFiltering>
+    	<useProjectArtifact>false</useProjectArtifact>
+		<useTransitiveDependencies>false</useTransitiveDependencies>
+      <outputDirectory>./addons</outputDirectory>
+      <unpack>false</unpack>
+      <includes>
+      	<include>org.openhab.action:org.openhab.action.mail:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.exec:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.http:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.proserv:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.sonos:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.knx:jar:*</include>
+      	<include>org.openhab.binding:org.openhab.binding.zwave:jar:*</include>
+      	<include>org.openhab.io:org.openhab.io.habmin:jar:*</include>
+      	<include>org.openhab.persistence:org.openhab.persistence.db4o:jar:*</include>
+      	<include>org.openhab.persistence:org.openhab.persistence.rrd4j:jar:*</include>
+      	<include>org.openhab.persistence:org.openhab.persistence.logging:jar:*</include>
+      </includes>
+    </dependencySet>    
   </dependencySets>
 </assembly>

@@ -1473,7 +1473,7 @@ public class ProservData {
 					String newValue = " \"\"";
 					changeProperty(path, key, newValue );										
 				}
-				updateLine(path, "COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT", "/*COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT commented and activated by proserv binding*/");
+				updateLine(path, "COMMENT-THIS-LINE-TO-ACTIVATE-THIS-SCRIPT", "");
 				
 				int altIpDefinition = -1;
 				for(int i=0; i<20; i++){
