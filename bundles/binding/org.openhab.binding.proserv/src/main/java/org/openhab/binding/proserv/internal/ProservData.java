@@ -1418,7 +1418,7 @@ public class ProservData {
 	    return s;
 	}
 
-	public void updateSonosRulesFile() {
+	public void updateSonosRulesFile(String proservIp) {
 
 		String filename = "proserv-sonos-5z.rules";
 		try {
@@ -1448,7 +1448,9 @@ public class ProservData {
 						count++;
 						String key = "var String[] RinconString" + count + " ";
 						String newValue = " \"" + s + "\"";
-						changeProperty(path, key, newValue );						
+						changeProperty(path, key, newValue );
+						key = "sonos:zone_" + count + ".udn";
+						writeConfigData(key, s);	
 					}
 			    }
 				for(;count<5;){
@@ -1456,6 +1458,8 @@ public class ProservData {
 					String key = "var String[] RinconString" + count + " ";
 					String newValue = " \"\"";
 					changeProperty(path, key, newValue );										
+					key = "sonos:zone_" + count + ".udn";
+					writeConfigData(key, "");	
 				}
 
 				String[] radioStations = urlSchemes[radioDefinition].replaceFirst("#RADIO#", "").split("#");
@@ -1485,6 +1489,9 @@ public class ProservData {
 				if(altIpDefinition != -1){
 					String altIp = urlSchemes[altIpDefinition].replaceFirst("#ALTIP#", "");
 					writeConfigData("knx:ip", altIp);	
+				}
+				else{
+					writeConfigData("knx:ip", proservIp);	
 				}
 				
 			}
