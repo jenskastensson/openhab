@@ -1095,15 +1095,26 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					numberOfBytesToRead = (short) (PROSERV_MEMORY_LENGTH - startByte);
 
 				byte[] proServValues = null;
-				for(int attempt=0;attempt<4;attempt++){
+				for(int attempt=0;attempt<3;attempt++){
 					proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
 					if(proServValues!=null) 
 						break;
 				}
 				if(proServValues==null)
 				{
-					logger.info("proServ getConfigValues failed proServValues==null");
-					return null;
+					if(startByte>16000){
+						numberOfBytesToRead = 100;
+						proServValues = connector.getParameterBytes(startByte, numberOfBytesToRead);
+						if(proServValues==null)
+						{
+							logger.info("proServ getConfigValues failed at index[{}]", startByte);
+							return null;
+						}
+					}
+					else {
+						logger.info("proServ getConfigValues failed at index[{}]", startByte);
+						return null;
+					}
 				}
 				int offset = chunkId * NUMBER_OF_BYTES_IN_CHUNK;
 				startByte += NUMBER_OF_BYTES_IN_CHUNK;
