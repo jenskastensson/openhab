@@ -516,7 +516,8 @@ public class ProservData {
 		}
 	}
 
-	private static void updateLine(String fileName, String toUpdate, String updated) throws IOException {
+	private static synchronized void updateLine(String fileName, String toUpdate, String updated) throws IOException {
+		logger.debug("START updateLine filename:{},  toUpdate:{},  updated:{}", fileName, toUpdate, updated);
 	    BufferedReader file = new BufferedReader(new FileReader(fileName));
 	    String line;
 	    String input = "";
@@ -529,8 +530,9 @@ public class ProservData {
 	    os.close();
 	}	
 	
-	private static void changeProperty(String filename, String key, String value) throws IOException {
+	private static synchronized void changeProperty(String filename, String key, String value) throws IOException {
 		final File tmpFile = new File(filename + ".tmp");
+		Files.deleteIfExists(tmpFile.toPath());
 		final File file = new File(filename);
 		PrintWriter pw = new PrintWriter(tmpFile);
 		BufferedReader br = new BufferedReader(new FileReader(file));
@@ -550,16 +552,19 @@ public class ProservData {
 		Files.move(tmpFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 
-	public static boolean writeConfigData(String key, String value) {
+	public static synchronized boolean writeConfigData(String key, String value) {
+		logger.info("START writeConfigData key:{},  value:{}", key, value);
 		String filename = "openhab.cfg";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator + filename;
 			changeProperty(path, key, value);
+			logger.info("END writeConfigData");
 			return true;
 		} catch (Throwable e) {
 			String message = "writeConfigData value: " + value + " key: " + key + " file: " + filename + " throws exception" + e.toString();
 			logger.error(message, e);
 		}
+		logger.info("END writeConfigData FAILED");
 		return false;
 	}
 
