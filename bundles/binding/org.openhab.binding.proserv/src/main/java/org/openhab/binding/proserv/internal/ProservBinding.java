@@ -67,8 +67,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static ProservConnector connector = null;
 	ProservXConnect proservXConnect = new ProservXConnect();
 	
-	/** Default refresh interval (currently 2 minute) */
-	private long refreshInterval = 125000L;
+	/** Default refresh interval (currently 65 sec) */
+	private long refreshInterval = 65000L;
 
 	/* The IP address to connect to */
 	private static String ip;
@@ -78,6 +78,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String mailContent = "";
 	private static Boolean previousEmailTrigger[][] = new Boolean[18][16];
 	private static String language = null;
+	private static String oldLanguage = null;
 	private static String chartItemRefreshHour = null;
 	private static String chartItemRefreshDay = null;
 	private static String chartItemRefreshWeek = null;
@@ -117,6 +118,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	@SuppressWarnings("rawtypes")
 	public void updated(Dictionary config) throws ConfigurationException {
 		if (config != null) {
+			boolean needsRefresh = false;
 			String ip = (String) config.get("ip");
 			String portString = (String) config.get("port");
 			ProservBinding.mailTo = (String) config.get("mailto");
@@ -131,7 +133,13 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			{
 				logger.error("Mising config proserv:language");
 				ProservBinding.language = "en";
+				ProservData.writeConfigData("proserv:language", ProservBinding.language);
 			}
+			if(ProservBinding.oldLanguage == null)
+				needsRefresh = true;
+			else if (ProservBinding.oldLanguage.compareTo(ProservBinding.language)!=0)
+				needsRefresh = true;
+			ProservBinding.oldLanguage = ProservBinding.language;
 			
 			ProservBinding.chartItemRefreshHour = (String) config.get("chartItemRefreshHour");
 			ProservBinding.chartItemRefreshDay = (String) config.get("chartItemRefreshDay");
@@ -165,6 +173,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 
 			if ((StringUtils.isNotBlank(ip) && !ip.equals(ProservBinding.ip)) || portTmp != ProservBinding.port) {
 				// only do something if the ip or port has changed
+				needsRefresh = true;
+				logger.debug("needsRefresh = true");				
 				ProservBinding.ip = ip;
 				ProservBinding.port = portTmp;
 
@@ -195,7 +205,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				IOUtils.closeQuietly(reader);
 			}		
 			
-			if(proservData != null){
+			if(proservData != null && needsRefresh == true){
 				logger.debug("proServ force a reload of configdata!");
 				proservData.refresh = true; // force a reload of configdata
 				//execute();
@@ -866,6 +876,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				connector.connect();
 				
 				if (proservData == null || proservData.refresh == true) {
+					if(proservData != null){ logger.debug("proservData.refresh == {}", proservData.refresh); }
 					proservData = null;
 					proservData = new ProservData(chartItemRefreshHour,chartItemRefreshDay, 
 							chartItemRefreshWeek, chartItemRefreshMonth, chartItemRefreshYear, language );
@@ -878,7 +889,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					if (proservAllConfigValues != null) {
 						proservData.parseRawConfigData(proservAllConfigValues);
 						handleCronJobs();
+						logger.debug("Before createFiles");
 						createFiles();
+						logger.debug("After createFiles");
 						connector.startMonitor(this.eventPublisher, ProservBinding.proservData, this);										
 					} else {
 						logger.debug("proServ getConfigValues failed twice in a row, try next refresh cycle!");
