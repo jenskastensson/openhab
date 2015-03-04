@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="lib/calimero-core-2.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/org.openhab.action.mail"/>
+	<classpathentry kind="lib" path="/org.openhab.action.nma"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -46,6 +46,7 @@ import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openhab.action.mail.internal.Mail;
+//import org.openhab.action.nma.internal.NotifyMyAndroid;
 
 
 
@@ -470,6 +471,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				} else {
 					eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
 				}
+// Test Android notifications:
+//NotifyMyAndroid.notifyMyAndroid("The event", "the message");
 			}
 		}
 		//http://localhost:8080/CMD?ProservIP=192.168.2.1
