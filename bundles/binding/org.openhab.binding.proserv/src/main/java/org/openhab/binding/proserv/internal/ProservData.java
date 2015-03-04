@@ -891,14 +891,14 @@ public class ProservData {
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			String labelPleaseConfigure = mapProservLang.get("PLEASE-CONFIGURE-IP");
 			String labelNoConnectionProserv = mapProservLang.get("NO-CONNECTION-PROSERV");
-			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
+			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group item=gDummy icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
 			writer.println("}");
 			writer.close();
 			path = ConfigDispatcher.getConfigFolder() + File.separator + "sitemaps" + File.separator + filenameClassic;
 			writer = new PrintWriter(path, "UTF-8");
 			labelPleaseConfigure = mapProservLang.get("PLEASE-CONFIGURE-CLASSIC");
 			labelNoConnectionProserv = mapProservLang.get("NO-CONNECTION-PROSERV-CLASSIC");
-			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
+			writer.println("sitemap proserv label=\"" + labelPleaseConfigure + "\"\n{\n   Frame {\n		Group item=gDummy icon=\"pie\" label=\"" + labelNoConnectionProserv + "\"\n   }\n");			
 			writer.println("}");
 			writer.close();
 		} catch (IOException e) {
