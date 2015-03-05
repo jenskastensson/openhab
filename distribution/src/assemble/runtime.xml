@@ -75,6 +75,8 @@
       <unpack>false</unpack>
       <includes>
       	<include>org.openhab.action:org.openhab.action.mail:jar:*</include>
+      	<include>org.openhab.action:org.openhab.action.nma:jar:*</include>
+      	<include>org.openhab.action:org.openhab.action.prowl:jar:*</include>
       	<include>org.openhab.binding:org.openhab.binding.exec:jar:*</include>
       	<include>org.openhab.binding:org.openhab.binding.http:jar:*</include>
       	<include>org.openhab.binding:org.openhab.binding.proserv:jar:*</include>
