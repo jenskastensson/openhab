@@ -529,28 +529,66 @@ public class ProservData {
 	    file.close();
 	    os.close();
 	}	
-	
-	private static synchronized void changeProperty(String filename, String key, String value) throws IOException {
-		final File tmpFile = new File(filename + ".tmp");
-		Files.deleteIfExists(tmpFile.toPath());
-		final File file = new File(filename);
-		PrintWriter pw = new PrintWriter(tmpFile);
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		boolean found = false;
-		final String toAdd = key + '=' + value;
-		for (String line; (line = br.readLine()) != null;) {
-			if( line.startsWith(key + '=') || line.startsWith('#' + key + '=') ) {
-				line = toAdd;
-				found = true;
-			}
-			pw.println(line);
+
+	private static synchronized void changeProperty(String fileName, String key, String value) throws IOException {
+		if(getProperty(fileName, key).compareTo(value)==0) {
+			logger.info("skipping already up-to-date");
+			return;
 		}
-		if (!found)
-			pw.println(toAdd);
-		br.close();
-		pw.close();
-		Files.move(tmpFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	    BufferedReader file = new BufferedReader(new FileReader(fileName));
+	    String line;
+	    String input = "";
+	    final String toAdd = key + '=' + value;
+	    while ((line = file.readLine()) != null){
+	    	if( line.startsWith(key + '=') || line.startsWith('#' + key + '=') ) {
+	    		line = toAdd; 
+	    	}
+	        input += line + System.lineSeparator();
+	    }
+	    FileOutputStream os = new FileOutputStream(fileName);
+	    os.write(input.getBytes());
+	    file.close();
+	    os.close();	
 	}
+	private static synchronized String getProperty(String fileName, String key) throws IOException {
+	    BufferedReader file = new BufferedReader(new FileReader(fileName));
+	    String line;
+	    String output = "";
+	    while ((line = file.readLine()) != null){
+	    	if( line.trim().startsWith(key + '=')) {
+	    		String[] array = line.split("=");
+	    		if(array.length>1 && array[1]!=null){
+	    			output = array[1];
+	    		}
+	    		break;
+	    	}
+	    }
+	    file.close();
+	    return output;
+	}
+
+	
+//	private static synchronized void changeProperty(String filename, String key, String value) throws IOException {
+//		final File tmpFile = new File(filename + ".tmp");
+//		Files.deleteIfExists(tmpFile.toPath());
+//		final File file = new File(filename);
+//		PrintWriter pw = new PrintWriter(tmpFile);
+//		BufferedReader br = new BufferedReader(new FileReader(file));
+//		boolean found = false;
+//		final String toAdd = key + '=' + value;
+//		for (String line; (line = br.readLine()) != null;) {
+//			if( line.startsWith(key + '=') || line.startsWith('#' + key + '=') ) {
+//				line = toAdd;
+//				found = true;
+//			}
+//			pw.println(line);
+//		}
+//		if (!found)
+//			pw.println(toAdd);
+//		br.close();
+//		pw.close();
+//		Files.move(tmpFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//	}
 
 	public static synchronized boolean writeConfigData(String key, String value) {
 		logger.info("START writeConfigData key:{},  value:{}", key, value);
@@ -1703,7 +1741,7 @@ public class ProservData {
 	
 			PrintWriter writer = new PrintWriter(path, "US-ASCII");
 			writer.println("var langCode='" + language + "';");
-			writer.println("var langcodes=['en','fr','de'];var lang=langCode.toLowerCase();lang=lang.substr(0,2);var dest=window.location.origin+'/proserv/index.html';for(i=langcodes.length-1;i>=0;i--){if(lang==langcodes[i]){dest=dest.substr(0,dest.lastIndexOf('.'))+'-'+lang.substr(0,2)+dest.substr(dest.lastIndexOf('.'));window.location.replace?window.location.replace(dest):window.location=dest;}}");
+			writer.println("var dest=window.location.origin+window.location.pathname;if(dest.toLowerCase().indexOf('html')==-1){dest=window.location.origin+'/proserv/index.html';} var langcodes=['en','fr','de'];var lang=langCode.toLowerCase();lang=lang.substr(0,2);for(i=langcodes.length-1;i>=0;i--){if(lang==langcodes[i]){dest=dest.substr(0,dest.lastIndexOf('.'))+'-'+lang.substr(0,2)+dest.substr(dest.lastIndexOf('.'));window.location.replace?window.location.replace(dest):window.location=dest;}}");
 			writer.close();
 
 		} catch (IOException e) {
