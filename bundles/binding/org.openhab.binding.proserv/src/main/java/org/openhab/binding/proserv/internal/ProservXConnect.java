@@ -107,7 +107,7 @@ public class ProservXConnect {
 		} else {
 			java.sql.Timestamp timestampNow = new java.sql.Timestamp(Calendar.getInstance().getTime().getTime());
 			long diff = timestampNow.getTime() - timestampProservConnectServer.getTime();
-			if(diff > 1000*60*60){ // re-send every ~hour
+			if(diff > 23*1000*60*60){ // re-send every ~23hour
 			//if (diff > 1000 * 60) {
 				bDoneProservConnectServer = false; // will force a new call next time
 			}
