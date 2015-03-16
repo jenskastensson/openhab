@@ -14,5 +14,5 @@ a:hover { text-decoration: underline; }
 .example { margin: 10px; border: 1px dashed #ccc; padding: 10px;}
 .example-text { font-family: monospace; }
 #content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
-#footer { margin: 0 auto; padding: 20px; padding-top: 2px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }
+#footer { margin: 0 auto; padding-top: 20px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }
 #top { margin: 0 auto; padding: 5px; padding-top: 2px; width: 760px; font-size: 0.7em; text-align: center; color: #888; }
