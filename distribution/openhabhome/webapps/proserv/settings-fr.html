@@ -2,33 +2,42 @@
 <html>
 <head>
    <meta charset="ISO-8859-1">
-   <title>proServX Settings</title>
+   <title>proServX Paramètres</title>
    <link href="./jquery-ui/jquery-ui.css" rel="stylesheet">
    <link href="style.css" rel="stylesheet">    
 </head>
 
 <body>
 
-<div id="reset_history_data_dlg"></div>
 <div id="select_language_dlg"><select id="language_selectmenu"></select></div>
+<div id="reset_history_data_dlg"></div>
+<div id="save_history_data_dlg"></div>
+<div id="send_history_data_dlg"></div>
+<div id="set_email_dlg"><div id="email_text"></div><input id="email_input"></input></div>
+<div id="set_ip_dlg"><div id="ip_text"></div><input id="ip_input"></input></div>
 
 
 <div id="content">
-   <h1>proServX Settings</h1>
+   <h1>proServX Paramètres</h1>
 
-   <div style='text-align:center'>
-      <br><button id='select_language_btn'></button><br>
-      <br><button id='reset_history_data_btn'></button>
+   <div id='all_buttons'>
+      <button id='select_language_btn'></button>
+      <button id='reset_history_data_btn'></button>
+      <button id='save_history_data_btn'></button>
+      <button id='send_history_data_btn'></button>
+      <button id='set_email_btn'></button>
+      <button id='set_ip_btn'></button>
    </div>
+   
    <div id='footer'><br>Copyright &copy; 2015 <a href='http://www.proknx.com' target='_blank'> Bleu Comm' Azur</div>
            
    <script src="jquery-1.6.4.min.js"></script>
    <script src="./jquery-ui/jquery-ui.min.js"></script>
    <script src="alert.js"></script>
    <script src="url.js"></script>   
+   
    <script>function OH(){}; var OpenHAB = new OH();</script>
    <script src="../greent/app/translations.cfg"></script>
-   
    <script>var ui_language = 'fr';</script>
    <script src="settings.js"></script>
    
