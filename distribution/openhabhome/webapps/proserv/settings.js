@@ -16,7 +16,7 @@ function getEmail() {
     failure : function (response) {
       title = OpenHAB.i18n_strings[ui_language].timeout;
       msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
-      //Ext.Msg.alert(title, msg);
+      $.alert(msg, title);
     }
   });
 }
@@ -38,7 +38,7 @@ function getIP() {
     failure : function (response) {
       title = OpenHAB.i18n_strings[ui_language].timeout;
       msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
-      //Ext.Msg.alert(title, msg);
+      $.alert(msg, title);
     }
   });
 }
@@ -110,7 +110,7 @@ $('#select_language_dlg').dialog({
                       $.alertnok(msg, title);
                       setTimeout(function () {
                         location.assign('./settings.html');
-                      }, 120000);
+                      }, 60000);
                     }
                   }
                 });
