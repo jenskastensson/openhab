@@ -223,7 +223,7 @@ public class RRD4jService implements QueryablePersistenceService {
             } else {
             	File folder = new File(DB_FOLDER);
             	if(!folder.exists()) {
-            		folder.mkdir();
+            		folder.mkdirs();
             	}
             	// create a new database file
                 db = new RrdDb(getRrdDef(function, file));
