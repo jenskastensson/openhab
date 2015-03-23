@@ -51,8 +51,8 @@ abstract public class AbstractWidgetRenderer implements WidgetRenderer {
 	protected static final String SNIPPET_LOCATION = "snippets/";
 
 	/* a local cache so we do not have to read the snippets over and over again from the bundle */
-	protected static final Map<String, String> snippetCache = new HashMap<String, String>(); 
-
+	protected static final Map<String, String> snippetCache = new HashMap<String, String>();
+	
 	protected boolean useSnippetCache = true;
 
 	public void setItemUIRegistry(ItemUIRegistry itemUIRegistry) {
@@ -91,7 +91,7 @@ abstract public class AbstractWidgetRenderer implements WidgetRenderer {
 				try {
 					snippet = IOUtils.toString(entry.openStream());
 					if (useSnippetCache) {
-					snippetCache.put(elementType, snippet);
+						snippetCache.put(elementType, snippet);	
 					}
 				} catch (IOException e) {
 					logger.warn("Cannot load snippet for element type '{}'", elementType, e);

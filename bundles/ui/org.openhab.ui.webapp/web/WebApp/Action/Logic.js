@@ -26,7 +26,7 @@ var WebApp = (function() {
 	var _tmp		= setInterval(InitBlocks, 250);
 	var _locker		= null;
 	var _win		= window;
-	
+
 	// RFC 2397 (http://www.scalora.org/projects/uriencoder/)
 	var _blank		= "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
 
@@ -65,7 +65,7 @@ var WebApp = (function() {
 	d.wa = {
 		get autoCreateLayer() { return _o_acl; },
 		set autoCreateLayer(v) { _o_acl = (v == "true" || v == "yes" || v === true) },
-		
+
 		get header() { return $h },
 		get direction() { return $d }
 	};
@@ -248,7 +248,7 @@ var WebApp = (function() {
 					q += _($$("textarea", f));
 					q += "&" + (a && a.id ? a.id : "__submit") + "=1";
 					q  = q.substr(1); // TODO: add q to action if method=get (use AddParam)
-				
+
 				/*	Use getAttribute instead of f.action because if an element of the form
 					is named "action", the element will be returned instead of the action attr.
 				 */
@@ -287,29 +287,29 @@ var WebApp = (function() {
 			} else {
 				url		= a[0];	// Can be changed in beginasync event
 				prms	= a[1];
-	
+
 				cb = cb == -1 ? DefaultCallback() : cb;
-	
+
 				var o = new XMLHttpRequest();
 				var c = function() { __callback(o, cb, loader) };
 				var m = prms ? "POST" : "GET";
-	
+
 				async = !!async;
 				if (loader) { $pc.Loader(loader, 1); }
 				_ajax.push([o, a]);
-	
+
 				url = AddParam(url, "__async", "true");
 				if (_historyPos >= 0) {
 					url = AddParam(url, "__source", _history[_historyPos][0]);
 				}
 				url = SetURL(url);
-	
+
 				o.open(m, url, async);
 				if (prms) { o.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); }
 				CallListeners("willasync", a, o);
 				o.onreadystatechange = (async) ? c : null;
 				o.send(prms);
-	
+
 				if (!async) { c(); }
 			}
 		},
@@ -320,13 +320,13 @@ var WebApp = (function() {
 			if (o = $(obj)) {
 				h = HasClass(o, "__lod");
 				ApplyMore(o);
-	
+
 				if (show) {
 					// If already running remove it to make the new loader image work if style has change
 					if (h) { $pc.Loader(obj, 0); }
 					AddClass(o, "__lod");
 					_loader.push([o, AnimPrepare(o)]);
-	
+
 				} else if (h) {
 					DelClass(o, "__lod");
 					f = _loader.filter(function(f) { return f[0] == o })[0];
@@ -412,13 +412,13 @@ var WebApp = (function() {
 		if (_head) {
 			var a = $$("a", lay);
 			var p = $h.RIGHT;
-	
+
 			for (var i = 0; i < a.length && p >= $h.LEFT; i++) {
 				if (_header[p] && !ignore) { i--; p--; continue; }
 
 				if (HasToken(a[i].rel, "action") ||
 					HasToken(a[i].rel, "back")) {
-	
+
 					AddClass(a[i], p == $h.RIGHT ? "iRightButton" : "iLeftButton");
 					Display(a[i], 1);
 					_header[p--] = a[i];
@@ -429,13 +429,13 @@ var WebApp = (function() {
 	}
 
 	function DelLayerButtons(lay) {
-		if (_head) { 
+		if (_head) {
 			with ($h) {
 				for (var i = LEFT; i <= RIGHT; i++) {
 					var a = _header[i];
 					if (a && (	HasToken(a.rel, "action") ||
 								HasToken(a.rel, "back")) ) {
-		
+
 						Display(a, 0);
 						DelClass(a, i == RIGHT ? "iRightButton" : "iLeftButton");
 						lay.insertBefore(a, lay.firstChild);
@@ -464,7 +464,7 @@ var WebApp = (function() {
 
 	function AnimPrepare(o) {
 		var d, c, i;
-		
+
 		// if the object has no background with anim definition, search any child
 		if (!(d = AnimData(o))) {
 			c = $$("*", o);
@@ -512,7 +512,7 @@ var WebApp = (function() {
 
 		return {x:x, y:y};
 	}
-	
+
 	function WIN() {
 		with (_win) return { x:pageXOffset, y:pageYOffset, w:innerWidth, h:innerHeight };
 	}
@@ -524,7 +524,7 @@ var WebApp = (function() {
 		s.textContent = c;
 		h.appendChild(s);
 	}
-	
+
 	function NewItem(t, c) {
 		var o = document.createElement(t);
 		if (c) { o.innerHTML = c; }
@@ -611,7 +611,7 @@ var WebApp = (function() {
 
 		_bdy = document.body;
 		_bdo = (_bdy.dir == "rtl") ? -1 : +1;
-		_wkt = IsDefined(_bdy.style.webkitTransform);		
+		_wkt = IsDefined(_bdy.style.webkitTransform);
 	}
 
 	function Display(o, s) { if (o = $(o)) { o.style.display = s ? "block" : "none"; } }
@@ -643,7 +643,7 @@ var WebApp = (function() {
 	function Historize(o, l) {	// l = isDefault
 		if (o) {
 			//TODO: fix endless toggle when using same layer in different level of navigation
-			
+
 			_history.splice(++_historyPos, _history.length);
 			_history.push([o, !l ? location.hash : ("#_" + _def.substr(2)), _lastScroll]);
 
@@ -769,7 +769,7 @@ var WebApp = (function() {
 			target: obj || null,
 			context: ctx || Explode(_history[_historyPos][1]),
 			windowWidth: _width,
-			windowHeight: _height 
+			windowHeight: _height
 		}
 
 		var k = true;
@@ -816,7 +816,7 @@ var WebApp = (function() {
 			var h = _header;
 			Display(h[BACK], (!h[LEFT] && _historyPos));
 			Display(h[HOME], (!h[RIGHT] && _historyPos > 1 && a != _def));
-	
+
 			if (h[BACK]) {
 				_baseBack = h[BACK].innerHTML;
 			}
@@ -853,7 +853,7 @@ var WebApp = (function() {
 			for (var i = 0; i < al.length; i++) {
 				c = (al[i] == li);
 				if (c) { s = i; }						// check which has been selected
-	
+
 				Display(ul.id + i, (!h && c));	// display/hide the panel if no override (h)
 				DelClass(al[i], "__act");			// unselected any tabs
 			}
@@ -883,7 +883,7 @@ var WebApp = (function() {
 		}
 
 		/* Radio parent */
-		var li = GetParent(o, "li");		
+		var li = GetParent(o, "li");
 		if (li && HasClass(li, "iRadio")) {
 			AddClass(li, "__sel");
 			ShowRadio(li);
@@ -1099,7 +1099,7 @@ var WebApp = (function() {
 		var r = (m < 0 && !!_hold) ? ["wa__radio"] : d;
 		return [s, d, m, r];
 	}
-	
+
 	function tr_iphone(t) { return "translate3d(" + t + ",0,0)"; }
 	function tr_others(t) { return "translateX(" + t + ")"; }
 
@@ -1109,14 +1109,14 @@ var WebApp = (function() {
 			o.style.webkitTransitionProperty = (i) ? "none" : "";
 			o.style.webkitTransform = t;
 		}
-	}	
+	}
 
 	function GetTiming(o) {
 		return o ? getComputedStyle(o, null).webkitTransitionDuration : "0s";
 	}
-	
+
 	function GetHigherOf() {
-		var r, t, i, j, a = arguments;		
+		var r, t, i, j, a = arguments;
 		r = 0;
 		for (i = 0; i < a.length; i++) {
 			t = GetTiming(a[i]).split(',');
@@ -1275,7 +1275,7 @@ var WebApp = (function() {
 		// WARNING: with classic anchors the returned value of this function will be wrong
 		if (loc) {
 			var p = loc.indexOf("#_");
-			
+
 			if (p != -1) {
 				loc = loc.substring(p + 2).split("/");
 				var id = "wa" + loc[0];
@@ -1303,7 +1303,7 @@ var WebApp = (function() {
 		}
 		return lay;
 	}
-	
+
 	function CreateLayer(i) {
 		var n = NewItem("div");
 		n.id = i;
@@ -1350,7 +1350,7 @@ var WebApp = (function() {
 		q.push(k + "=" + encodeURIComponent(v));
 		return u[0] + "?" + q.join("&") + u[2];
 	}
-	
+
 	function AddParams(u, q) {
 		u = SplitURL(u);
 		u[1].push(q);
@@ -1384,7 +1384,7 @@ var WebApp = (function() {
 			return null;
 		};
 	}
-	
+
 	function ReadTextNodes(o) {
 		var nds = o.childNodes;
 		var txt = "";
@@ -1393,13 +1393,13 @@ var WebApp = (function() {
 		}
 		return txt;
 	}
-	
+
 	function Forward(l) {
 		_lastScroll = WIN().y;
 		AdjustView();
 		_opener(l);
 	}
-	
+
 	function Go(g) {
 		return "#_" + g.substr(2);
 	}
@@ -1440,7 +1440,7 @@ var WebApp = (function() {
 				var i = $A(dst, "zone");
 				if (($A(dst, "create") == "true" || _o_acl) &&
 					i.substr(0, 2) == "wa" && !$(i)) {
-					
+
 					CreateLayer(i);
 				}
 
@@ -1457,7 +1457,7 @@ var WebApp = (function() {
 					DelLayerButtons(i);
 					k = i;
 				}
-				
+
 				/* Rset scroll if we modify a previous layer */
 				ResetScroll(i.id);
 
@@ -1538,7 +1538,7 @@ var WebApp = (function() {
 		}
 
 		er = (o.status != 200 && o.status != 0); // 0 for file based requests
-		try { if (cb) { ld = cb(o, lr, DefaultCallback()); } } 
+		try { if (cb) { ld = cb(o, lr, DefaultCallback()); } }
 		catch (ex) { er = ex; console.error(er); }
 
 		if (lr) {
@@ -1797,7 +1797,7 @@ var WebApp = (function() {
 /* PreLoad */
 
 	function DocumentTracker(s) {
-		addEventListener(s, Resizer, false);		
+		addEventListener(s, Resizer, false);
 	}
 
 	addEventListener("load", Init, true);
