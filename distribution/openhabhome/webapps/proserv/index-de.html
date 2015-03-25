@@ -2,44 +2,47 @@
 <html>
 <head>
     <meta charset="ISO-8859-1">
-    <title>proServX GERMAN  Homepage</title>
-    <div id='top'><a href='./index.html'>Refresh</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=':8081/proserv/settings.html' target='_blank'>Settings</a></div>
+    <title>proServX Startseite</title>
+    <div id='top'><a href='./index.html'>Sprache aktualisieren</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=':8081/proserv/settings.html' target='_blank'>Einstellungen</a></div>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <script type="text/javascript" src="url.js"></script>
 <body>
 <div id="content">
-    <h1>proServX GERMAN Homepage</h1>
+    <h1>proServX Startseite</h1>
 
-    <h2 id='intro'>Introduction</h2>
+    <h2 id='intro'>Einleitung</h2>
     <p>
-    proServX extends the functionality of the proServ KNX remote controller. proServX provides automatically generated user interface for data presentation, logging capabilities and advanced configuration and automation.
-    </p>
-    <h2 id='intro'>Basic Functions</h2>
+    proServX erweitert die Funktionalität des KNX-proServ. proServX ermöglicht eine Datenprotokollierung von beliebigen KNX Datenpunkten, die in der Produktdatenbank des proServ gekennzeichnet wurden. Weiterhin wird automatisch eine Benutzeroberfläche erstellt, welche die protokollierten Daten als Kurven darstellt. proSevX ermöglicht zusätzlich die aufgezeichneten Datenpunkte als csv Datei zu exportieren und anschliessend per Email zu versenden. Zeitschaltprogramme zu nahezu allen im proServ angelegten Funktionen können mit proServX aktiviert, angezeigt und editiert werden. Die proServX Expertenfunktionen ermöglichen schliesslich die Erstellung von Logikfunktionen und die Zusammenstellung beliebiger aufgezeichneter Graphen.</p>
+    <h2 id='intro'>Standardfunktionen</h2>
     <p>
-    <b>proServX logViewer standard</b> : show current and historical data charts with:</br> 
-    <li><a href=':8081/greent' target='_blank'>proServX logview standard</a> - recommended for hand-held touch screen devices, Chrome & Safari browsers&nbsp;&nbsp;<a href=':8443/greent' target='_blank'>(https)</a></li>
-    </p>
-    <p>
-    <b>proServX logViewer classic</b> : show current and historical data charts with:</br>  
-    <li><a href=':8081/openhab.app?sitemap=proserv-classic' target='_blank'>proServ logview 'Classic'</a> - recommended for all browsers, all devices&nbsp;&nbsp;<a href=':8443/openhab.app?sitemap=proserv-classic' target='_blank'>(https)</a></li>
-    </p>
-    <p>
-    <b>proServX scheduler</b> : schedule events with:</br> 
-    <li><a href=':8081/proserv/scheduler.html' target='_blank'>proServ scheduler</a> - make a timetable when the heating/shades/lights etc should be on or off&nbsp;&nbsp;<a href=':8443/proserv/scheduler.html' target='_blank'>(https)</a></li>
+    <b>proServX logViewer standard</b> : Stellt sowohl die augenblicklichen als auch die aufgezeichneten Daten dar:</br> 
+    <li><a href=':8081/greent' target='_blank'>proServX logview standard</a> - für Chrome & Safari Browser geeignet</li>
+    <li><a href=':8443/greent' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
+    <b>proServX Einstellungen</b> : Ändern der Einstellungen:</br> 
+    <li><a href=':8081/proserv/settings.html' target='_blank'>proServX Einstellungen</a> - Sprache, Email Adresse, IP Adresse des proServ</li>
+    <li><a href=':8443/proserv/settings.html' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
     </p>
     <p>
-    <b>proServX settings</b> : change settings with:</br> 
-    <li><a href=':8081/proserv/settings.html' target='_blank'>proServX settings</a> - language, email, proserv IP and more&nbsp;&nbsp;<a href=':8443/proserv/settings.html' target='_blank'>(https)</a></li>
-    </p>
-    <h2 id='intro'>Expert Functions</h2>
-    <p>
-    <b>proServExpert</b> : expert tool for advanced administration and configuration:</br>
-    <li><a href=':8081/habmin/index.html' target='_blank'>proServExpert</a> -  recommended for experts only&nbsp;&nbsp;<a href=':8443/habmin/index.html' target='_blank'>(https)</a></li>
+    <b>proServX logViewer classic</b> : Stellt sowohl die augenblicklichen als auch die aufgezeichneten Daten dar:</br>  
+    <li><a href=':8081/openhab.app?sitemap=proserv-classic' target='_blank'>proServ logview 'Classic'</a> - für alle Browser geeignet.</li>
+    <li><a href=':8443/openhab.app?sitemap=proserv-classic' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
     </p>
     <p>
-    <b>example URL (link) to custom graph</b>:</br> 
-    <li><a href=':8081/habmin/chart.html?chart=Energy&service=rrd4j&refresh=1' target='_blank'>custom graph 'Energy'</a> create your own custom graph in proServExpert, copy and modify this link to point to your new graph&nbsp;&nbsp;<a href=':8443/habmin/chart.html?chart=Energy&service=rrd4j&refresh=1' target='_blank'>(https)</a></li>
+    <b>proServX Kalender und Zeitschaltuhr</b> : für proServ Funktionen:</br> 
+    <li><a href=':8081/proserv/scheduler.html' target='_blank'>proServ Zeitschaltuhr</a></li>
+    <li><a href=':8443/proserv/scheduler.html' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
+    </p>
+    <h2 id='intro'>Expertenfunktionen</h2>
+    <p>
+    <b>Expertentool</b> zur Administration und Konfiguration:</br>
+    <li><a href=':8081/habmin/index.html' target='_blank'>proServX Expertentool zur Administration und Konfiguration</a> -  nur für erfahrene Benutzer empfohlen.</li>
+    <li><a href=':8443/habmin/index.html' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
+    </p>
+    <p>
+    <b>Beispieladresse (Link) zu einem im Expertentool festgelegten Graphen</b>:</br> 
+    <li><a href=':8081/habmin/chart.html?chart=Energy&service=rrd4j&refresh=1' target='_blank'>logview 'Energy'</a> ruft über einen Link den im Expertentool festgelegen Graphen auf. Dieser kann kopiert und entsprechend angepasst werden.</li>
+    <li><a href=':8443/habmin/chart.html?chart=Energy&service=rrd4j&refresh=1' target='_blank'>wie vorher jedoch mit verschlüsselter Verbindung</a></li>
     </p>
     <br><br><img src="flyer.png" alt="proServ products"><br><br>
     <div id='footer'>Copyright &copy; 2015 <a href='http://www.proknx.com' target='_blank'> Bleu Comm' Azur</div>
