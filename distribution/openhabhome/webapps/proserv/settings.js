@@ -3,12 +3,25 @@ $(document).ready(function () {
   var ui_language = $('html').attr('lang');
     
   function getEmail() {
-    $.ajax({
-      url : '/CMD?ProservEmail=?',
-      success : function (response) {
+    var bOK = false;
+    $.when(
+      $.ajax({
+        url : '/CMD?ProservEmail=?',
+        async : false,
+        success : function (response) {
+          bOK = true;
+        },
+        failure : function (response) {
+          title = OpenHAB.i18n_strings[ui_language].timeout;
+          msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+          $.alert(msg, title);
+        }
+      })).done(function () {
+      if (bOK == true) {
         $.ajax({
           url : '/rest/items/ProservEmail/state',
           timeout : 5000,
+          async : false,
           success : function (response) {
             current_email = response;
           },
@@ -16,21 +29,30 @@ $(document).ready(function () {
             alert('Error connecting to server!');
           }
         });
-      },
-      failure : function (response) {
-        title = OpenHAB.i18n_strings[ui_language].timeout;
-        msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
-        $.alert(msg, title);
       }
-    });
+    })
   }
+  
   function getIP() {
-    $.ajax({
-      url : '/CMD?ProservIP=?',
-      success : function (response) {
+    var bOK = false;
+    $.when(
+      $.ajax({
+        url : '/CMD?ProservIP=?',
+        async : false,
+        success : function (response) {
+          bOK = true;
+        },
+        failure : function (response) {
+          title = OpenHAB.i18n_strings[ui_language].timeout;
+          msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+          $.alert(msg, title);
+        }
+      })).done(function () {
+      if (bOK == true) {
         $.ajax({
           url : '/rest/items/ProservIP/state',
           timeout : 5000,
+          async : false,
           success : function (response) {
             current_ip = response;
           },
@@ -38,14 +60,10 @@ $(document).ready(function () {
             alert('Error connecting to server!');
           }
         });
-      },
-      failure : function (response) {
-        title = OpenHAB.i18n_strings[ui_language].timeout;
-        msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
-        $.alert(msg, title);
       }
-    });
+    })
   }
+  
   var current_ip = "";
   var current_email = "";
   getEmail();
@@ -403,6 +421,7 @@ $(document).ready(function () {
   // Email configuration
   //
   $('#set_email_btn').click(function (event) {
+    getEmail();
     $('#email_input').button().addClass('ui-textfield');
     $('#email_text').html(OpenHAB.i18n_strings[ui_language].confirm_email_msg);
     $('#email_input').val(current_email);
@@ -474,6 +493,7 @@ $(document).ready(function () {
   // IP configuration
   //
   $('#set_ip_btn').click(function (event) {
+    getIP();
     $('#ip_input').button().addClass('ui-textfield');
     $('#ip_text').html(OpenHAB.i18n_strings[ui_language].confirm_proserv_ip_msg);
     $('#ip_input').val(current_ip);
