@@ -17,7 +17,7 @@ $(document).ready(function () {
           $.alert(msg, title);
         }
       })).done(function () {
-      if (bOK == true) {
+      if (bOK === true) {
         $.ajax({
           url : '/rest/items/ProservEmail/state',
           timeout : 5000,
@@ -30,7 +30,7 @@ $(document).ready(function () {
           }
         });
       }
-    })
+    });
   }
   
   function getIP() {
@@ -48,7 +48,7 @@ $(document).ready(function () {
           $.alert(msg, title);
         }
       })).done(function () {
-      if (bOK == true) {
+      if (bOK === true) {
         $.ajax({
           url : '/rest/items/ProservIP/state',
           timeout : 5000,
@@ -61,7 +61,7 @@ $(document).ready(function () {
           }
         });
       }
-    })
+    });
   }
   
   var current_ip = "";
@@ -69,12 +69,12 @@ $(document).ready(function () {
   getEmail();
   getIP();
 
-  var language_array = new Array();
+  var language_array = [];
   for (var i in OpenHAB.i18n_strings) {
     language_array.push({
       text : OpenHAB.i18n_strings[i].language_name,
       value : i
-    })
+    });
   }
 
   //
@@ -295,7 +295,7 @@ $(document).ready(function () {
               }
             })).done(function () {
 
-            if (stepOneOk == true) {
+            if (stepOneOk === true) {
               $.ajax({
                 timeout : 10000,
                 url : '/CMD?ProservBackupRrd=START',
