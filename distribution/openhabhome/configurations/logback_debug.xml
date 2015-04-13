@@ -49,6 +49,7 @@
 
 	<logger name="OSGi" level="WARN" />
 	<logger name="org.eclipse.jetty" level="WARN" />
+	<logger name="org.teleal.cling" level="ERROR" />
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

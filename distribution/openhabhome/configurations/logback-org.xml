@@ -50,6 +50,7 @@
 
 	<!-- temporary workaround to circumvent error messages with any obvious effect -->
 	<logger name="org.atmosphere.cpr.AtmosphereFramework" level="OFF" />
+	<logger name="org.teleal.cling" level="ERROR" />
 	
 	<root level="WARN">
 		<appender-ref ref="FILE" />
