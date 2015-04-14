@@ -16,6 +16,7 @@ var String[] RadioStation2 = ""
 var String[] RadioStation3 = ""
 var String[] RadioStation4 = ""
 var String[] RadioStation5 = ""
+
 var Number counter
 
 rule "Startup"
@@ -25,16 +26,12 @@ when
 		counter = 0
 end
 
-rule "test every 30 seconds"
+rule "test every 2 minutes"
 when 
-	Time cron "*/30 * * * * ?"
+	Time cron "2 * * * * ?"
 	then
 		if (counter == 0) {
-			sendCommand( z1Sonos_Standalone, ON)
-			sendCommand( z2Sonos_Standalone, ON)
-			sendCommand( z3Sonos_Standalone, ON)
-			sendCommand( z4Sonos_Standalone, ON)
-			sendCommand( z5Sonos_Standalone, ON)
+			executeCommandLine("touch /volume1/@appstore/proServX/addons/org.openhab.binding.sonos-1.7.0-SNAPSHOT.jar")
 			counter = 1
 		}
 end
@@ -1444,5 +1441,4 @@ rule "z5Volume Rel control"
 		}
 		sendCommand(z5Sonos_VolumeOut, z5volCounter.intValue)
 end
-
 
