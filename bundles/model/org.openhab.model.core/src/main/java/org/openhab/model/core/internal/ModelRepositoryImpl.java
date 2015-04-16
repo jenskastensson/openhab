@@ -22,6 +22,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.resource.SynchronizedXtextResourceSet;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
+import org.openhab.io.net.exec.ExecUtil;
 import org.openhab.model.core.EventType;
 import org.openhab.model.core.ModelRepository;
 import org.openhab.model.core.ModelRepositoryChangeListener;
@@ -58,6 +59,18 @@ public class ModelRepositoryImpl implements ModelRepository {
 					logger.warn("Configuration model '{}' is either empty or cannot be parsed correctly!", name);
 					logger.debug("Errors reported for '{}': {}", name, resource.getErrors());
 					resourceSet.getResources().remove(resource);
+					if(name.endsWith(".rules")){
+						ExecUtil.executeCommandLine("touch /volume1/@appstore/proServX/configurations/rules/" + name);
+					}
+					else if(name.endsWith(".items")){
+						ExecUtil.executeCommandLine("touch /volume1/@appstore/proServX/configurations/items/" + name);
+					}
+					else if(name.endsWith(".persist")){
+						ExecUtil.executeCommandLine("touch /volume1/@appstore/proServX/configurations/persistence/" + name);
+					}
+					else if(name.endsWith(".sitemap")){
+						ExecUtil.executeCommandLine("touch /volume1/@appstore/proServX/configurations/sitemaps/" + name);
+					}
 					return null;
 				}
 			} else {

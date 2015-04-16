@@ -19,6 +19,7 @@ Import-Package: com.google.common.base,
  org.eclipse.xtext.common.types.impl,
  org.eclipse.xtext.resource,
  org.openhab.config.core,
+ org.openhab.io.net.exec,
  org.osgi.framework,
  org.osgi.service.cm,
  org.slf4j;version="1.5.11"
