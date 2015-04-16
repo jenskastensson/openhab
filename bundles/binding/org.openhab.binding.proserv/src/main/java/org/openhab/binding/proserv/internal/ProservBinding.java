@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -85,7 +86,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String chartItemRefreshWeek = null;
 	private static String chartItemRefreshMonth = null;
 	private static String chartItemRefreshYear = null;
-
+	
+	private static boolean bIsFirstRefresh = true; 
+	private static boolean bHasReadHashTeesOnce = false; 
 	
 	private static ProservData proservData = null;
 	private static ProservCronJobs proservCronJobs = new ProservCronJobs();
@@ -502,6 +505,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate(itemName, new StringType("FAILED:Failed to save the new setting, please try later!"));
 			}
 		}
+		else {
+			State s = command.toString().equals("ON") ? OnOffType.ON : OnOffType.OFF;	
+			internalReceiveUpdate(itemName, s);
+		}
 	}
 	
 	private static String padRight(String s, int n) {
@@ -855,7 +862,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	public synchronized void execute() {
 
 		logger.debug("proServ binding refresh cycle starts!");
-	
+		
 		proservXConnect.handleProservConnectServer();
 		
 		try {
@@ -908,6 +915,13 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 
 			if (proservData != null) {
+				
+				if(bIsFirstRefresh){
+					logger.debug("proServ binding SKIP FIRST refresh cycle !");
+					bIsFirstRefresh = false;
+					return;
+				}				
+				
 				// function 1-1 .. function 18-16
 				for (int x = 0; x < 18; x++) {
 					for (int y = 0; y < 16; y++) {
@@ -987,6 +1001,21 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 						postUpdateWeather(dataValue,5);
 					}
 				}
+				
+				// read the values of the #t data points once to get a start value
+				if(!bHasReadHashTeesOnce){
+					logger.info("start read #t data points");								
+					for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+						int dataPoint = Integer.parseInt(entry.getValue().dataPointID.substring(4));
+						byte[] dataValue = connector.getDataPointValue((short) dataPoint, (short) 1);
+						if (dataValue != null) {
+							boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+							eventPublisher.postUpdate(entry.getValue().dataPointID, b ? OnOffType.ON : OnOffType.OFF);	
+						}
+					}
+					bHasReadHashTeesOnce = true;
+				}
+								
 				logger.debug("proServ binding refresh cycle completed");								
 			}
 			else {
@@ -1017,8 +1046,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservData.updateProservItemFile(proservCronJobs);
 		proservData.updateProservSitemapFile();
 		proservData.updateProservSitemapClassicFile();
-		proservData.updateRrd4jPersistFile();
-		proservData.updateDb4oPersistFile();		
+		proservData.updateRrd4jPersistFile(proservCronJobs);
+		proservData.updateDb4oPersistFile(proservCronJobs);		
 		proservData.updateSonosRulesFile(ProservBinding.ip);		
 		// generate html file and rules file based on the proservData and cronjobs
 		proservData.updateSchedulerHtmlFile(proservCronJobs);
