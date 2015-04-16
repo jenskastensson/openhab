@@ -1311,7 +1311,7 @@ public class ProservData {
 	}
 	
 	
-	public void updateRrd4jPersistFile() {
+	public void updateRrd4jPersistFile(ProservCronJobs proservCronJobs) {
 
 		String filename = "rrd4j.persist";
 		allItemNames = "";
@@ -1361,6 +1361,11 @@ public class ProservData {
 				}
 			}
 
+			// add the #t items
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				writer.println("	" + entry.getValue().dataPointID + ",");
+			}
+			
 			String[] customItems = getCustomItems();
 			for (String s: customItems)
 		    {
@@ -1378,7 +1383,7 @@ public class ProservData {
 
 	}
 
-	public void updateDb4oPersistFile() {
+	public void updateDb4oPersistFile(ProservCronJobs proservCronJobs) {
 
 		String filename = "db4o.persist";
 		try {
@@ -1417,6 +1422,11 @@ public class ProservData {
 					String thisItem = "itemProServLog" + index + ",";
 					writer.println("	" + thisItem);
 				}
+			}
+
+			// add the #t items
+			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+				writer.println("	" + entry.getValue().dataPointID + ",");
 			}
 						
 			String[] customItems = getCustomItems();
