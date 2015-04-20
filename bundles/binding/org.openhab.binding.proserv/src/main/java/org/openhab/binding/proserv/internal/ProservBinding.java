@@ -88,6 +88,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private static String chartItemRefreshYear = null;
 	
 	private static boolean bIsFirstRefresh = true; 
+	static boolean bLogHashTees = false; 
 	private static boolean bHasReadHashTeesOnce = false; 
 	
 	private static ProservData proservData = null;
@@ -170,6 +171,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if(Integer.parseInt(ProservBinding.chartItemRefreshYear)<5000)
 					ProservBinding.chartItemRefreshYear = "5000";
 					
+			ProservBinding.bLogHashTees = Boolean.parseBoolean((String) config.get("logHashTees")); 
+			
 			int portTmp = 80;
 			if (StringUtils.isNotBlank(portString)) {
 				portTmp = (int) Long.parseLong(portString);
@@ -1002,18 +1005,20 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 					}
 				}
 				
-				// read the values of the #t data points once to get a start value
-				if(!bHasReadHashTeesOnce){
-					logger.info("start read #t data points");								
-					for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
-						int dataPoint = Integer.parseInt(entry.getValue().dataPointID.substring(4));
-						byte[] dataValue = connector.getDataPointValue((short) dataPoint, (short) 1);
-						if (dataValue != null) {
-							boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
-							eventPublisher.postUpdate(entry.getValue().dataPointID, b ? OnOffType.ON : OnOffType.OFF);	
+				if(ProservBinding.bLogHashTees == true){
+					// read the values of the #t data points once to get a start value
+					if(!bHasReadHashTeesOnce){
+						logger.info("start read #t data points");								
+						for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+							int dataPoint = Integer.parseInt(entry.getValue().dataPointID.substring(4));
+							byte[] dataValue = connector.getDataPointValue((short) dataPoint, (short) 1);
+							if (dataValue != null) {
+								boolean b = proservData.parse1ByteBooleanValue(dataValue[0]);
+								eventPublisher.postUpdate(entry.getValue().dataPointID, b ? OnOffType.ON : OnOffType.OFF);	
+							}
 						}
+						bHasReadHashTeesOnce = true;
 					}
-					bHasReadHashTeesOnce = true;
 				}
 								
 				logger.debug("proServ binding refresh cycle completed");								

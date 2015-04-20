@@ -1361,9 +1361,11 @@ public class ProservData {
 				}
 			}
 
-			// add the #t items
-			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
-				writer.println("	" + entry.getValue().dataPointID + ",");
+			if(ProservBinding.bLogHashTees == true){
+				// add the #t items
+				for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+					writer.println("	" + entry.getValue().dataPointID + ",");
+				}
 			}
 			
 			String[] customItems = getCustomItems();
@@ -1424,9 +1426,11 @@ public class ProservData {
 				}
 			}
 
-			// add the #t items
-			for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
-				writer.println("	" + entry.getValue().dataPointID + ",");
+			if(ProservBinding.bLogHashTees == true){
+				// add the #t items
+				for (Map.Entry<String, CronJob> entry : proservCronJobs.cronJobs.entrySet()) {
+					writer.println("	" + entry.getValue().dataPointID + ",");
+				}
 			}
 						
 			String[] customItems = getCustomItems();
