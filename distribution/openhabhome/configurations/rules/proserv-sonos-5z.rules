@@ -26,16 +26,6 @@ when
 		counter = 0
 end
 
-rule "test every 2 minutes"
-when 
-	Time cron "2 * * * * ?"
-	then
-		if (counter == 0) {
-			executeCommandLine("touch /volume1/@appstore/proServX/addons/org.openhab.binding.sonos-1.7.0-SNAPSHOT.jar")
-			counter = 1
-		}
-end
-
 rule "ungroup all"
 	when
 		Item  KNX_Standalone received command
