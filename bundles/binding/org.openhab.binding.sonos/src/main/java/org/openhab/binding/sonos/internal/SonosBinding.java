@@ -99,7 +99,8 @@ implements ManagedService {
 	static protected int interval = 600;
 
 	static protected boolean bindingStarted = false;
-
+	static protected long bindingStartTime = 0;
+	
 	private PlayerCache sonosZonePlayerCache = new PlayerCache();
 	private List<SonosZoneGroup> sonosZoneGroups = null;
 	private Map<String, SonosZonePlayerState> sonosSavedPlayerState = null;
@@ -750,6 +751,13 @@ implements ManagedService {
 		if(isProperlyConfigured()) {
 
 			if(!bindingStarted) {
+				if(bindingStartTime == 0){
+					bindingStartTime = System.currentTimeMillis() + 60000;
+					return;
+				}
+				if(bindingStartTime > System.currentTimeMillis()){
+					return;
+				}
 
 				// This will create necessary network resources for UPnP right away
 				upnpService = new UpnpServiceImpl(new SonosUpnpServiceConfiguration(), listener);
