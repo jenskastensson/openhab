@@ -509,6 +509,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 		}
 		else {
+			// http://192.168.1.13:8081/CMD?dpID772=OFF
+			// GET after to test result: http://192.168.1.13:8081/rest/items/dpID772/state
 			State s = command.toString().equals("ON") ? OnOffType.ON : OnOffType.OFF;	
 			internalReceiveUpdate(itemName, s);
 		}
