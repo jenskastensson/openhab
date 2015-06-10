@@ -73,7 +73,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	private long refreshInterval = 65000L;
 
 	/* The IP address to connect to */
-	private static String ip;
+	static String ip;
 	private static int port = 80;
 	private static String mailTo = "";
 	private static String mailSubject = "";

@@ -287,8 +287,8 @@ public class ProservXConnect {
 		if (bFoundGIP && bFoundLIP && bFoundMAC) {
 			logger.debug("Send HTTP to proSevConnectServer");
 			try {
-				logger.debug("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}", MacID, publicIp, getLocalIp(), hostName);
-				bRet = sendToProservConnectServer(MacID, publicIp, getLocalIp(), hostName);
+				logger.debug("Sending to ProservConnectServer: MacID: {}, publicIp: {}, localIp: {}, hostName: {}, proservIP: {}", MacID, publicIp, getLocalIp(), hostName, ProservBinding.ip);
+				bRet = sendToProservConnectServer(MacID, publicIp, getLocalIp(), hostName, ProservBinding.ip);
 			} catch (Exception e) {
 				logger.error("sendToProservConnectServer exception: {}", e);
 			}
@@ -299,9 +299,9 @@ public class ProservXConnect {
 		return bRet;
 	}
 
-	private boolean sendToProservConnectServer(String MAC, String PIP, String LIP, String hostName) throws Exception {
+	private boolean sendToProservConnectServer(String MAC, String PIP, String LIP, String hostName, String proservIP) throws Exception {
 		String url = "https://script.google.com/macros/s/AKfycbwz0tCIHC_d59jV0uiuXDABPX48e0lYGyDjifc7-9O6ATbEh8dB/exec?method=set";
-		url += "&mac=" + MAC + "&pip=" + PIP + "&lip=" + LIP + "&host=" + hostName;
+		url += "&mac=" + MAC + "&pip=" + PIP + "&lip=" + LIP + "&host=" + hostName + "&proservip=" + proservIP;
 		// mac=01:23:45:67:89:ab&pip=33.44.55.66&lip=192.168.1.1
 		URL obj;
 
