@@ -1509,6 +1509,18 @@ public class ProservData {
 						key = "sonos:zone_" + count + ".udn";
 						writeConfigData(key, s);	
 					}
+					else {
+						// first string is always localIP
+						if(ProservXConnect.validateIPv4(s)){
+							if(!writeConfigData("knx:localIp", s)){
+								logger.error("Failed to write SONOS config to openhab.cfg knx:localIp={}", s);
+							}
+						}
+						else {
+							logger.error("SONOS config invalideIPv¤ adress will not found not update knx:localIp={}", s);
+						}
+						
+					}
 			    }
 				for(;count<5;){
 					count++;

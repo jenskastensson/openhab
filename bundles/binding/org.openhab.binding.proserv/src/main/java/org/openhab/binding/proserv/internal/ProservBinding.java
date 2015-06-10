@@ -881,9 +881,6 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 			}
 				
 			if(connector == null && !ip.isEmpty()) {
-				if(!ProservData.writeConfigData("knx:localIp", ProservXConnect.getLocalIp())){
-					logger.error("Failed to write to openhab.cf knx:localIp={}", ProservXConnect.getLocalIp());
-				}				
 				connector = new ProservConnector(ip, port);					
 			}			
 			
