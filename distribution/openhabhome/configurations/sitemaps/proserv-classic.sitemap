@@ -1,13 +1,7 @@
-sitemap proserv label="proServX charts"
+sitemap proserv label="Please configure proserv IP from proServX 'standard'"
 {
    Frame {
-		Group icon="pie" label="All values" {
-			Group item=gProserv icon="pie" label="All values"
-			Group item=gProserv0 icon="pie" label="All values 1"
-		}
+		Group item=gDummy icon="pie" label="No connection to proServ, check IP configuration! "
    }
-
-	Frame  icon="chart" {
-	}
 
 }
