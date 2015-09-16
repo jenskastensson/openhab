@@ -3,7 +3,7 @@ body { font-family: Helvetica,Arial,sans-serif; color: #222; background-color: #
 ul { margin-left: 20px; }
 ol { margin: 15px 0px 0px 20px; }
 ol li { margin-top: 10px; }
-h1 { margin: 30px; font-size: 2.5em; font-weight: bold; color: #000; text-align: center; }
+h1 { margin: 30px; font-size: 2.0em; font-weight: bold; color: #000; text-align: center; line-height: normal;}
 h2 { border-bottom: 1px solid #999; margin: 30px 0 10px 0; font-size: 1.3em; color: #555; }
 h3 { border-left: 20px solid #999; padding-left: 10px; line-height: 1.2; font-size: 1.1em; color: #333; margin: 30px 0 10px 0; }
 li { margin-top: 0px; margin-left: 7px; }
@@ -13,10 +13,11 @@ a { color: #369; font-weight: bold; text-decoration: none; }
 a:hover { text-decoration: underline; }
 .example { margin: 10px; border: 1px dashed #ccc; padding: 10px;}
 .example-text { font-family: monospace; }
-#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: 760px; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
-#footer { margin: 0 auto; padding-top: 20px; width: 760px; font-size: 0.8em; text-align: center; color: #888; }
-#top { margin: 0 auto; padding: 5px; padding-top: 2px; width: 760px; font-size: 0.7em; text-align: center; color: #888; }
-button[id$='_btn']{ width: 350px; margin-top: 20px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
+#content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: auto; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
+#footer { margin: 0 auto; padding-top: 20px; width: auto; font-size: 0.8em; text-align: center; color: #888; }
+#top { margin: 0 auto; padding: 5px; padding-top: 2px; width: auto; font-size: 0.7em; text-align: center; color: #888; }
+button[id$='_btn']{ width:90%; min-width: 300px; max-width: 500px; margin-top: 20px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
 input {margin-top: 10px; margin-bottom: 5px;}
 .ui-selectmenu-button { margin-top: 10px; }
 .ui-textfield { font: inherit; color: inherit; background: none; text-align: inherit; outline: none; cursor: text; }
+img { max-width: 100%; height: auto; }
