@@ -84,6 +84,12 @@ public enum ProservCommandType {
 			itemClass = SwitchItem.class;
 		}
 	},
+	TYPE_PROSERV_RESTART {
+		{
+			command = "proserv_restart";
+			itemClass = StringItem.class;
+		}
+	},	
 	TYPE_PROSERV_TEST {
 		{
 			command = "proserv_test";

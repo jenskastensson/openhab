@@ -1,6 +1,7 @@
 Switch OS_Shutdown  "OS_Shutdown"   { exec="OFF:sudo halt"} 
 Switch OS_Reboot  "OS_Reboot"   { exec="ON:sudo reboot"} 
 String ProservBackupResetRrd  "ProservBackupResetRrd"   { proserv="proserv_backup_reset_rrd", autoupdate="false" }
+String ProservRestart  "ProservRestart"   { proserv="proserv_restart", autoupdate="false" }
 String ProservBackupRrd  "ProservBackupRrd"   { proserv="proserv_backup_rrd", autoupdate="false" }
 String ProservSendRrdBackup  "ProservSendRrdBackup"   { proserv="proserv_send_rrd_backup", autoupdate="false" }
 String ProservExportCsvFiles  "ProservExportCsvFiles"   { proserv="proserv_export_csv_files", autoupdate="false" }

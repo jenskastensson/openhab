@@ -557,4 +557,81 @@ $(document).ready(function () {
     ]
   });
 
+  //
+  // Restart proservx
+  //
+  function refresh() {
+    window.location.reload(true);
+  }
+  $('#restart_proservx_btn').click(function (event) {
+    $('#restart_proservx_dlg').dialog('open');
+    event.preventDefault();
+  });
+  $('#restart_proservx_btn').button({
+    label : OpenHAB.i18n_strings[ui_language].button_restart_proservx
+  });
+  $('#restart_proservx_dlg').dialog({
+    title : OpenHAB.i18n_strings[ui_language].confirm_restart_proservx,
+    open : function () {
+      $(this).html(OpenHAB.i18n_strings[ui_language].are_you_sure_you_want_to_restart);
+    },
+    autoOpen : false,
+    width : 500,
+    modal : true,
+    buttons : [{
+        text : OpenHAB.i18n_strings[ui_language].button_restart_proservx,
+        click : function () {
+          $.ajax({
+            timeout : 5000,
+            url : '/CMD?ProservRestart=START',
+            success : function () {
+              $.ajax({
+                url : '/rest/items/ProservRestart/state',
+                timeout : 5000,
+                success : function (response) {
+                  if (response == 'SUCCESS') {
+                    $('#restart_proservx_btn').button('option', 'icons', {
+                      primary : 'ui-icon-circle-check'
+                    });
+                    title = OpenHAB.i18n_strings[ui_language].button_restart_proservx;
+                    msg = OpenHAB.i18n_strings[ui_language].please_wait_for_restart;
+                    $.alertnok(msg, title);
+                    setTimeout(refresh, 3*60*1000);                    
+                  } else if (response.indexOf('FAILED') >= 0) {
+                    $('#restart_proservx_btn').button('option', 'icons', {
+                      primary : 'ui-icon-alert'
+                    });
+                    title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+                    msg = OpenHAB.i18n_strings[ui_language].error_message_from_server;
+                    $.alert(msg + response.replace('FAILED:', ''), title);
+                  }
+                },
+                error : function () {
+                  $('#restart_proservx_btn').button('option', 'icons', {
+                    primary : 'ui-icon-alert'
+                  });
+                }
+              });
+            },
+            error : function () {
+              $('#restart_proservx_btn').button('option', 'icons', {
+                primary : 'ui-icon-alert'
+              });
+              title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
+              msg = OpenHAB.i18n_strings[ui_language].the_operation_timed_out_waiting;
+              $.alert(msg, title);
+            }
+          });
+          $(this).dialog('close');
+        }
+      }, {
+        text : OpenHAB.i18n_strings[ui_language].cancel,
+        click : function () {
+          $(this).dialog('close');
+        }
+      }
+    ]
+  });
+
+  
 });

@@ -42,6 +42,7 @@ import org.openhab.binding.proserv.ProservBindingProvider;
 import org.openhab.binding.proserv.internal.ProservCronJobs;
 import org.openhab.binding.proserv.internal.ProservCronJobs.CronJob;
 import org.openhab.core.binding.AbstractActiveBinding;
+import org.openhab.io.net.exec.ExecUtil;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
@@ -76,6 +77,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 	static String ip;
 	private static int port = 80;
 	private static String mailTo = "";
+	private static String shellRestartCommand = "";
 	private static String mailSubject = "";
 	private static String mailContent = "";
 	private static Boolean previousEmailTrigger[][] = new Boolean[18][16];
@@ -146,6 +148,8 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				needsRefresh = true;
 			ProservBinding.oldLanguage = ProservBinding.language;
 			
+			ProservBinding.shellRestartCommand = (String) config.get("shellRestartCommand");
+
 			ProservBinding.chartItemRefreshHour = (String) config.get("chartItemRefreshHour");
 			ProservBinding.chartItemRefreshDay = (String) config.get("chartItemRefreshDay");
 			ProservBinding.chartItemRefreshWeek = (String) config.get("chartItemRefreshWeek");
@@ -423,15 +427,10 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate(itemName, new StringType("FAILED:The history data file is missing, please save history data!"));
 			}
 		}
-		//http://localhost:8080/CMD?ProservExportCsvFiles=START
-		else if(itemName.equals("ProservExportCsvFiles") && command.toString().equals("START")){
-			if(proservData==null ){
-				eventPublisher.postUpdate(itemName, new StringType("FAILED: unable to communicate with proserv, please check the communcation link (e.g the IP address)!"));
-				return;
-			}			
-			ProservLogfileProvider proservLogfileProvider = new ProservLogfileProvider();
+		//http://localhost:8080/CMD?ProservRestart=START
+		else if(itemName.equals("ProservRestart") && command.toString().equals("START")){
 			try {
-				proservLogfileProvider.doSnapshot(proservData.getAllItemNames());
+				ExecUtil.executeCommandLine(shellRestartCommand);				
 				eventPublisher.postUpdate(itemName, new StringType("SUCCESS"));
 			} catch (Throwable e) {
 				eventPublisher.postUpdate(itemName, new StringType("FAILED:" + e.toString()));

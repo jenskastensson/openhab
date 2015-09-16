@@ -1,7 +1,7 @@
-sitemap proserv label="Please configure proserv IP ---------------->"
+sitemap proserv label="proServX charts"
 {
    Frame {
-		Group item=gDummy icon="pie" label="No connection to proServ, check IP configuration! After a change of IP, wait 2 minutes to take effect. Finally refresh the browser."
+		Group item=gProserv icon="pie" label="All values"
    }
 
 }
