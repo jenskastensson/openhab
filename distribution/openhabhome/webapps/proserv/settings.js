@@ -126,14 +126,14 @@ $(document).ready(function () {
                         title = OpenHAB.i18n_strings[ui_language].the_operation_failed;
                         msg = OpenHAB.i18n_strings[ui_language].changing_language_failed;
                         $.alert(msg, title);
-                      } else {
-                        title = OpenHAB.i18n_strings[ui_language].restart_server;
-                        msg = OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect;
-                        $.alertnok(msg, title);
-                        setTimeout(function () {
-                          location.assign('./settings.html');
-                        }, 60000);
-                      }
+                       } else {
+                         title = OpenHAB.i18n_strings[ui_language].restart_server;
+                         msg = OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect;
+                         //$.alertnok(msg, title);
+                         // setTimeout(function () {
+                           // location.assign('./settings.html');
+                         // }, 60000);
+                       }
                     }
                   });
                 },
@@ -596,7 +596,7 @@ $(document).ready(function () {
                     title = OpenHAB.i18n_strings[ui_language].button_restart_proservx;
                     msg = OpenHAB.i18n_strings[ui_language].please_wait_for_restart;
                     $.alertnok(msg, title);
-                    setTimeout(refresh, 3*60*1000);                    
+                    setTimeout(function(){location.assign('./settings.html');}, 3*60*1000);                    
                   } else if (response.indexOf('FAILED') >= 0) {
                     $('#restart_proservx_btn').button('option', 'icons', {
                       primary : 'ui-icon-alert'
