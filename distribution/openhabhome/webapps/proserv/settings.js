@@ -111,9 +111,9 @@ $(document).ready(function () {
         click : function () {
           new_ui_language = $('#language_selectmenu').val();
           if (new_ui_language != ui_language) {
-            title = OpenHAB.i18n_strings[ui_language].restart_server;
-            msg = OpenHAB.i18n_strings[ui_language].this_will_restart_the_software;
-            $.alertsync(msg, title, function () {
+            //title = OpenHAB.i18n_strings[ui_language].restart_server;
+            //msg = OpenHAB.i18n_strings[ui_language].this_will_restart_the_software;
+            //$.alertsync(msg, title, function () {
               $.ajax({
                 url : '/CMD?ProservLanguage=' + new_ui_language,
                 timeout : 5000,
@@ -128,11 +128,11 @@ $(document).ready(function () {
                         $.alert(msg, title);
                        } else {
                          title = OpenHAB.i18n_strings[ui_language].restart_server;
-                         msg = OpenHAB.i18n_strings[ui_language].need_to_restart_for_changes_to_take_effect;
-                         //$.alertnok(msg, title);
-                         // setTimeout(function () {
-                           // location.assign('./settings.html');
-                         // }, 60000);
+                         msg = OpenHAB.i18n_strings[ui_language].need_to_reload_for_changes_to_take_effect;
+                         $.alertnok(msg, title);
+                          setTimeout(function () {
+                            location.assign('./settings.html');
+                          }, 10000);
                        }
                     }
                   });
@@ -146,8 +146,8 @@ $(document).ready(function () {
                   $.alert(msg, title);
                 }
               });
-            });
-            $(this).dialog('close');
+            //});
+            //$(this).dialog('close');
 
           }
           $(this).dialog('close');
@@ -596,7 +596,7 @@ $(document).ready(function () {
                     title = OpenHAB.i18n_strings[ui_language].button_restart_proservx;
                     msg = OpenHAB.i18n_strings[ui_language].please_wait_for_restart;
                     $.alertnok(msg, title);
-                    setTimeout(function(){location.assign('./settings.html');}, 3*60*1000);                    
+                    setTimeout(function(){location.assign('./settings.html').reload(true);}, 3*60*1000);                    
                   } else if (response.indexOf('FAILED') >= 0) {
                     $('#restart_proservx_btn').button('option', 'icons', {
                       primary : 'ui-icon-alert'
