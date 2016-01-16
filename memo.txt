@@ -1,7 +1,8 @@
 build openhab
 mvn clean install
+-> result in distribution\target\distribution-1.7.0-SNAPSHOT-runtime.zip
+
 
 build proserv binding
 \bundles\binding\org.openhab.binding.proserv\build.bat
-
-result in bundles\binding\org.openhab.binding.proserv\target
+-> result in bundles\binding\org.openhab.binding.proserv\target
