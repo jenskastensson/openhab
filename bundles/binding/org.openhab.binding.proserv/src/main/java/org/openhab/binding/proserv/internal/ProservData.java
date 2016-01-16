@@ -1778,4 +1778,78 @@ public class ProservData {
 	
 	}
 	
+	public static void updateProservxJsonForRealknx(String ip) {
+		String filename = "proservx.json";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator
+					+ ".." + File.separator + "realknx" + File.separator
+					+ "designer" + File.separator + filename;
+
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			writer.println("{\"ip\": \"" + ip + "\"}");
+			writer.close();
+
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {
+		}
+
+	}
+
+	public void updateObjectsJsonForRealknx() {
+		String filename = "objects.json";
+		try {
+			String path = ConfigDispatcher.getConfigFolder() + File.separator
+					+ ".." + File.separator + ".." + File.separator + "realknx" + File.separator
+					+ "designer" + File.separator + filename;
+
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			writer.println("{");
+
+			boolean firstzone = true;
+			for (int x = 0; x < 18; x++) {
+				String zone = zoneNames[x];
+				if (!zone.isEmpty()) {
+					if(firstzone == false)
+						writer.println("   ,");
+					firstzone = false;
+					writer.println("   \"" + zone + "\": [");
+					boolean first = true;
+					for (int y = 0; y < 16; y++) {
+						String Name = functionDescriptions[x][y];
+						if (!Name.isEmpty()) {
+							if(first == false)
+								writer.println("      ,");
+							first = false;
+							writer.println("      {");
+							writer.println("         \"Name\":\"" + Name+"\",");
+							int DP = (48*x) + (y*3) + 1;
+							writer.println("         \"DP\":\"" + DP+"\",");
+							int FCode = ((int) functionCodes[x][y] & 0xFF);
+							writer.println("         \"FCode\":\"" + FCode+"\",");
+							String OnText = "On";
+							writer.println("         \"OnText\":\"" + OnText+"\",");
+							String OffText = "Off";
+							writer.println("         \"OffText\":\"" + OffText+"\"");
+							writer.println("      }");
+						}
+					}
+					writer.println("   ]");
+				    
+				}
+			}
+
+			writer.println("}");
+
+			writer.close();
+
+		} catch (IOException e) {
+			String message = "opening file '" + filename + "' throws exception";
+			logger.error(message, e);
+		} finally {
+		}
+
+	}
+	
 }

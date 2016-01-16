@@ -3,3 +3,5 @@ mvn clean install
 
 build proserv binding
 \bundles\binding\org.openhab.binding.proserv\build.bat
+
+result in bundles\binding\org.openhab.binding.proserv\target

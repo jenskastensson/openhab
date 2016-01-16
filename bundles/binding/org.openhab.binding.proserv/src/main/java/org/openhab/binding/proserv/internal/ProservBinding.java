@@ -486,6 +486,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				eventPublisher.postUpdate(itemName, new StringType(ProservBinding.ip));				
 			} else {
 				ProservBinding.ip = command.toString();
+				ProservData.updateProservxJsonForRealknx(ProservBinding.ip);				
 				if(ProservData.writeConfigData("proserv:ip", ProservBinding.ip)){
 					eventPublisher.postUpdate(itemName, new StringType(ProservBinding.ip));
 				} else {
@@ -876,6 +877,7 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 				if(ProservDiscovery.search()){
 					ProservBinding.ip = ProservDiscovery.getProservIP(); 
 					ProservData.writeConfigData("proserv:ip", ProservBinding.ip);	
+					ProservData.updateProservxJsonForRealknx(ProservBinding.ip);
 				}
 			}
 				
@@ -1054,7 +1056,9 @@ public class ProservBinding extends AbstractActiveBinding<ProservBindingProvider
 		proservData.updateSonosRulesFile(ProservBinding.ip);		
 		// generate html file and rules file based on the proservData and cronjobs
 		proservData.updateSchedulerHtmlFile(proservCronJobs);
-		proservData.updateProservRulesFile(proservCronJobs);		
+		proservData.updateProservRulesFile(proservCronJobs);
+		ProservData.updateProservxJsonForRealknx(ProservBinding.ip);
+		proservData.updateObjectsJsonForRealknx();
 	}
 
 	private void handleCronJobs() {
