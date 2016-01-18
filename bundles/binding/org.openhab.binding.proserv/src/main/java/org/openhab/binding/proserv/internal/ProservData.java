@@ -1782,7 +1782,7 @@ public class ProservData {
 		String filename = "proservx.json";
 		try {
 			String path = ConfigDispatcher.getConfigFolder() + File.separator
-					+ ".." + File.separator + "realknx" + File.separator
+					+ ".." + File.separator + ".." + File.separator + "realknx" + File.separator
 					+ "designer" + File.separator + filename;
 
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
