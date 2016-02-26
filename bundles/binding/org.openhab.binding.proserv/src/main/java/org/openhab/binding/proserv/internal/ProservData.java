@@ -1810,7 +1810,18 @@ public class ProservData {
 			boolean firstzone = true;
 			for (int x = 0; x < 18; x++) {
 				String zone = zoneNames[x];
+				boolean zoneHasObjects = false;
 				if (!zone.isEmpty()) {
+					// check if any objects
+					for (int y = 0; y < 16; y++) {
+						if (!functionDescriptions[x][y].isEmpty()) {
+							zoneHasObjects = true;
+							break;
+						}
+					}
+				}
+				
+				if (zoneHasObjects == true) {
 					if(firstzone == false)
 						writer.println("   ,");
 					firstzone = false;
