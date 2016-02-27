@@ -1806,7 +1806,8 @@ public class ProservData {
 
 			PrintWriter writer = new PrintWriter(path, "UTF-8");
 			writer.println("{");
-
+			
+			
 			boolean firstzone = true;
 			for (int x = 0; x < 18; x++) {
 				String zone = zoneNames[x];
@@ -1814,10 +1815,13 @@ public class ProservData {
 				if (!zone.isEmpty()) {
 					// check if any objects
 					for (int y = 0; y < 16; y++) {
-						if (!functionDescriptions[x][y].isEmpty()) {
+						if (functionDescriptions[x][y] != null && !functionDescriptions[x][y].isEmpty()) {
 							zoneHasObjects = true;
 							break;
 						}
+					}
+					if (heatingDescriptions[x] != null && !heatingDescriptions[x].isEmpty()) {
+						zoneHasObjects = true;
 					}
 				}
 				
@@ -1826,18 +1830,37 @@ public class ProservData {
 						writer.println("   ,");
 					firstzone = false;
 					writer.println("   \"" + zone + "\": [");
-					boolean first = true;
+					boolean firstObject = true;
 					for (int y = 0; y < 16; y++) {
 						String Name = functionDescriptions[x][y];
 						if (!Name.isEmpty()) {
-							if(first == false)
+							if(firstObject == false)
 								writer.println("      ,");
-							first = false;
+							firstObject = false;
 							writer.println("      {");
 							writer.println("         \"Name\":\"" + Name+"\",");
 							int DP = (48*x) + (y*3) + 1;
 							writer.println("         \"DP\":\"" + DP+"\",");
 							int FCode = ((int) functionCodes[x][y] & 0xFF);
+							writer.println("         \"FCode\":\"" + FCode+"\",");
+							String OnText = "On";
+							writer.println("         \"OnText\":\"" + OnText+"\",");
+							String OffText = "Off";
+							writer.println("         \"OffText\":\"" + OffText+"\"");
+							writer.println("      }");
+						}
+					}
+					{
+						String Name = heatingDescriptions[x];
+						if (!Name.isEmpty()) {
+							if(firstObject == false)
+								writer.println("      ,");
+							firstObject = false;
+							writer.println("      {");
+							writer.println("         \"Name\":\"" + Name+"\",");
+							int DP = 865 + x * 5;
+							writer.println("         \"DP\":\"" + DP+"\",");
+							int FCode = ((int) heatingCodes[x] & 0xFF);
 							writer.println("         \"FCode\":\"" + FCode+"\",");
 							String OnText = "On";
 							writer.println("         \"OnText\":\"" + OnText+"\",");
