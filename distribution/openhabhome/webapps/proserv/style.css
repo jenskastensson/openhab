@@ -16,7 +16,8 @@ a:hover { text-decoration: underline; }
 #content { margin: 0 auto;  padding: 20px 20px 40px 20px; width: auto; background-color: #fff; border: 1px solid #777; border-width: 0 1px 0px 1px; }
 #footer { margin: 0 auto; padding-top: 20px; width: auto; font-size: 0.8em; text-align: center; color: #888; }
 #top { margin: 0 auto; padding: 5px; padding-top: 2px; width: auto; font-size: 0.7em; text-align: center; color: #888; }
-button[id$='_btn']{ width:90%; min-width: 300px; max-width: 500px; margin-top: 20px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
+@media (max-width: 1000px){ .ui-button .ui-button-text { font-size: 1.2em !important; } }
+button[id$='_btn']{ width:80%; min-width: 300px; max-width: 80%; margin-top: 20px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
 input {margin-top: 10px; margin-bottom: 5px;}
 .ui-selectmenu-button { margin-top: 10px; }
 .ui-textfield { font: inherit; color: inherit; background: none; text-align: inherit; outline: none; cursor: text; }
