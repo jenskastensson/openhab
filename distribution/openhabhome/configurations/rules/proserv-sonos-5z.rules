@@ -37,6 +37,104 @@ rule "ungroup all"
 		sendCommand( z5Sonos_Standalone, ON)
 end
 
+rule "2+1"
+	when
+		Item  KNX_group_2to1 received command
+	then
+		sendCommand (z2toz1, RinconString2 )
+end
+
+rule "3+1"
+	when
+		Item  KNX_group_3to1 received command
+	then
+		sendCommand (z3toz1, RinconString3 )
+end
+
+rule "4+1"
+	when
+		Item  KNX_group_4to1 received command
+	then
+		sendCommand (z4toz1, RinconString4 )
+end
+
+rule "5+1"
+	when
+		Item  KNX_group_5to1 received command
+	then
+		sendCommand (z5toz1, RinconString5 )
+end
+
+rule "3+2"
+	when
+		Item  KNX_group_3to2 received command
+	then
+		sendCommand (z3toz2, RinconString3 )
+end
+
+rule "4+2"
+	when
+		Item  KNX_group_4to2 received command
+	then
+		sendCommand (z4toz2, RinconString4 )
+end
+
+rule "5+2"
+	when
+		Item  KNX_group_5to2 received command
+	then
+		sendCommand (z5toz2, RinconString5 )
+end
+
+rule "4+3"
+	when
+		Item  KNX_group_4to3 received command
+	then
+		sendCommand (z4toz3, RinconString4 )
+end
+
+rule "5+3"
+	when
+		Item  KNX_group_5to3 received command
+	then
+		sendCommand (z5toz3, RinconString5 )
+end
+
+rule "5+4"
+	when
+		Item  KNX_group_5to4 received command
+	then
+		sendCommand (z5toz4, RinconString5 )
+end
+
+rule "3+2+1"
+	when
+		Item  KNX_group_3to2to1 received command
+	then
+		sendCommand (z2toz1, RinconString2 )
+		sendCommand (z3toz1, RinconString3 )
+end
+
+rule "4+3+2+1"
+	when
+		Item  KNX_group_4to3to2to1 received command
+	then
+		sendCommand (z2toz1, RinconString2 )
+		sendCommand (z3toz1, RinconString3 )
+		sendCommand (z4toz1, RinconString4 )
+end
+
+rule "5+4+3+2+1"
+	when
+		Item  KNX_group_5to4to3to2to1 received command
+	then
+		sendCommand (z2toz1, RinconString2 )
+		sendCommand (z3toz1, RinconString3 )
+		sendCommand (z4toz1, RinconString4 )
+		sendCommand (z5toz1, RinconString5 )
+end
+
+
 rule "Send transport to all"
 	when
 		Item  KNX_Power received command

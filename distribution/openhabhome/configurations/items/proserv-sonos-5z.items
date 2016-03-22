@@ -7,6 +7,31 @@ Switch z3Sonos_Standalone	{ sonos="[ON:zone_3:standalone], [OFF:zone_3:standalon
 Switch z4Sonos_Standalone	{ sonos="[ON:zone_4:standalone], [OFF:zone_4:standalone]"}
 Switch z5Sonos_Standalone	{ sonos="[ON:zone_5:standalone], [OFF:zone_5:standalone]"}
 
+Switch KNX_group_2to1		{ knx="1.001:10/0/2"}
+Switch KNX_group_3to1		{ knx="1.001:10/0/3"}
+Switch KNX_group_4to1		{ knx="1.001:10/0/4"}
+Switch KNX_group_5to1		{ knx="1.001:10/0/5"}
+Switch KNX_group_3to2		{ knx="1.001:10/0/6"}
+Switch KNX_group_4to2		{ knx="1.001:10/0/7"}
+Switch KNX_group_5to2		{ knx="1.001:10/0/8"}
+Switch KNX_group_4to3		{ knx="1.001:10/0/9"}
+Switch KNX_group_5to3		{ knx="1.001:10/0/10"}
+Switch KNX_group_5to4		{ knx="1.001:10/0/11"}
+Switch KNX_group_3to2to1	{ knx="1.001:10/0/12"}
+Switch KNX_group_4to3to2to1	{ knx="1.001:10/0/13"}
+Switch KNX_group_5to4to3to2to1	{ knx="1.001:10/0/14"}
+
+String z2toz1			{ sonos="[zone_1:add]" }
+String z3toz1			{ sonos="[zone_1:add]" }
+String z4toz1			{ sonos="[zone_1:add]" }
+String z5toz1			{ sonos="[zone_1:add]" }
+String z3toz2			{ sonos="[zone_2:add]" }
+String z4toz2			{ sonos="[zone_2:add]" }
+String z5toz2			{ sonos="[zone_2:add]" }
+String z4toz3			{ sonos="[zone_3:add]" }
+String z5toz3			{ sonos="[zone_3:add]" }
+String z5toz4			{ sonos="[zone_4:add]" }
+
 /* Zone 1 */
 Switch z1KNX_Volume_Rel		{ knx="1.001:10/1/5"}
 Switch z1KNX_Power		{ sonos="[ON:zone_1:play], [OFF:zone_1:pause]", knx="1.001:10/1/1", autoupdate="true"}
