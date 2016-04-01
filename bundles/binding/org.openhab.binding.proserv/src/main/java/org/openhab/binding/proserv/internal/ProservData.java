@@ -44,6 +44,7 @@ public class ProservData {
 	private String[] zoneNames = new String[18];
 	private byte[][] functionCodes = new byte[18][16];
 	private String[][] functionDescriptions = new String[18][16];
+	private String[][] functionDescriptions2 = new String[18][16];
 	private String[][] functionUnits = new String[18][16];
 	private byte[][] functionProfiles = new byte[18][16];
 	private byte[][] functionDefs = new byte[18][16];
@@ -62,6 +63,12 @@ public class ProservData {
 	private int[][] heatingMapId = new int[18][2];
 	private int[][] heatingDataPoint = new int[18][2];
 	private boolean[] heatingIsTimer = new boolean[18];
+
+	private byte[] sceneCodes = new byte[5*18*2];
+	private String[] sceneDescriptions = new String[5*18*2];
+	private byte[] sceneProfiles = new byte[5*18*2];
+	private byte[] sceneDefs = new byte[5*18*2];
+
 
 	private byte weatherStationCode = 0x71;
 	byte weatherStationDefs = 0;
@@ -216,6 +223,7 @@ public class ProservData {
 	
 	public void parseRawConfigData(byte[] proServAllValues) throws UnsupportedEncodingException {
 		int lengthDescription = 24;
+		int lengthDescription2 = 8;
 		int lengthUnit = 5;
 
 		// zone 1-18
@@ -250,6 +258,13 @@ public class ProservData {
 						functionDescriptions[x][y] = (new String(proServAllValues, offset + 1, actualLength, "ISO-8859-1"));
 					else
 						functionDescriptions[x][y] = new String();
+
+					for (actualLength = 0; actualLength < lengthDescription2 && proServAllValues[offset + 17 + actualLength] != 0; actualLength++) {
+					}
+					if (actualLength > 0)
+						functionDescriptions2[x][y] = (new String(proServAllValues, offset + 17, actualLength, "ISO-8859-1"));
+					else
+						functionDescriptions2[x][y] = new String();
 
 					for (actualLength = 0; actualLength < lengthUnit && proServAllValues[offset + 25 + actualLength] != 0; actualLength++) {
 					}
@@ -374,6 +389,30 @@ public class ProservData {
 			}
 		}
 
+		// Scenes
+		int sceneOffset = 10304;
+		for (int x = 0; x < 5*18*2; x++) {
+			try {
+				int offset = sceneOffset + 32 * x;
+				sceneCodes[x] = proServAllValues[offset];
+
+				int actualLength = 0;
+				for (actualLength = 0; actualLength < lengthDescription && proServAllValues[offset + 1 + actualLength] != 0; actualLength++) {
+				}
+				if (actualLength > 0)
+					sceneDescriptions[x] = (new String(proServAllValues, offset + 1, actualLength, "ISO-8859-1"));
+				else
+					sceneDescriptions[x] = new String();
+
+				sceneProfiles[x] = proServAllValues[offset + 30];
+				sceneDefs[x] = proServAllValues[offset + 31];
+
+			} catch (NullPointerException e) {
+				logger.warn("proserv NullPointerException scenes");
+			} finally {
+			}
+		}
+		
 		// weatherStation
 		int weatherStationOffset = 16065;
 		weatherStationDefs = proServAllValues[weatherStationOffset];
@@ -1833,6 +1872,9 @@ public class ProservData {
 					boolean firstObject = true;
 					for (int y = 0; y < 16; y++) {
 						String Name = functionDescriptions[x][y];
+						if(functionDescriptions[x][y].toLowerCase().contains("#f")){
+							Name = functionDescriptions[x][y].substring(0, functionDescriptions[x][y].indexOf("#"));
+						}
 						if (!Name.isEmpty()) {
 							if(firstObject == false)
 								writer.println("      ,");
@@ -1842,7 +1884,71 @@ public class ProservData {
 							int DP = (48*x) + (y*3) + 1;
 							writer.println("         \"DP\":\"" + DP+"\",");
 							int FCode = ((int) functionCodes[x][y] & 0xFF);
-							writer.println("         \"FCode\":\"" + FCode+"\",");
+							if(FCode==37){
+								String urlIndexes = functionDescriptions2[x][y];
+								int[] intArray=new int[8];
+								boolean isValid = true;
+							    for(int i=0;i<2;i++) { // for now we only care about the first index, i.e. two first bytes
+							        if (!Character.isDigit(urlIndexes.charAt(i))) {
+							        	logger.error("Description2 invalid digit: {}", urlIndexes.charAt(i));
+							        	isValid = false;
+							        	break;
+							        }
+							        intArray[i] = Integer.parseInt(String.valueOf(urlIndexes.charAt(i)));
+							    }										
+							    if(isValid){
+									int urlIndex = intArray[0]*10+intArray[1];
+									if(urlIndex>=1 && urlIndex<=20){
+										writer.println("         \"Url\":\"" + urlSchemes[urlIndex-1]+"\",");
+									}
+							    }
+							}
+							if(FCode==33){
+								// valid codes: 33.0, 33.01, 33.1, 33.11, 33.2, 33.3,
+								// x | y
+								// 0 | 0 : only ON (with optional #f, #c functionality)
+								// 0 | 1 : only OFF (with optional #f, #c functionality)
+								// 1 | 0 : toggle
+								// 1 | 1 : pulse (ON during pressing, then OFF)
+								int xCode = ((functionDefs[x][y] & 0x10) == 0x10) ? 1 : 0;
+								int yCode = functionDefs[x][y] & 0x1;
+								String FCodeText = "33.";
+								String FSubCodeText = "";
+								if(xCode==0 && yCode==0)
+									FSubCodeText = "0";
+								else if(xCode==0 && yCode==1)
+									FSubCodeText = "1";
+								else if(xCode==1 && yCode==0)
+									FSubCodeText = "2";
+								else if(xCode==1 && yCode==1)
+									FSubCodeText = "3";
+					            if(FSubCodeText=="0" || FSubCodeText=="1"){
+					            	if(functionDescriptions[x][y].toLowerCase().contains("#f")){
+					            		FSubCodeText += "1";
+					            	}
+								}
+					            writer.println("         \"FCode\":\"" + FCodeText + FSubCodeText + "\",");
+
+								
+							} else if(FCode==35){
+								// valid codes: 35.0, 35.1
+								String FSubCodeText = ".0";
+				            	if(functionDescriptions[x][y].toLowerCase().contains("#f")){
+				            		FSubCodeText = ".1";
+				            	}
+					            writer.println("         \"FCode\":\"" + FCode + FSubCodeText + "\",");
+								int ValueToSend = ((int) functionDefs[x][y] & 0x3F);
+								writer.println("         \"ValueToSend\":\"" + ValueToSend+"\",");					            
+							} else {
+								writer.println("         \"FCode\":\"" + FCode+"\",");
+							}
+							
+							if(FCode>=51 && FCode<=57){
+								String unit = functionUnits[x][y];
+								if(!unit.isEmpty()){
+									writer.println("         \"Unit\":\"" + unit+"\",");
+								}
+							}
 							String OnText = "On";
 							writer.println("         \"OnText\":\"" + OnText+"\",");
 							String OffText = "Off";
@@ -1869,6 +1975,47 @@ public class ProservData {
 							writer.println("      }");
 						}
 					}
+					// Scene 1
+					for (int y = 0; y < 5; y++) {
+						String Name = sceneDescriptions[x*5+y];
+						if (!Name.isEmpty()) {
+							if(firstObject == false)
+								writer.println("      ,");
+							firstObject = false;
+							writer.println("      {");
+							writer.println("         \"Name\":\"" + Name+"\",");
+							int DP = 955 + x;
+							writer.println("         \"DP\":\"" + DP+"\",");
+							int FCode = ((int) sceneCodes[x*5+y] & 0xFF);
+							writer.println("         \"FCode\":\"" + FCode+"\",");
+							int ValueToSend = ((int) sceneDefs[x*5+y] & 0x3F);
+							if(ValueToSend>0)
+								ValueToSend--;
+							writer.println("         \"ValueToSend\":\"" + ValueToSend+"\"");
+							writer.println("      }");
+						}						
+					}
+					// Scene 2
+					for (int y = 0; y < 5; y++) {
+						String Name = sceneDescriptions[90+x*5+y];
+						if (!Name.isEmpty()) {
+							if(firstObject == false)
+								writer.println("      ,");
+							firstObject = false;
+							writer.println("      {");
+							writer.println("         \"Name\":\"" + Name+"\",");
+							int DP = 973 + x;
+							writer.println("         \"DP\":\"" + DP+"\",");
+							int FCode = ((int) sceneCodes[90+x*5+y] & 0xFF);
+							writer.println("         \"FCode\":\"" + FCode+"\",");
+							int ValueToSend = ((int) sceneDefs[90+x*5+y] & 0x3F);
+							if(ValueToSend>0)
+								ValueToSend--;
+							writer.println("         \"ValueToSend\":\"" + ValueToSend+"\"");
+							writer.println("      }");
+						}						
+					}
+
 					writer.println("   ]");
 				    
 				}

@@ -1,6 +1,6 @@
 build openhab
 mvn clean install
--> result in distribution\target\distribution-1.7.0-SNAPSHOT-runtime.zip
+-> result in distribution\target\distribution-1.7.1-SNAPSHOT-runtime.zip
 
 
 build proserv binding
